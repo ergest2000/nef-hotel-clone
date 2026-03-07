@@ -41,7 +41,7 @@ const TailorMade = () => {
     email: "",
     specification: "",
   });
-  const [showGallery, setShowGallery] = useState(false);
+
 
   const update = (field: string, value: string) =>
     setForm((prev) => ({ ...prev, [field]: value }));
