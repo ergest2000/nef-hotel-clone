@@ -51,7 +51,7 @@ const TailorMade = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
+    <div className="min-h-screen bg-background flex flex-col md:overflow-visible overflow-y-auto h-screen overscroll-none">
       <SiteHeader />
 
       {/* Hero */}

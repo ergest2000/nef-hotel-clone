@@ -17,7 +17,7 @@ const clients = [
 
 const Clients = () => {
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background md:overflow-visible overflow-y-auto h-screen overscroll-none">
       <SiteHeader />
 
       {/* Hero */}
