@@ -102,3 +102,24 @@
 .animate-scroll-clients {
   animation: scroll-clients 30s linear infinite;
 }
+
+/* Mobile: disable page scroll, content fills viewport */
+@media (max-width: 768px) {
+  html, body {
+    overflow: hidden;
+    height: 100dvh;
+    position: fixed;
+    width: 100%;
+  }
+
+  #root {
+    height: 100dvh;
+    overflow: hidden;
+  }
+
+  /* Allow internal scrollable containers */
+  .mobile-scroll-container {
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+}
