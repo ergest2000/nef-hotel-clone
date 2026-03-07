@@ -8,6 +8,7 @@ import Company from "./pages/Company";
 import Clients from "./pages/Clients";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
+import TailorMade from "./pages/TailorMade";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
