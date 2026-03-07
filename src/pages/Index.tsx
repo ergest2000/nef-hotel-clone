@@ -19,10 +19,10 @@ const Index = () => {
       <CategoriesSection />
       <CustomTextiles />
       <SuggestionsSection />
-      <NewsletterSection />
       <BlogSection />
       <MembershipSection />
       <CertificationsSection />
+      <NewsletterSection />
       <SiteFooter />
     </div>
   );
