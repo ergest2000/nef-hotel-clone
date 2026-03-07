@@ -126,7 +126,7 @@ const Company = () => {
       />
 
       {/* Network / Stats */}
-      <section className="py-16 md:py-24 bg-primary text-primary-foreground">
+      <section className="py-16 md:py-24 bg-warm-gray text-foreground">
         <div className="container text-center">
           <h2 className="text-2xl md:text-3xl font-light tracking-brand mb-4">
             Our Network
