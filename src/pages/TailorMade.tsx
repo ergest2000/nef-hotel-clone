@@ -1,10 +1,11 @@
 import { useState } from "react";
 import SiteHeader from "@/components/SiteHeader";
 import SiteFooter from "@/components/SiteFooter";
+import ProductGalleryCarousel from "@/components/ProductGalleryCarousel";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { Stamp, Ruler, Gem, Factory, ChevronDown } from "lucide-react";
+import { Stamp, Ruler, Gem, Factory } from "lucide-react";
 import heroImg from "@/assets/tailor-made-hero.jpg";
 
 const services = [
