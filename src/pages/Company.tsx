@@ -126,20 +126,20 @@ const Company = () => {
       />
 
       {/* Network / Stats */}
-      <section className="py-16 md:py-24 bg-primary text-primary-foreground">
+      <section className="py-16 md:py-24 bg-warm-gray text-foreground">
         <div className="container text-center">
           <h2 className="text-2xl md:text-3xl font-light tracking-brand mb-4">
             Our Network
           </h2>
-          <p className="text-sm md:text-base text-primary-foreground/80 max-w-2xl mx-auto mb-12 leading-relaxed">
+          <p className="text-sm md:text-base text-muted-foreground max-w-2xl mx-auto mb-12 leading-relaxed">
             Confidence in our product results today in exports to 12 countries, as well as active cooperation with more than 1500 accommodation units in Greece.
           </p>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-8 max-w-3xl mx-auto">
             {stats.map((stat) => (
               <div key={stat.label} className="flex flex-col items-center gap-3">
-                <stat.icon size={36} className="text-primary-foreground/70" />
-                <span className="text-4xl md:text-5xl font-light tracking-brand">{stat.value}</span>
-                <span className="text-xs tracking-brand uppercase text-primary-foreground/70">{stat.label}</span>
+                <stat.icon size={36} className="text-primary" />
+                <span className="text-4xl md:text-5xl font-light tracking-brand text-foreground">{stat.value}</span>
+                <span className="text-xs tracking-brand uppercase text-muted-foreground">{stat.label}</span>
               </div>
             ))}
           </div>
