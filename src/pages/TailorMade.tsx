@@ -1,10 +1,11 @@
 import { useState } from "react";
 import SiteHeader from "@/components/SiteHeader";
 import SiteFooter from "@/components/SiteFooter";
+import ProductGalleryCarousel from "@/components/ProductGalleryCarousel";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { Stamp, Ruler, Gem, Factory, ChevronDown } from "lucide-react";
+import { Stamp, Ruler, Gem, Factory } from "lucide-react";
 import heroImg from "@/assets/tailor-made-hero.jpg";
 
 const services = [
@@ -40,7 +41,7 @@ const TailorMade = () => {
     email: "",
     specification: "",
   });
-  const [showGallery, setShowGallery] = useState(false);
+
 
   const update = (field: string, value: string) =>
     setForm((prev) => ({ ...prev, [field]: value }));
@@ -105,43 +106,8 @@ const TailorMade = () => {
         </div>
       </section>
 
-      {/* Show More */}
-      <section className="py-12 bg-background">
-        <div className="container text-center">
-          <button
-            onClick={() => setShowGallery(!showGallery)}
-            className="inline-flex items-center gap-2 px-10 py-3 border border-border text-xs tracking-wide-brand uppercase text-foreground hover:bg-warm-gray transition-colors"
-          >
-            Show More
-            <ChevronDown
-              size={16}
-              className={`transition-transform ${showGallery ? "rotate-180" : ""}`}
-            />
-          </button>
-
-          {showGallery && (
-            <div className="mt-10 grid grid-cols-2 md:grid-cols-3 gap-4 animate-hero-in">
-              {[
-                "Embroidered pillowcases with hotel monogram",
-                "Custom-sized king bed sheets",
-                "Branded spa towels collection",
-                "Restaurant table linen set",
-                "Pool towels with resort logo",
-                "Premium bathrobes with embroidery",
-              ].map((item, i) => (
-                <div
-                  key={i}
-                  className="aspect-[4/3] bg-warm-gray border border-border flex items-center justify-center p-6"
-                >
-                  <p className="text-xs tracking-brand text-muted-foreground text-center uppercase">
-                    {item}
-                  </p>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      </section>
+      {/* Product Gallery Carousel */}
+      <ProductGalleryCarousel />
 
       {/* Contact Form */}
       <section id="contact-form" className="py-16 md:py-24 bg-warm-gray">
