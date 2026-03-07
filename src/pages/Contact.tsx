@@ -198,6 +198,34 @@ const Contact = () => {
         </div>
       </section>
 
+      {/* Membership CTA */}
+      <section className="py-16 md:py-20 bg-warm-gray">
+        <div className="container text-center max-w-2xl mx-auto">
+          <h2 className="text-lg md:text-xl tracking-wide-brand text-foreground font-light mb-4">
+            BËHUNI ANËTAR
+          </h2>
+          <p className="text-sm text-muted-foreground leading-relaxed mb-8">
+            Regjistrohuni dhe bashkohuni me platformën tonë për të pasur akses
+            në oferta ekskluzive dhe produkte të përshtatura për nevojat e
+            hotelerisë.
+          </p>
+          <div className="flex items-center justify-center gap-4">
+            <Link
+              to="/register"
+              className="inline-block px-10 py-3 bg-primary text-primary-foreground text-xs tracking-wide-brand uppercase hover:bg-primary/90 transition-colors"
+            >
+              REGJISTROHU
+            </Link>
+            <Link
+              to="/login"
+              className="inline-block px-10 py-3 border border-foreground text-foreground text-xs tracking-wide-brand uppercase hover:bg-foreground hover:text-background transition-colors"
+            >
+              HYR
+            </Link>
+          </div>
+        </div>
+      </section>
+
       {/* Newsletter */}
       <section className="py-16 md:py-20 bg-primary">
         <div className="container">
@@ -227,34 +255,6 @@ const Contact = () => {
                 </button>
               </div>
             </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Membership CTA */}
-      <section className="py-16 md:py-20 bg-warm-gray">
-        <div className="container text-center max-w-2xl mx-auto">
-          <h2 className="text-lg md:text-xl tracking-wide-brand text-foreground font-light mb-4">
-            BËHUNI ANËTAR
-          </h2>
-          <p className="text-sm text-muted-foreground leading-relaxed mb-8">
-            Regjistrohuni dhe bashkohuni me platformën tonë për të pasur akses
-            në oferta ekskluzive dhe produkte të përshtatura për nevojat e
-            hotelerisë.
-          </p>
-          <div className="flex items-center justify-center gap-4">
-            <Link
-              to="/register"
-              className="inline-block px-10 py-3 bg-primary text-primary-foreground text-xs tracking-wide-brand uppercase hover:bg-primary/90 transition-colors"
-            >
-              REGJISTROHU
-            </Link>
-            <Link
-              to="/login"
-              className="inline-block px-10 py-3 border border-foreground text-foreground text-xs tracking-wide-brand uppercase hover:bg-foreground hover:text-background transition-colors"
-            >
-              HYR
-            </Link>
           </div>
         </div>
       </section>
