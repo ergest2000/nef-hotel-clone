@@ -85,6 +85,7 @@
     #root > div {
       touch-action: pan-y;
       -webkit-overflow-scrolling: touch;
+      overflow-x: hidden !important;
     }
   }
 
