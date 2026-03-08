@@ -60,7 +60,12 @@
     @apply border-border;
   }
 
-  /* Mobile: prevent all page scrolling, allow internal scroll only */
+  /* Mobile & Desktop: prevent rubber-band/bounce scrolling */
+  html, body {
+    overscroll-behavior: none !important;
+    -webkit-overflow-scrolling: auto !important;
+  }
+
   @media (max-width: 767px) {
     html, body {
       overflow: hidden !important;
@@ -68,8 +73,6 @@
       width: 100% !important;
       height: 100% !important;
       height: 100dvh !important;
-      overscroll-behavior: none !important;
-      -webkit-overflow-scrolling: auto !important;
       touch-action: none;
     }
 
