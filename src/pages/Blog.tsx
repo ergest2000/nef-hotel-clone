@@ -34,9 +34,6 @@ const Blog = () => {
                     loading="lazy"
                   />
                 </div>
-                <p className="text-[10px] tracking-brand text-muted-foreground uppercase mb-2">
-                  {new Date(post.date).toLocaleDateString("sq-AL", { year: "numeric", month: "long", day: "numeric" })}
-                </p>
                 <h3 className="text-sm md:text-base text-foreground font-semibold normal-case tracking-normal leading-snug group-hover:text-primary transition-colors">
                   {post.title}
                 </h3>
