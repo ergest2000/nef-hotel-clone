@@ -109,7 +109,7 @@ const SiteHeader = () => {
               <img src={logo} alt="EGJEU" className="h-9 w-auto" />
             </Link>
             <div className="flex items-center gap-4">
-              <a href="tel:+35569000000" className="text-muted-foreground hover:text-foreground"><Phone size={18} /></a>
+              <button className="text-muted-foreground hover:text-foreground"><Heart size={18} /></button>
               <Link to="/register" className="text-muted-foreground hover:text-foreground"><UserPlus size={18} /></Link>
               <button className="relative text-muted-foreground hover:text-foreground">
                 <ShoppingCart size={18} />
