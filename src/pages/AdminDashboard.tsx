@@ -18,6 +18,8 @@ import { AdminDashboardOverview } from "@/components/admin/AdminDashboardOvervie
 import { AdminSeoEditor } from "@/components/admin/AdminSeoEditor";
 import { AdminMenuManager } from "@/components/admin/AdminMenuManager";
 import { AdminLogoManager } from "@/components/admin/AdminLogoManager";
+import { AdminRegistrations } from "@/components/admin/AdminRegistrations";
+import { AdminFormBuilder } from "@/components/admin/AdminFormBuilder";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import type { Tables } from "@/integrations/supabase/types";
 
