@@ -65,6 +65,75 @@ export type Database = {
         }
         Relationships: []
       }
+      nav_menus: {
+        Row: {
+          created_at: string
+          href: string
+          id: string
+          label: string
+          location: string
+          sort_order: number
+          updated_at: string
+          visible: boolean
+        }
+        Insert: {
+          created_at?: string
+          href?: string
+          id?: string
+          label: string
+          location: string
+          sort_order?: number
+          updated_at?: string
+          visible?: boolean
+        }
+        Update: {
+          created_at?: string
+          href?: string
+          id?: string
+          label?: string
+          location?: string
+          sort_order?: number
+          updated_at?: string
+          visible?: boolean
+        }
+        Relationships: []
+      }
+      seo_metadata: {
+        Row: {
+          created_at: string
+          id: string
+          lang: string
+          meta_description: string | null
+          meta_title: string | null
+          og_image: string | null
+          page: string
+          seo_keywords: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          lang?: string
+          meta_description?: string | null
+          meta_title?: string | null
+          og_image?: string | null
+          page: string
+          seo_keywords?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          lang?: string
+          meta_description?: string | null
+          meta_title?: string | null
+          og_image?: string | null
+          page?: string
+          seo_keywords?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       site_content: {
         Row: {
           content_type: string
