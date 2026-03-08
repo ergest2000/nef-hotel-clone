@@ -67,8 +67,8 @@ const HeroSlider = ({ content }: { content?: SiteContent[] }) => {
         </div>
       </div>
 
-      {/* Elegant vertical dots on the right */}
-      <div className="absolute right-6 md:right-10 top-1/2 -translate-y-1/2 flex flex-col items-center gap-3">
+      {/* Elegant horizontal dots at the bottom */}
+      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex items-center gap-3">
         {slides.map((_, i) => (
           <button
             key={i}
@@ -77,7 +77,7 @@ const HeroSlider = ({ content }: { content?: SiteContent[] }) => {
           >
             <span className={`block rounded-full transition-all duration-500 ${
               i === current
-                ? "w-2.5 h-8 bg-primary"
+                ? "w-8 h-2.5 bg-primary"
                 : "w-2 h-2 bg-muted-foreground/30 group-hover:bg-muted-foreground/60"
             }`} />
           </button>
