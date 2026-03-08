@@ -14,6 +14,10 @@ import TailorMade from "./pages/TailorMade";
 import Contact from "./pages/Contact";
 import Blog from "./pages/Blog";
 import BlogPost from "./pages/BlogPost";
+import Shipping from "./pages/Shipping";
+import PaymentTerms from "./pages/PaymentTerms";
+import TermsOfUse from "./pages/TermsOfUse";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
 import AdminDashboard from "./pages/AdminDashboard";
 import AdminRoute from "./components/AdminRoute";
 import ScrollToTop from "./components/ScrollToTop";
@@ -40,6 +44,10 @@ const App = () => (
               <Route path="/contact" element={<Contact />} />
               <Route path="/blog" element={<Blog />} />
               <Route path="/blog/:id" element={<BlogPost />} />
+              <Route path="/shipping" element={<Shipping />} />
+              <Route path="/payment-terms" element={<PaymentTerms />} />
+              <Route path="/terms-of-use" element={<TermsOfUse />} />
+              <Route path="/privacy-policy" element={<PrivacyPolicy />} />
               <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
