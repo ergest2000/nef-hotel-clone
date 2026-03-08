@@ -10,6 +10,8 @@ import {
   Image,
   Settings,
   Menu as MenuIcon,
+  Award,
+  ImageIcon,
 } from "lucide-react";
 import {
   Sidebar,
@@ -36,6 +38,8 @@ const menuItems = [
   { key: "blog", label: "Blog", icon: FileText, group: "pages" },
   { key: "blog-posts", label: "Blog Posts", icon: PenSquare, group: "content" },
   { key: "menus", label: "Menus", icon: MenuIcon, group: "content" },
+  { key: "clients-logos", label: "Clients Logos", icon: ImageIcon, group: "content" },
+  { key: "certifications-logos", label: "Certifications Logos", icon: Award, group: "content" },
   { key: "media", label: "Media", icon: Image, group: "content" },
   { key: "settings", label: "Settings", icon: Settings, group: "system" },
 ];
