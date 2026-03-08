@@ -23,7 +23,9 @@ const HeroSlider = ({ content }: { content?: SiteContent[] }) => {
     const title = getContentValue(content, "hero", `slide${idx}_title`, def.title);
     const imageVal = getContentValue(content, "hero", `slide${idx}_image`, "");
     const image = imageVal && !imageVal.startsWith("/src/") ? imageVal : def.image;
-    return { image, title };
+    const overlayVal = getContentValue(content, "hero", `slide${idx}_overlay`, "50");
+    const overlay = Math.min(100, Math.max(0, parseInt(overlayVal) || 50));
+    return { image, title, overlay };
   });
 
   const goTo = useCallback((index: number) => {
@@ -54,7 +56,7 @@ const HeroSlider = ({ content }: { content?: SiteContent[] }) => {
             className="w-full h-full object-cover"
             loading={i === 0 ? "eager" : "lazy"}
           />
-          <div className="absolute inset-0 bg-gradient-to-r from-background/80 via-background/30 to-transparent" />
+          <div className="absolute inset-0" style={{ background: `linear-gradient(to right, hsl(var(--background) / ${slide.overlay / 100}), hsl(var(--background) / ${slide.overlay / 300}), transparent)` }} />
         </div>
       ))}
 
