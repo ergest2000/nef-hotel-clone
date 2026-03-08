@@ -70,42 +70,29 @@ const HeroSlider = ({ content }: { content?: SiteContent[] }) => {
         </div>
       </div>
 
-      {/* Navigation controls */}
-      <div className="absolute bottom-6 md:bottom-10 left-0 right-0">
-        <div className="container flex items-center justify-between">
-          <button
-            onClick={() => goTo((current - 1 + slides.length) % slides.length)}
-            className="w-10 h-10 md:w-12 md:h-12 flex items-center justify-center text-primary-foreground/50 hover:text-primary-foreground transition-colors duration-300"
-            aria-label="Previous slide"
-          >
-            <ChevronLeft size={20} strokeWidth={1} />
-          </button>
+      {/* Glass arrows */}
+      <button onClick={() => goTo((current - 1 + slides.length) % slides.length)} className="absolute left-3 md:left-6 bottom-16 md:bottom-8 w-9 h-9 md:w-11 md:h-11 rounded-full backdrop-blur-md bg-background/10 border border-primary-foreground/10 flex items-center justify-center text-primary-foreground/70 hover:text-primary-foreground hover:bg-background/20 transition-all">
+        <ChevronLeft size={18} strokeWidth={1.5} />
+      </button>
+      <button onClick={() => goTo((current + 1) % slides.length)} className="absolute right-3 md:right-6 bottom-16 md:bottom-8 w-9 h-9 md:w-11 md:h-11 rounded-full backdrop-blur-md bg-background/10 border border-primary-foreground/10 flex items-center justify-center text-primary-foreground/70 hover:text-primary-foreground hover:bg-background/20 transition-all">
+        <ChevronRight size={18} strokeWidth={1.5} />
+      </button>
 
-          <div className="flex items-center gap-4">
-            {slides.map((_, i) => (
-              <button
-                key={i}
-                onClick={() => goTo(i)}
-                aria-label={`Go to slide ${i + 1}`}
-                className="group p-1"
-              >
-                <span className={`block transition-all duration-500 ease-out ${
-                  i === current
-                    ? "w-8 h-[1.5px] bg-primary-foreground"
-                    : "w-4 h-[1.5px] bg-primary-foreground/30 group-hover:bg-primary-foreground/60 group-hover:w-6"
-                }`} />
-              </button>
-            ))}
-          </div>
-
+      {/* Dots */}
+      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex items-center gap-3">
+        {slides.map((_, i) => (
           <button
-            onClick={() => goTo((current + 1) % slides.length)}
-            className="w-10 h-10 md:w-12 md:h-12 flex items-center justify-center text-primary-foreground/50 hover:text-primary-foreground transition-colors duration-300"
-            aria-label="Next slide"
+            key={i}
+            onClick={() => goTo(i)}
+            className="group relative flex items-center justify-center"
           >
-            <ChevronRight size={20} strokeWidth={1} />
+            <span className={`block rounded-full transition-all duration-500 ${
+              i === current
+                ? "w-8 h-2.5 bg-primary"
+                : "w-2 h-2 bg-muted-foreground/30 group-hover:bg-muted-foreground/60"
+            }`} />
           </button>
-        </div>
+        ))}
       </div>
     </section>
   );
