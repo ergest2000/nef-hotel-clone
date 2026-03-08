@@ -11,10 +11,11 @@ const SiteHeader = () => {
   const mainLinks = [
     { label: "About Us", href: "/company" },
     { label: "Our Clients", href: "/clients" },
-    { label: "Certifications", href: "#certifications" },
-    { label: "Blog", href: "#blog" },
+    { label: "Certifications", href: "/#certifications" },
+    { label: "Blog", href: "/blog" },
     { label: "Catalogue", href: "#" },
     { label: "Tailor Made", href: "/tailor-made" },
+    { label: "Contact", href: "/contact" },
   ];
 
   const productLinks = [

@@ -1,36 +1,17 @@
-import blog1 from "@/assets/blog-1.jpg";
-import blog2 from "@/assets/blog-2.jpg";
-import blog3 from "@/assets/blog-3.jpg";
-
-const posts = [
-  {
-    image: blog1,
-    title: "Boutique hotels: The new trend in Albanian hospitality",
-    excerpt: "Discover how boutique hotels are reshaping the guest experience with personalized service and unique design.",
-  },
-  {
-    image: blog2,
-    title: "Restarting laundromats after the closing of the winter period",
-    excerpt: "In the next few months all hotels will welcome their customers again. Here's how to prepare your laundry.",
-  },
-  {
-    image: blog3,
-    title: "Preparing hotel rooms for the summer season",
-    excerpt: "Essential tips for refreshing your hotel rooms with new linens and amenities before the summer rush.",
-  },
-];
+import { Link } from "react-router-dom";
+import { blogPosts } from "@/data/blogPosts";
 
 const BlogSection = () => {
   return (
-    <section className="py-16 md:py-24">
+    <section id="blog" className="py-16 md:py-24">
       <div className="container">
         <h2 className="text-xl md:text-2xl tracking-wide-brand text-foreground font-light text-center mb-12">
           BLOG
         </h2>
 
         <div className="grid md:grid-cols-3 gap-6 md:gap-8">
-          {posts.map((post) => (
-            <a key={post.title} href="#" className="group">
+          {blogPosts.map((post) => (
+            <Link key={post.id} to={`/blog/${post.id}`} className="group">
               <div className="aspect-[4/3] overflow-hidden mb-4">
                 <img
                   src={post.image}
@@ -45,8 +26,17 @@ const BlogSection = () => {
               <p className="text-xs md:text-sm text-muted-foreground mt-2 leading-relaxed">
                 {post.excerpt}
               </p>
-            </a>
+              <span className="inline-block mt-3 text-xs tracking-brand text-primary uppercase group-hover:underline">
+                Read More →
+              </span>
+            </Link>
           ))}
+        </div>
+
+        <div className="text-center mt-10">
+          <Link to="/blog" className="text-xs tracking-brand text-primary hover:underline uppercase">
+            Shiko të gjitha postimet →
+          </Link>
         </div>
       </div>
     </section>
