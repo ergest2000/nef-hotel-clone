@@ -81,43 +81,39 @@ const SiteHeader = () => {
           </div>
         </div>
 
-        {/* Logo + Hamburger Nav */}
+        {/* Logo + Hamburger + Product links horizontal */}
         <div className="border-b border-border">
-          <div className="container flex items-center h-20 gap-6">
+          <div className="container flex items-center h-20 gap-4">
             <Link to="/" className="flex items-center gap-3 shrink-0">
               <img src={logo} alt="EGJEU" className="h-14 w-auto" />
             </Link>
             <button
-              className="text-foreground hover:text-primary transition-colors"
+              className="text-foreground hover:text-primary transition-colors shrink-0"
               onClick={() => setDesktopMenuOpen(!desktopMenuOpen)}
             >
               {desktopMenuOpen ? <X size={24} /> : <Menu size={24} />}
             </button>
+            {/* Product links - horizontal inline */}
+            <nav className="flex items-center gap-4 xl:gap-5">
+              {productLinks.map((item, i) => (
+                <Link
+                  key={item.label}
+                  to={item.href}
+                  className="text-[10px] xl:text-xs tracking-brand text-muted-foreground hover:text-primary transition-colors uppercase whitespace-nowrap"
+                >
+                  {item.label}
+                </Link>
+              ))}
+            </nav>
           </div>
         </div>
 
-        {/* Desktop dropdown menu */}
+        {/* Desktop dropdown menu (main pages) */}
         {desktopMenuOpen && (
           <div className="border-b border-border bg-background shadow-sm">
-            <div className="container py-6 flex gap-16">
-              {/* Main pages */}
+            <div className="container py-6">
               <div className="flex flex-col gap-1">
-                <span className="text-[10px] tracking-brand text-muted-foreground/60 uppercase mb-2">Menu</span>
                 {mainLinks.map((item) => (
-                  <Link
-                    key={item.label}
-                    to={item.href}
-                    onClick={() => setDesktopMenuOpen(false)}
-                    className="text-xs tracking-brand text-muted-foreground hover:text-primary transition-colors uppercase py-2"
-                  >
-                    {item.label}
-                  </Link>
-                ))}
-              </div>
-              {/* Product categories */}
-              <div className="flex flex-col gap-1 border-l border-border pl-16">
-                <span className="text-[10px] tracking-brand text-muted-foreground/60 uppercase mb-2">Produkte</span>
-                {productLinks.map((item) => (
                   <Link
                     key={item.label}
                     to={item.href}
@@ -155,35 +151,28 @@ const SiteHeader = () => {
           </div>
         </div>
 
-        {/* Search bar - always visible below logo */}
-        <div className="border-b border-border px-4 py-2">
-          <div className="relative w-full">
-            <input
-              type="text"
-              placeholder="Kërko për produkte këtu..."
-              className="w-full h-11 pl-4 pr-12 text-sm border border-border bg-background rounded-full focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-muted-foreground/50"
-            />
-            <Search size={18} className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground" />
-          </div>
-        </div>
-
-        {/* Mobile menu dropdown */}
-        {mobileMenuOpen && (
-          <div className="border-b border-border bg-background">
-            <div className="container py-3 flex flex-col gap-1">
-              <span className="text-[10px] tracking-brand text-muted-foreground/60 uppercase mb-1 mt-1">Menu</span>
-              {mainLinks.map((item) => (
+        {/* Product links - horizontal scrollable */}
+        <div className="border-b border-border">
+          <div className="overflow-x-auto scrollbar-none">
+            <div className="flex items-center gap-4 px-4 py-2.5 min-w-max">
+              {productLinks.map((item) => (
                 <Link
                   key={item.label}
                   to={item.href}
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="text-sm tracking-brand text-muted-foreground hover:text-primary transition-colors uppercase py-2.5 border-b border-border"
+                  className="text-[11px] tracking-brand text-muted-foreground hover:text-primary transition-colors uppercase whitespace-nowrap"
                 >
                   {item.label}
                 </Link>
               ))}
-              <span className="text-[10px] tracking-brand text-muted-foreground/60 uppercase mb-1 mt-4">Produkte</span>
-              {productLinks.map((item) => (
+            </div>
+          </div>
+        </div>
+
+        {/* Mobile menu dropdown (main pages only) */}
+        {mobileMenuOpen && (
+          <div className="border-b border-border bg-background">
+            <div className="container py-3 flex flex-col gap-1">
+              {mainLinks.map((item) => (
                 <Link
                   key={item.label}
                   to={item.href}
