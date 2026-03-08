@@ -2,7 +2,7 @@ import { useParams, Link } from "react-router-dom";
 import SiteHeader from "@/components/SiteHeader";
 import SiteFooter from "@/components/SiteFooter";
 import { blogPosts } from "@/data/blogPosts";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, MessageCircle, Mail, Facebook } from "lucide-react";
 
 const BlogPost = () => {
   const { id } = useParams<{ id: string }>();
@@ -25,6 +25,30 @@ const BlogPost = () => {
     );
   }
 
+  const shareUrl = typeof window !== "undefined" ? window.location.href : "";
+  const shareText = post.title;
+
+  const shareLinks = [
+    {
+      label: "WhatsApp",
+      icon: MessageCircle,
+      href: `https://wa.me/?text=${encodeURIComponent(shareText + " " + shareUrl)}`,
+      className: "bg-[#25D366] hover:bg-[#1da851] text-white",
+    },
+    {
+      label: "Email",
+      icon: Mail,
+      href: `mailto:?subject=${encodeURIComponent(shareText)}&body=${encodeURIComponent(shareUrl)}`,
+      className: "bg-muted hover:bg-muted-foreground/20 text-foreground",
+    },
+    {
+      label: "Facebook",
+      icon: Facebook,
+      href: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`,
+      className: "bg-[#1877F2] hover:bg-[#0d65d9] text-white",
+    },
+  ];
+
   return (
     <div className="min-h-screen bg-background md:overflow-visible overflow-y-auto overflow-x-hidden h-screen overscroll-none">
       <SiteHeader />
@@ -34,10 +58,6 @@ const BlogPost = () => {
           <Link to="/blog" className="inline-flex items-center gap-2 text-xs tracking-brand text-muted-foreground hover:text-primary transition-colors uppercase mb-8">
             <ArrowLeft size={14} /> Kthehu te Blogu
           </Link>
-
-          <p className="text-[10px] tracking-brand text-muted-foreground uppercase mb-3">
-            {new Date(post.date).toLocaleDateString("sq-AL", { year: "numeric", month: "long", day: "numeric" })} · {post.author}
-          </p>
 
           <h1 className="text-2xl md:text-4xl font-light text-foreground leading-tight normal-case tracking-normal mb-8">
             {post.title}
@@ -53,6 +73,25 @@ const BlogPost = () => {
                 {paragraph}
               </p>
             ))}
+          </div>
+
+          {/* Share buttons */}
+          <div className="border-t border-border mt-12 pt-8">
+            <p className="text-xs tracking-brand text-muted-foreground uppercase mb-4">Ndaje postimin</p>
+            <div className="flex gap-3">
+              {shareLinks.map((item) => (
+                <a
+                  key={item.label}
+                  href={item.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-xs tracking-brand uppercase transition-colors ${item.className}`}
+                >
+                  <item.icon size={16} />
+                  {item.label}
+                </a>
+              ))}
+            </div>
           </div>
         </div>
       </article>
