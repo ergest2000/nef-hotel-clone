@@ -1,5 +1,4 @@
 import { useState, useEffect, useCallback } from "react";
-import { ChevronLeft, ChevronRight } from "lucide-react";
 import { getContentValue } from "@/hooks/useCms";
 import hero1 from "@/assets/hero-1.jpg";
 import hero2 from "@/assets/hero-2.jpg";
@@ -68,22 +67,22 @@ const HeroSlider = ({ content }: { content?: SiteContent[] }) => {
         </div>
       </div>
 
-      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex gap-3">
+      {/* Elegant vertical dots on the right */}
+      <div className="absolute right-6 md:right-10 top-1/2 -translate-y-1/2 flex flex-col items-center gap-3">
         {slides.map((_, i) => (
           <button
             key={i}
             onClick={() => goTo(i)}
-            className={`w-3 h-3 rounded-full transition-colors ${i === current ? "bg-primary" : "bg-muted-foreground/40"}`}
-          />
+            className="group relative flex items-center justify-center"
+          >
+            <span className={`block rounded-full transition-all duration-500 ${
+              i === current
+                ? "w-2.5 h-8 bg-primary"
+                : "w-2 h-2 bg-muted-foreground/30 group-hover:bg-muted-foreground/60"
+            }`} />
+          </button>
         ))}
       </div>
-
-      <button onClick={() => goTo((current - 1 + slides.length) % slides.length)} className="absolute left-4 top-1/2 -translate-y-1/2 text-foreground/60 hover:text-foreground transition-colors">
-        <ChevronLeft size={36} />
-      </button>
-      <button onClick={() => goTo((current + 1) % slides.length)} className="absolute right-4 top-1/2 -translate-y-1/2 text-foreground/60 hover:text-foreground transition-colors">
-        <ChevronRight size={36} />
-      </button>
     </section>
   );
 };
