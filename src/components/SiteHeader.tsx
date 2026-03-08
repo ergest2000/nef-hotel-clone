@@ -46,6 +46,11 @@ const SiteHeader = () => {
               </button>
             </div>
 
+            {/* Contact - left side after language */}
+            <span className="text-muted-foreground shrink-0">
+              CONTACT: <strong className="text-foreground">+355 69 000 0000</strong>
+            </span>
+
             {/* Search - centered */}
             <div className="relative flex-1 mx-auto max-w-sm">
               <input
@@ -55,11 +60,6 @@ const SiteHeader = () => {
               />
               <Search size={13} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
             </div>
-
-            {/* Contact */}
-            <span className="text-muted-foreground shrink-0">
-              CONTACT: <strong className="text-foreground">+355 69 000 0000</strong>
-            </span>
 
             {/* Actions */}
             <div className="flex items-center gap-5 shrink-0 ml-auto">
