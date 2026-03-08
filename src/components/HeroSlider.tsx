@@ -1,18 +1,30 @@
 import { useState, useEffect, useCallback } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { getContentValue } from "@/hooks/useCms";
 import hero1 from "@/assets/hero-1.jpg";
 import hero2 from "@/assets/hero-2.jpg";
 import hero3 from "@/assets/hero-3.jpg";
+import type { Tables } from "@/integrations/supabase/types";
 
-const slides = [
+type SiteContent = Tables<"site_content">;
+
+const defaultSlides = [
   { image: hero1, title: "Making hotel rooms\nfeel like home" },
   { image: hero2, title: "Luxury bathroom\ncollection" },
   { image: hero3, title: "Pool & outdoor\nessentials" },
 ];
 
-const HeroSlider = () => {
+const HeroSlider = ({ content }: { content?: SiteContent[] }) => {
   const [current, setCurrent] = useState(0);
   const [isAnimating, setIsAnimating] = useState(true);
+
+  const slides = defaultSlides.map((def, i) => {
+    const idx = i + 1;
+    const title = getContentValue(content, "hero", `slide${idx}_title`, def.title);
+    const imageVal = getContentValue(content, "hero", `slide${idx}_image`, "");
+    const image = imageVal && !imageVal.startsWith("/src/") ? imageVal : def.image;
+    return { image, title };
+  });
 
   const goTo = useCallback((index: number) => {
     setIsAnimating(false);
@@ -27,7 +39,7 @@ const HeroSlider = () => {
       goTo((current + 1) % slides.length);
     }, 5000);
     return () => clearInterval(timer);
-  }, [current, goTo]);
+  }, [current, goTo, slides.length]);
 
   return (
     <section className="relative w-full h-[60vh] md:h-[80vh] overflow-hidden">
@@ -46,7 +58,6 @@ const HeroSlider = () => {
         </div>
       ))}
 
-      {/* Text overlay */}
       <div className="absolute inset-0 flex items-center">
         <div className="container">
           <div className={`max-w-lg transition-all duration-700 ${isAnimating ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"}`}>
@@ -57,7 +68,6 @@ const HeroSlider = () => {
         </div>
       </div>
 
-      {/* Navigation dots */}
       <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex gap-3">
         {slides.map((_, i) => (
           <button
@@ -68,7 +78,6 @@ const HeroSlider = () => {
         ))}
       </div>
 
-      {/* Arrows */}
       <button onClick={() => goTo((current - 1 + slides.length) % slides.length)} className="absolute left-4 top-1/2 -translate-y-1/2 text-foreground/60 hover:text-foreground transition-colors">
         <ChevronLeft size={36} />
       </button>
