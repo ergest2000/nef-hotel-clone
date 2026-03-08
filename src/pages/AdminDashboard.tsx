@@ -38,6 +38,8 @@ const pageTitles: Record<string, string> = {
   menus: "Menu Management",
   "clients-logos": "Clients Logos",
   "certifications-logos": "Certifications Logos",
+  registrations: "Registrations",
+  "registration-form": "Registration Form",
   settings: "Settings",
 };
 
