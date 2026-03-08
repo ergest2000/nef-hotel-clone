@@ -12,7 +12,7 @@ import SiteFooter from "@/components/SiteFooter";
 
 const Index = () => {
   return (
-    <div className="min-h-screen bg-background md:overflow-visible overflow-y-auto h-screen overscroll-none">
+    <div className="min-h-screen bg-background md:overflow-visible overflow-y-auto overflow-x-hidden h-screen overscroll-none">
       <SiteHeader />
       <HeroSlider />
       <ClientsCarousel />
