@@ -22,18 +22,21 @@ export const usePageContent = (page: string, lang: string = "al") => {
   });
 };
 
-// Fetch all content for all pages (admin dashboard)
-export const useAllContent = (lang: string = "al") => {
+// Fetch all content for all pages (admin dashboard) - optionally filter by lang
+export const useAllContent = (lang?: string) => {
   return useQuery({
-    queryKey: ["site_content", "all", lang],
+    queryKey: ["site_content", "all", lang ?? "all"],
     queryFn: async () => {
-      const { data, error } = await supabase
+      let query = supabase
         .from("site_content")
         .select("*")
-        .eq("lang", lang)
         .order("page")
         .order("section_key")
         .order("sort_order");
+      if (lang) {
+        query = query.eq("lang", lang);
+      }
+      const { data, error } = await query;
       if (error) throw error;
       return data as SiteContent[];
     },
