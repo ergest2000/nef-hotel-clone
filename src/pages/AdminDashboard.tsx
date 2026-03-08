@@ -14,16 +14,30 @@ import { AdminSidebar } from "@/components/admin/AdminSidebar";
 import { AdminPageEditor } from "@/components/admin/AdminPageEditor";
 import { AdminBlogManager } from "@/components/admin/AdminBlogManager";
 import { AdminHeader } from "@/components/admin/AdminHeader";
-import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { AdminDashboardOverview } from "@/components/admin/AdminDashboardOverview";
+import { SidebarProvider } from "@/components/ui/sidebar";
 import type { Tables } from "@/integrations/supabase/types";
 
 type SiteContent = Tables<"site_content">;
+
+const pageTitles: Record<string, string> = {
+  dashboard: "Dashboard",
+  home: "Faqja Kryesore",
+  company: "Company",
+  clients: "Clients",
+  "tailor-made": "Tailor Made",
+  contact: "Contact",
+  blog: "Blog",
+  "blog-posts": "Blog Posts",
+  media: "Media",
+  settings: "Settings",
+};
 
 const AdminDashboard = () => {
   const { signOut, user } = useAuth();
   const { toast } = useToast();
   const [lang, setLang] = useState<"al" | "en">("al");
-  const [activePage, setActivePage] = useState("home");
+  const [activePage, setActivePage] = useState("dashboard");
 
   const { data: content, isLoading: loadingContent } = useAllContent(lang);
   const { data: sections, isLoading: loadingSections } = useAllSections();
@@ -94,13 +108,105 @@ const AdminDashboard = () => {
   );
 
   const isLoading = loadingContent || loadingSections || loadingBlog;
-
   const pageSections = sections?.filter((s) => s.page === activePage) ?? [];
   const pageContent = content?.filter((c) => c.page === activePage) ?? [];
 
+  // Count unique pages
+  const uniquePages = new Set(sections?.map((s) => s.page) ?? []);
+
+  const renderContent = () => {
+    if (isLoading) {
+      return (
+        <div className="flex items-center justify-center py-20">
+          <div className="text-center">
+            <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-3" />
+            <p className="text-sm text-muted-foreground">Duke ngarkuar...</p>
+          </div>
+        </div>
+      );
+    }
+
+    switch (activePage) {
+      case "dashboard":
+        return (
+          <AdminDashboardOverview
+            totalSections={sections?.length ?? 0}
+            totalContent={content?.length ?? 0}
+            totalBlogPosts={blogPosts?.length ?? 0}
+            totalPages={uniquePages.size}
+            onNavigate={setActivePage}
+          />
+        );
+      case "blog-posts":
+        return (
+          <AdminBlogManager
+            posts={blogPosts ?? []}
+            lang={lang}
+            onSave={(post) =>
+              upsertBlogPost.mutate(post, {
+                onSuccess: () => toast({ title: "Postimi u ruajt!" }),
+                onError: (e) => toast({ title: "Gabim", description: e.message, variant: "destructive" }),
+              })
+            }
+            onDelete={(id) =>
+              deleteBlogPost.mutate(id, {
+                onSuccess: () => toast({ title: "Postimi u fshi!" }),
+                onError: (e) => toast({ title: "Gabim", description: e.message, variant: "destructive" }),
+              })
+            }
+            onUploadImage={async (file: File) => {
+              const path = `blog/${Date.now()}-${file.name}`;
+              return await uploadCmsImage(file, path);
+            }}
+          />
+        );
+      case "media":
+        return (
+          <div>
+            <h2 className="text-xl font-semibold text-foreground mb-4">Media Library</h2>
+            <p className="text-sm text-muted-foreground">
+              Imazhet ngarkohen direkt nga editori i çdo seksioni. Këtu mund të shikoni dhe menaxhoni të gjitha imazhet e ngarkuara.
+            </p>
+            <div className="mt-6 border-2 border-dashed border-border rounded-lg p-12 text-center">
+              <p className="text-sm text-muted-foreground">Media library do të shtohet së shpejti.</p>
+            </div>
+          </div>
+        );
+      case "settings":
+        return (
+          <div>
+            <h2 className="text-xl font-semibold text-foreground mb-4">Settings</h2>
+            <div className="bg-background border border-border rounded-lg p-6 space-y-4">
+              <div>
+                <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Email i administratorit</label>
+                <p className="text-sm text-foreground mt-1">{user?.email}</p>
+              </div>
+              <div>
+                <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Gjuha aktive</label>
+                <p className="text-sm text-foreground mt-1">{lang === "al" ? "Shqip" : "English"}</p>
+              </div>
+            </div>
+          </div>
+        );
+      default:
+        return (
+          <AdminPageEditor
+            page={activePage}
+            sections={pageSections}
+            content={pageContent}
+            lang={lang}
+            onSaveField={handleSaveField}
+            onUploadImage={handleUploadImage}
+            onToggleVisibility={handleToggleVisibility}
+            onDragEnd={handleDragEnd}
+          />
+        );
+    }
+  };
+
   return (
     <SidebarProvider>
-      <div className="min-h-screen flex w-full bg-warm-gray">
+      <div className="min-h-screen flex w-full">
         <AdminSidebar activePage={activePage} onPageChange={setActivePage} />
         <div className="flex-1 flex flex-col min-w-0">
           <AdminHeader
@@ -108,41 +214,10 @@ const AdminDashboard = () => {
             lang={lang}
             onLangChange={setLang}
             onSignOut={signOut}
+            pageTitle={pageTitles[activePage] || activePage}
           />
-          <main className="flex-1 p-6 overflow-auto">
-            {isLoading ? (
-              <div className="text-center py-20">
-                <p className="text-sm text-muted-foreground tracking-brand">Duke ngarkuar...</p>
-              </div>
-            ) : activePage === "blog-posts" ? (
-              <AdminBlogManager
-                posts={blogPosts ?? []}
-                lang={lang}
-                onSave={(post) => upsertBlogPost.mutate(post, {
-                  onSuccess: () => toast({ title: "Postimi u ruajt!" }),
-                  onError: (e) => toast({ title: "Gabim", description: e.message, variant: "destructive" }),
-                })}
-                onDelete={(id) => deleteBlogPost.mutate(id, {
-                  onSuccess: () => toast({ title: "Postimi u fshi!" }),
-                  onError: (e) => toast({ title: "Gabim", description: e.message, variant: "destructive" }),
-                })}
-                onUploadImage={async (file: File) => {
-                  const path = `blog/${Date.now()}-${file.name}`;
-                  return await uploadCmsImage(file, path);
-                }}
-              />
-            ) : (
-              <AdminPageEditor
-                page={activePage}
-                sections={pageSections}
-                content={pageContent}
-                lang={lang}
-                onSaveField={handleSaveField}
-                onUploadImage={handleUploadImage}
-                onToggleVisibility={handleToggleVisibility}
-                onDragEnd={handleDragEnd}
-              />
-            )}
+          <main className="flex-1 p-6 md:p-8 bg-muted/30 overflow-auto">
+            {renderContent()}
           </main>
         </div>
       </div>
