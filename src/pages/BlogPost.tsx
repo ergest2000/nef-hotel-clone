@@ -88,7 +88,11 @@ const BlogPost = () => {
                   rel="noopener noreferrer"
                   className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-xs tracking-brand uppercase transition-colors ${item.className}`}
                 >
-                  <item.icon size={16} />
+                  {"iconSrc" in item ? (
+                    <img src={item.iconSrc} alt={item.label} className="w-4 h-4 brightness-0 invert" />
+                  ) : (
+                    <item.icon size={16} />
+                  )}
                   {item.label}
                 </a>
               ))}
