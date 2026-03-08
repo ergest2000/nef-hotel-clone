@@ -32,7 +32,7 @@ const BlogPost = () => {
     {
       label: "WhatsApp",
       icon: MessageCircle,
-      href: `https://wa.me/?text=${encodeURIComponent(shareText + " " + shareUrl)}`,
+      href: `https://api.whatsapp.com/send?text=${encodeURIComponent(shareText + " " + shareUrl)}`,
       className: "bg-[#25D366] hover:bg-[#1da851] text-white",
     },
     {
@@ -77,8 +77,8 @@ const BlogPost = () => {
 
           {/* Share buttons */}
           <div className="border-t border-border mt-12 pt-8">
-            <p className="text-xs tracking-brand text-muted-foreground uppercase mb-4">Ndaje postimin</p>
-            <div className="flex gap-3">
+            <p className="text-xs tracking-brand text-muted-foreground uppercase mb-4 text-center">Ndaje postimin</p>
+            <div className="flex justify-center gap-3">
               {shareLinks.map((item) => (
                 <a
                   key={item.label}
