@@ -1,4 +1,4 @@
-import { Search, Heart, ShoppingCart, UserPlus, Menu, X } from "lucide-react";
+import { Search, Heart, ShoppingCart, UserPlus, Menu, X, ChevronDown, ChevronUp } from "lucide-react";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import logo from "@/assets/egjeu-logo.png";
@@ -6,6 +6,7 @@ import logo from "@/assets/egjeu-logo.png";
 const SiteHeader = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [desktopMenuOpen, setDesktopMenuOpen] = useState(false);
+  const [mobileProductsOpen, setMobileProductsOpen] = useState(false);
   const [lang, setLang] = useState<"AL" | "EN">("AL");
 
   const mainLinks = [
@@ -152,27 +153,46 @@ const SiteHeader = () => {
           </div>
         </div>
 
-        {/* Product links - horizontal scrollable */}
-        <div className="border-b border-border">
-          <div className="overflow-x-auto scrollbar-none">
-            <div className="flex items-center gap-4 px-4 py-2.5 min-w-max">
-              {productLinks.map((item) => (
-                <Link
-                  key={item.label}
-                  to={item.href}
-                  className="text-[11px] tracking-brand text-muted-foreground hover:text-primary transition-colors uppercase whitespace-nowrap"
-                >
-                  {item.label}
-                </Link>
-              ))}
-            </div>
+        {/* Search bar */}
+        <div className="border-b border-border px-4 py-2">
+          <div className="relative w-full">
+            <input
+              type="text"
+              placeholder="Kërko për produkte këtu..."
+              className="w-full h-11 pl-4 pr-12 text-sm border border-border bg-background rounded-full focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-muted-foreground/50"
+            />
+            <Search size={18} className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground" />
           </div>
         </div>
 
-        {/* Mobile menu dropdown (main pages only) */}
+        {/* Mobile menu dropdown */}
         {mobileMenuOpen && (
           <div className="border-b border-border bg-background">
             <div className="container py-3 flex flex-col gap-1">
+              {/* Products dropdown */}
+              <button
+                onClick={() => setMobileProductsOpen(!mobileProductsOpen)}
+                className="flex items-center justify-between text-sm tracking-brand text-muted-foreground hover:text-primary transition-colors uppercase py-2.5 border-b border-border"
+              >
+                <span>Produkte</span>
+                {mobileProductsOpen ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+              </button>
+              {mobileProductsOpen && (
+                <div className="flex flex-col gap-1 pl-4">
+                  {productLinks.map((item) => (
+                    <Link
+                      key={item.label}
+                      to={item.href}
+                      onClick={() => { setMobileMenuOpen(false); setMobileProductsOpen(false); }}
+                      className="text-sm tracking-brand text-muted-foreground/80 hover:text-primary transition-colors uppercase py-2 border-b border-border/50 last:border-b-0"
+                    >
+                      {item.label}
+                    </Link>
+                  ))}
+                </div>
+              )}
+
+              {/* Main links */}
               {mainLinks.map((item) => (
                 <Link
                   key={item.label}
