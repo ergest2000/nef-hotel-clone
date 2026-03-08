@@ -1,9 +1,9 @@
 import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
-import { Plus, Trash2, Save, Upload, ChevronDown, ChevronRight, PenSquare } from "lucide-react";
+import { Plus, Trash2, Save, Upload, ChevronDown, ChevronRight } from "lucide-react";
+import { RichTextEditor } from "@/components/admin/RichTextEditor";
 import type { BlogPost } from "@/hooks/useBlogPosts";
 
 interface AdminBlogManagerProps {
@@ -22,11 +22,7 @@ export const AdminBlogManager = ({ posts, lang, onSave, onDelete, onUploadImage 
     <div>
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-lg tracking-wide-brand text-foreground font-light uppercase">Blog Posts</h2>
-        <Button
-          size="sm"
-          onClick={() => { setCreating(true); setEditingId(null); }}
-          className="text-xs tracking-brand"
-        >
+        <Button size="sm" onClick={() => { setCreating(true); setEditingId(null); }} className="text-xs tracking-brand">
           <Plus size={14} className="mr-1" /> Postim i ri
         </Button>
       </div>
@@ -59,7 +55,6 @@ export const AdminBlogManager = ({ posts, lang, onSave, onDelete, onUploadImage 
                 </Button>
               </div>
             </div>
-
             {editingId === post.id && (
               <div className="border-t border-border px-4 py-4">
                 <BlogPostForm
@@ -154,23 +149,38 @@ const BlogPostForm = ({
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-1">
           <label className="text-[10px] tracking-brand text-muted-foreground uppercase">Përshkrimi (AL)</label>
-          <Textarea value={form.excerpt_al} onChange={(e) => update("excerpt_al", e.target.value)} className="text-xs min-h-[60px]" />
+          <Input value={form.excerpt_al} onChange={(e) => update("excerpt_al", e.target.value)} className="text-xs h-9" />
         </div>
         <div className="space-y-1">
           <label className="text-[10px] tracking-brand text-muted-foreground uppercase">Përshkrimi (EN)</label>
-          <Textarea value={form.excerpt_en} onChange={(e) => update("excerpt_en", e.target.value)} className="text-xs min-h-[60px]" />
+          <Input value={form.excerpt_en} onChange={(e) => update("excerpt_en", e.target.value)} className="text-xs h-9" />
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
-        <div className="space-y-1">
-          <label className="text-[10px] tracking-brand text-muted-foreground uppercase">Përmbajtja (AL)</label>
-          <Textarea value={form.content_al} onChange={(e) => update("content_al", e.target.value)} className="text-xs min-h-[150px]" />
-        </div>
-        <div className="space-y-1">
-          <label className="text-[10px] tracking-brand text-muted-foreground uppercase">Përmbajtja (EN)</label>
-          <Textarea value={form.content_en} onChange={(e) => update("content_en", e.target.value)} className="text-xs min-h-[150px]" />
-        </div>
+      {/* Rich Text Content AL */}
+      <div className="space-y-1">
+        <label className="text-[10px] tracking-brand text-muted-foreground uppercase">
+          Përmbajtja (AL) — Rich Text Editor
+        </label>
+        <RichTextEditor
+          content={form.content_al}
+          onChange={(html) => update("content_al", html)}
+          onUploadImage={onUploadImage}
+          placeholder="Shkruani artikullin në Shqip..."
+        />
+      </div>
+
+      {/* Rich Text Content EN */}
+      <div className="space-y-1">
+        <label className="text-[10px] tracking-brand text-muted-foreground uppercase">
+          Përmbajtja (EN) — Rich Text Editor
+        </label>
+        <RichTextEditor
+          content={form.content_en}
+          onChange={(html) => update("content_en", html)}
+          onUploadImage={onUploadImage}
+          placeholder="Write article in English..."
+        />
       </div>
 
       {/* Image */}
