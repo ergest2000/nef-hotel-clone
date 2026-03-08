@@ -131,6 +131,66 @@ export type Database = {
         }
         Relationships: []
       }
+      registration_fields: {
+        Row: {
+          created_at: string
+          field_key: string
+          field_type: string
+          icon: string
+          id: string
+          label: string
+          placeholder: string
+          required: boolean
+          sort_order: number
+          updated_at: string
+          visible: boolean
+        }
+        Insert: {
+          created_at?: string
+          field_key: string
+          field_type?: string
+          icon?: string
+          id?: string
+          label: string
+          placeholder?: string
+          required?: boolean
+          sort_order?: number
+          updated_at?: string
+          visible?: boolean
+        }
+        Update: {
+          created_at?: string
+          field_key?: string
+          field_type?: string
+          icon?: string
+          id?: string
+          label?: string
+          placeholder?: string
+          required?: boolean
+          sort_order?: number
+          updated_at?: string
+          visible?: boolean
+        }
+        Relationships: []
+      }
+      registrations: {
+        Row: {
+          created_at: string
+          data: Json
+          id: string
+        }
+        Insert: {
+          created_at?: string
+          data?: Json
+          id?: string
+        }
+        Update: {
+          created_at?: string
+          data?: Json
+          id?: string
+        }
+        Relationships: []
+      }
       seo_metadata: {
         Row: {
           created_at: string

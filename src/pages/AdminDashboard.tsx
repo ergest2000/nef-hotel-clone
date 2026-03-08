@@ -18,6 +18,8 @@ import { AdminDashboardOverview } from "@/components/admin/AdminDashboardOvervie
 import { AdminSeoEditor } from "@/components/admin/AdminSeoEditor";
 import { AdminMenuManager } from "@/components/admin/AdminMenuManager";
 import { AdminLogoManager } from "@/components/admin/AdminLogoManager";
+import { AdminRegistrations } from "@/components/admin/AdminRegistrations";
+import { AdminFormBuilder } from "@/components/admin/AdminFormBuilder";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import type { Tables } from "@/integrations/supabase/types";
 
@@ -36,6 +38,8 @@ const pageTitles: Record<string, string> = {
   menus: "Menu Management",
   "clients-logos": "Clients Logos",
   "certifications-logos": "Certifications Logos",
+  registrations: "Registrations",
+  "registration-form": "Registration Form",
   settings: "Settings",
 };
 
@@ -208,6 +212,10 @@ const AdminDashboard = () => {
         return <AdminLogoManager category="clients" title="Clients Logos" />;
       case "certifications-logos":
         return <AdminLogoManager category="certifications" title="Certifications Logos" />;
+      case "registrations":
+        return <AdminRegistrations />;
+      case "registration-form":
+        return <AdminFormBuilder />;
       case "media":
         return (
           <div>

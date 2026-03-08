@@ -40,6 +40,8 @@ const menuItems = [
   { key: "menus", label: "Menus", icon: MenuIcon, group: "content" },
   { key: "clients-logos", label: "Clients Logos", icon: ImageIcon, group: "content" },
   { key: "certifications-logos", label: "Certifications Logos", icon: Award, group: "content" },
+  { key: "registrations", label: "Registrations", icon: Users, group: "content" },
+  { key: "registration-form", label: "Registration Form", icon: FileText, group: "content" },
   { key: "media", label: "Media", icon: Image, group: "content" },
   { key: "settings", label: "Settings", icon: Settings, group: "system" },
 ];
