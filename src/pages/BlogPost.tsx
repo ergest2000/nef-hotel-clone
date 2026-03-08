@@ -2,7 +2,8 @@ import { useParams, Link } from "react-router-dom";
 import SiteHeader from "@/components/SiteHeader";
 import SiteFooter from "@/components/SiteFooter";
 import { blogPosts } from "@/data/blogPosts";
-import { ArrowLeft, MessageCircle, Mail, Facebook } from "lucide-react";
+import { ArrowLeft, Mail, Facebook } from "lucide-react";
+import whatsappIcon from "@/assets/whatsapp-icon.svg";
 
 const BlogPost = () => {
   const { id } = useParams<{ id: string }>();
@@ -31,7 +32,7 @@ const BlogPost = () => {
   const shareLinks = [
     {
       label: "WhatsApp",
-      icon: MessageCircle,
+      iconSrc: whatsappIcon,
       href: `https://api.whatsapp.com/send?text=${encodeURIComponent(shareText + " " + shareUrl)}`,
       className: "bg-[#25D366] hover:bg-[#1da851] text-white",
     },
@@ -87,7 +88,11 @@ const BlogPost = () => {
                   rel="noopener noreferrer"
                   className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-xs tracking-brand uppercase transition-colors ${item.className}`}
                 >
-                  <item.icon size={16} />
+                  {"iconSrc" in item ? (
+                    <img src={item.iconSrc} alt={item.label} className="w-4 h-4 brightness-0 invert" />
+                  ) : (
+                    <item.icon size={16} />
+                  )}
                   {item.label}
                 </a>
               ))}
