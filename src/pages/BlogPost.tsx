@@ -2,7 +2,8 @@ import { useParams, Link } from "react-router-dom";
 import SiteHeader from "@/components/SiteHeader";
 import SiteFooter from "@/components/SiteFooter";
 import { blogPosts } from "@/data/blogPosts";
-import { ArrowLeft, MessageCircle, Mail, Facebook } from "lucide-react";
+import { ArrowLeft, Mail, Facebook } from "lucide-react";
+import whatsappIcon from "@/assets/whatsapp-icon.svg";
 
 const BlogPost = () => {
   const { id } = useParams<{ id: string }>();
