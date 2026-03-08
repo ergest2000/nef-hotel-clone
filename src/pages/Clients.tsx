@@ -1,19 +1,7 @@
 import SiteHeader from "@/components/SiteHeader";
 import SiteFooter from "@/components/SiteFooter";
 import { Building2 } from "lucide-react";
-
-const clients = [
-  "AKS Hotels", "Aldemar Resorts", "Amalia Hotels", "Anatolia Hotels", "Anek Lines", "Angsana",
-  "Aqua Bay Hotel", "Aqua Suites Hotel", "Art Maisons", "Athens Capital Hotel", "Atlantica", "Belvedere",
-  "Bohème Suites & Spa", "CBH Hotels", "Contessino", "Creta Palace", "Danai Beach Resort",
-  "Diamond Deluxe Hotel", "Elounda Peninsula", "Elivi Hotels", "Elysium", "Grecotel",
-  "Heritage Hill Hotel", "InterContinental", "King George", "KBH Hotels", "Langley Hotels",
-  "Lorvenn", "The Luxury Hotels", "Mayor Hotels", "Messonghi Beach", "Minos Mare Royal",
-  "Neptune Hotels", "Onoma Hotel", "Olympic Palace", "Petit Palace", "Philoxenia",
-  "Pomegranate Wellness Spa", "Porto Palace", "Porto Angel", "Port Royal", "Rhodos Palladium",
-  "Rochari Hotel", "Royal Olympic", "Stella Hotels", "Sun Beach Resort", "The Syntopia",
-  "Theoxenia", "White Olive", "Wyndham Grand", "Sea Side Resort", "Xenos Hotels",
-];
+import { allClients } from "@/data/clients";
 
 const Clients = () => {
   return (
@@ -36,7 +24,7 @@ const Clients = () => {
       <section className="py-16 md:py-24">
         <div className="container">
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6 md:gap-8">
-            {clients.map((name) => (
+            {allClients.map((name) => (
               <div
                 key={name}
                 className="flex flex-col items-center justify-center gap-3 p-6 border border-border hover:border-primary/30 hover:shadow-md transition-all duration-300 bg-background"
