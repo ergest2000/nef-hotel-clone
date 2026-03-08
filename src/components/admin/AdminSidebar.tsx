@@ -9,6 +9,7 @@ import {
   PenSquare,
   Image,
   Settings,
+  Menu as MenuIcon,
 } from "lucide-react";
 import {
   Sidebar,
@@ -34,6 +35,7 @@ const menuItems = [
   { key: "contact", label: "Contact", icon: Phone, group: "pages" },
   { key: "blog", label: "Blog", icon: FileText, group: "pages" },
   { key: "blog-posts", label: "Blog Posts", icon: PenSquare, group: "content" },
+  { key: "menus", label: "Menus", icon: MenuIcon, group: "content" },
   { key: "media", label: "Media", icon: Image, group: "content" },
   { key: "settings", label: "Settings", icon: Settings, group: "system" },
 ];

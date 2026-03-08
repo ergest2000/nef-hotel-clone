@@ -15,6 +15,8 @@ import { AdminPageEditor } from "@/components/admin/AdminPageEditor";
 import { AdminBlogManager } from "@/components/admin/AdminBlogManager";
 import { AdminHeader } from "@/components/admin/AdminHeader";
 import { AdminDashboardOverview } from "@/components/admin/AdminDashboardOverview";
+import { AdminSeoEditor } from "@/components/admin/AdminSeoEditor";
+import { AdminMenuManager } from "@/components/admin/AdminMenuManager";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import type { Tables } from "@/integrations/supabase/types";
 
@@ -30,8 +32,11 @@ const pageTitles: Record<string, string> = {
   blog: "Blog",
   "blog-posts": "Blog Posts",
   media: "Media",
+  menus: "Menu Management",
   settings: "Settings",
 };
+
+const cmsPages = ["home", "company", "clients", "tailor-made", "contact", "blog"];
 
 const AdminDashboard = () => {
   const { signOut, user } = useAuth();
@@ -39,7 +44,7 @@ const AdminDashboard = () => {
   const [lang, setLang] = useState<"al" | "en">("al");
   const [activePage, setActivePage] = useState("dashboard");
 
-  const { data: content, isLoading: loadingContent } = useAllContent(); // fetch both languages
+  const { data: content, isLoading: loadingContent } = useAllContent();
   const { data: sections, isLoading: loadingSections } = useAllSections();
   const { data: blogPosts, isLoading: loadingBlog } = useBlogPosts();
   const upsertContent = useUpsertContent();
@@ -67,7 +72,6 @@ const AdminDashboard = () => {
 
   const handleSaveField = useCallback(
     async (item: SiteContent, newValue: string) => {
-      // Save the current language version
       upsertContent.mutate(
         {
           page: item.page,
@@ -81,8 +85,6 @@ const AdminDashboard = () => {
         {
           onSuccess: async () => {
             toast({ title: "U ruajt!", description: `${item.field_key} u përditësua.` });
-            
-            // Auto-translate for text/html content types
             if (item.content_type === "text" || item.content_type === "html") {
               const targetLang = item.lang === "al" ? "en" : "al";
               const translated = await translateText(newValue, item.lang, targetLang);
@@ -149,8 +151,6 @@ const AdminDashboard = () => {
   const isLoading = loadingContent || loadingSections || loadingBlog;
   const pageSections = sections?.filter((s) => s.page === activePage) ?? [];
   const pageContent = content?.filter((c) => c.page === activePage) ?? [];
-
-  // Count unique pages
   const uniquePages = new Set(sections?.map((s) => s.page) ?? []);
 
   const renderContent = () => {
@@ -199,13 +199,12 @@ const AdminDashboard = () => {
             }}
           />
         );
+      case "menus":
+        return <AdminMenuManager />;
       case "media":
         return (
           <div>
             <h2 className="text-xl font-semibold text-foreground mb-4">Media Library</h2>
-            <p className="text-sm text-muted-foreground">
-              Imazhet ngarkohen direkt nga editori i çdo seksioni. Këtu mund të shikoni dhe menaxhoni të gjitha imazhet e ngarkuara.
-            </p>
             <div className="mt-6 border-2 border-dashed border-border rounded-lg p-12 text-center">
               <p className="text-sm text-muted-foreground">Media library do të shtohet së shpejti.</p>
             </div>
@@ -228,17 +227,22 @@ const AdminDashboard = () => {
           </div>
         );
       default:
+        // CMS page editor + SEO
+        const showSeo = cmsPages.includes(activePage);
         return (
-          <AdminPageEditor
-            page={activePage}
-            sections={pageSections}
-            content={pageContent}
-            lang={lang}
-            onSaveField={handleSaveField}
-            onUploadImage={handleUploadImage}
-            onToggleVisibility={handleToggleVisibility}
-            onDragEnd={handleDragEnd}
-          />
+          <div className="space-y-6">
+            <AdminPageEditor
+              page={activePage}
+              sections={pageSections}
+              content={pageContent}
+              lang={lang}
+              onSaveField={handleSaveField}
+              onUploadImage={handleUploadImage}
+              onToggleVisibility={handleToggleVisibility}
+              onDragEnd={handleDragEnd}
+            />
+            {showSeo && <AdminSeoEditor page={activePage} />}
+          </div>
         );
     }
   };
