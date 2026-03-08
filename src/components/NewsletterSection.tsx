@@ -11,16 +11,16 @@ const NewsletterSection = ({ content }: { content?: SiteContent[] }) => {
   const description = getContentValue(content, "newsletter", "description", "Be the first to learn about our offers and our news.");
 
   return (
-    <section className="py-16 md:py-24 bg-newsletter-bg">
+    <section className="py-12 md:py-24 bg-newsletter-bg">
       <div className="container">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
-          <div>
-            <h2 className="text-2xl md:text-3xl tracking-wide-brand text-primary-foreground font-light mb-3">{title}</h2>
-            <p className="text-sm text-primary-foreground/70">{subtitle}</p>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8 items-center">
+          <div className="text-center md:text-left">
+            <h2 className="text-xl md:text-3xl tracking-wide-brand text-primary-foreground font-light mb-2 md:mb-3">{title}</h2>
+            <p className="text-xs md:text-sm text-primary-foreground/70">{subtitle}</p>
           </div>
-          <div className="text-right">
-            <p className="text-sm text-primary-foreground/80 mb-4">{description}</p>
-            <div className="flex gap-0">
+          <div className="text-center md:text-right">
+            <p className="text-xs md:text-sm text-primary-foreground/80 mb-3 md:mb-4">{description}</p>
+            <div className="flex flex-col sm:flex-row gap-2 sm:gap-0">
               <input
                 type="email"
                 placeholder="Enter your e-mail address"
