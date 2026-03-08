@@ -227,19 +227,19 @@ const Contact = () => {
       </section>
 
       {/* Newsletter */}
-      <section className="py-16 md:py-20 bg-navy-light">
+      <section className="py-16 md:py-20 bg-newsletter-bg">
         <div className="container">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
             <div>
-              <h2 className="text-xl md:text-2xl tracking-wide-brand text-primary-foreground font-light mb-3">
+              <h2 className="text-xl md:text-2xl tracking-wide-brand text-foreground font-light mb-3">
                 NEWSLETTER
               </h2>
-              <p className="text-sm text-primary-foreground/70">
+              <p className="text-sm text-muted-foreground">
                 Bëhuni të parët që mësoni për ofertat dhe të rejat tona.
               </p>
             </div>
             <div>
-              <p className="text-sm text-primary-foreground/80 mb-4 md:text-right">
+              <p className="text-sm text-muted-foreground mb-4 md:text-right">
                 Vendosni adresën tuaj të email-it.
               </p>
               <div className="flex gap-0">
@@ -248,9 +248,9 @@ const Contact = () => {
                   placeholder="E-mail"
                   value={newsletterEmail}
                   onChange={(e) => setNewsletterEmail(e.target.value)}
-                  className="flex-1 px-4 py-3 bg-primary-foreground/10 border border-primary-foreground/30 text-primary-foreground placeholder:text-primary-foreground/50 text-sm focus:outline-none focus:border-primary-foreground"
+                  className="flex-1 px-4 py-3 bg-background border border-border text-foreground placeholder:text-muted-foreground text-sm focus:outline-none focus:border-primary"
                 />
-                <button className="px-6 py-3 bg-primary-foreground text-primary text-xs tracking-wide-brand uppercase hover:bg-primary-foreground/90 transition-colors">
+                <button className="px-6 py-3 bg-primary text-primary-foreground text-xs tracking-wide-brand uppercase hover:bg-primary/90 transition-colors">
                   Subscribe
                 </button>
               </div>
