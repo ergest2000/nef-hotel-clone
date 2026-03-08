@@ -31,7 +31,9 @@ const BlogSection = ({ content }: { content?: SiteContent[] }) => {
           ))}
         </div>
         <div className="text-center mt-10">
-          <Link to="/blog" className="text-xs tracking-brand text-primary hover:underline uppercase">Shiko të gjitha postimet →</Link>
+          <Link to="/blog" className="inline-block px-10 py-3 border border-primary text-primary text-xs tracking-wide-brand uppercase hover:bg-primary hover:text-primary-foreground transition-colors">
+            Shiko të gjitha postimet
+          </Link>
         </div>
       </div>
     </section>
