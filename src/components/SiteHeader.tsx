@@ -3,6 +3,7 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import logo from "@/assets/egjeu-logo.png";
 import { useNavMenusByLocation } from "@/hooks/useNavMenus";
+import { useLanguage } from "@/hooks/useLanguage";
 
 const productLinks = [
   { label: "Dhomë Gjumi", href: "#" },
@@ -18,7 +19,7 @@ const SiteHeader = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [desktopMenuOpen, setDesktopMenuOpen] = useState(false);
   const [mobileProductsOpen, setMobileProductsOpen] = useState(false);
-  const [lang, setLang] = useState<"AL" | "EN">("AL");
+  const { lang, setLang } = useLanguage();
   const { data: headerMenus } = useNavMenusByLocation("header");
 
   const mainLinks = headerMenus?.map(m => ({ label: m.label, href: m.href })) ?? [
@@ -31,6 +32,8 @@ const SiteHeader = () => {
     { label: "Contact", href: "/contact" },
   ];
 
+  const isAl = lang === "al";
+
   return (
     <header className="w-full sticky top-0 z-50 bg-background">
       {/* === DESKTOP === */}
@@ -38,21 +41,21 @@ const SiteHeader = () => {
         <div className="border-b border-border">
           <div className="container flex items-center h-10 gap-4 text-xs tracking-brand">
             <div className="flex items-center gap-1 shrink-0">
-              <button onClick={() => setLang("AL")} className={`px-1 ${lang === "AL" ? "text-foreground font-semibold" : "text-muted-foreground"}`}>AL</button>
+              <button onClick={() => setLang("al")} className={`px-1 ${isAl ? "text-foreground font-semibold" : "text-muted-foreground"}`}>AL</button>
               <span className="text-border">|</span>
-              <button onClick={() => setLang("EN")} className={`px-1 ${lang === "EN" ? "text-foreground font-semibold" : "text-muted-foreground"}`}>EN</button>
+              <button onClick={() => setLang("en")} className={`px-1 ${!isAl ? "text-foreground font-semibold" : "text-muted-foreground"}`}>EN</button>
             </div>
             <span className="text-muted-foreground shrink-0">
               CONTACT: <strong className="text-foreground">+355 69 000 0000</strong>
             </span>
             <div className="relative flex-1 mx-auto max-w-sm">
-              <input type="text" placeholder="Kerko per produkte ketu" className="w-full h-7 pl-3 pr-8 text-xs border border-border bg-background rounded-full focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-muted-foreground/60 text-center placeholder:text-center" />
+              <input type="text" placeholder={isAl ? "Kerko per produkte ketu" : "Search for products here"} className="w-full h-7 pl-3 pr-8 text-xs border border-border bg-background rounded-full focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-muted-foreground/60 text-center placeholder:text-center" />
               <Search size={13} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
             </div>
             <div className="flex items-center gap-5 shrink-0 ml-auto">
               <button className="flex items-center gap-1 text-muted-foreground hover:text-foreground transition-colors"><Heart size={14} /> <span>0</span></button>
               <button className="flex items-center gap-1 text-muted-foreground hover:text-foreground transition-colors"><ShoppingCart size={14} /> <span>0</span></button>
-              <Link to="/register" className="flex items-center gap-1 text-muted-foreground hover:text-foreground transition-colors"><UserPlus size={14} /> <span>REGISTER / LOGIN</span></Link>
+              <Link to="/register" className="flex items-center gap-1 text-muted-foreground hover:text-foreground transition-colors"><UserPlus size={14} /> <span>{isAl ? "REGJISTROHU / HYR" : "REGISTER / LOGIN"}</span></Link>
             </div>
           </div>
         </div>
@@ -104,7 +107,7 @@ const SiteHeader = () => {
         </div>
         <div className="border-b border-border px-4 py-2">
           <div className="relative w-full">
-            <input type="text" placeholder="Kërko për produkte këtu..." className="w-full h-11 pl-4 pr-12 text-sm border border-border bg-background rounded-full focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-muted-foreground/50" />
+            <input type="text" placeholder={isAl ? "Kërko për produkte këtu..." : "Search for products here..."} className="w-full h-11 pl-4 pr-12 text-sm border border-border bg-background rounded-full focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-muted-foreground/50" />
             <Search size={18} className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground" />
           </div>
         </div>
@@ -112,7 +115,7 @@ const SiteHeader = () => {
           <div className="border-b border-border bg-background">
             <div className="container py-3 flex flex-col gap-1">
               <button onClick={() => setMobileProductsOpen(!mobileProductsOpen)} className="flex items-center justify-between text-sm tracking-brand text-muted-foreground hover:text-primary transition-colors uppercase py-2.5 border-b border-border">
-                <span>Produkte</span>
+                <span>{isAl ? "Produkte" : "Products"}</span>
                 {mobileProductsOpen ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
               </button>
               {mobileProductsOpen && (
@@ -126,9 +129,9 @@ const SiteHeader = () => {
                 <Link key={item.label} to={item.href} onClick={() => setMobileMenuOpen(false)} className="text-sm tracking-brand text-muted-foreground hover:text-primary transition-colors uppercase py-2.5 border-b border-border last:border-b-0">{item.label}</Link>
               ))}
               <div className="flex items-center gap-2 pt-3 text-xs text-muted-foreground">
-                <button onClick={() => setLang("AL")} className={lang === "AL" ? "font-semibold text-foreground" : ""}>AL</button>
+                <button onClick={() => setLang("al")} className={isAl ? "font-semibold text-foreground" : ""}>AL</button>
                 <span>|</span>
-                <button onClick={() => setLang("EN")} className={lang === "EN" ? "font-semibold text-foreground" : ""}>EN</button>
+                <button onClick={() => setLang("en")} className={!isAl ? "font-semibold text-foreground" : ""}>EN</button>
               </div>
             </div>
           </div>

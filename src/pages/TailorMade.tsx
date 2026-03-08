@@ -7,6 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Stamp, Ruler, Gem, Factory } from "lucide-react";
 import { usePageContent, usePageSections, getContentValue } from "@/hooks/useCms";
+import { useLanguage } from "@/hooks/useLanguage";
 import heroImg from "@/assets/tailor-made-hero.jpg";
 
 const defaultServices = [
@@ -17,7 +18,8 @@ const defaultServices = [
 ];
 
 const TailorMade = () => {
-  const { data: content } = usePageContent("tailor-made", "al");
+  const { lang } = useLanguage();
+  const { data: content } = usePageContent("tailor-made", lang);
   const { data: sections } = usePageSections("tailor-made");
   const [form, setForm] = useState({ firstName: "", lastName: "", hotelName: "", city: "", phone: "", email: "", specification: "" });
 

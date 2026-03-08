@@ -3,19 +3,21 @@ import SiteHeader from "@/components/SiteHeader";
 import SiteFooter from "@/components/SiteFooter";
 import { usePublishedBlogPosts } from "@/hooks/useBlogPosts";
 import { usePageContent, getContentValue } from "@/hooks/useCms";
+import { useLanguage } from "@/hooks/useLanguage";
 import { blogPosts as fallbackPosts } from "@/data/blogPosts";
 
 const Blog = () => {
   const { data: dbPosts } = usePublishedBlogPosts();
-  const { data: content } = usePageContent("blog", "al");
+  const { lang, isAl } = useLanguage();
+  const { data: content } = usePageContent("blog", lang);
 
   // Use DB posts if available, fallback to static
   const posts = dbPosts && dbPosts.length > 0
     ? dbPosts.map((p) => ({
         id: p.slug,
         image: p.image && !p.image.startsWith("/src/") ? p.image : fallbackPosts.find((fp) => fp.id === p.slug)?.image || "",
-        title: p.title_al,
-        excerpt: p.excerpt_al,
+        title: isAl ? p.title_al : p.title_en,
+        excerpt: isAl ? p.excerpt_al : p.excerpt_en,
       }))
     : fallbackPosts;
 
@@ -44,7 +46,7 @@ const Blog = () => {
                 </div>
                 <h3 className="text-sm md:text-base text-foreground font-semibold normal-case tracking-normal leading-snug group-hover:text-primary transition-colors">{post.title}</h3>
                 <p className="text-xs md:text-sm text-muted-foreground mt-2 leading-relaxed">{post.excerpt}</p>
-                <span className="inline-block mt-3 text-xs tracking-brand text-primary uppercase group-hover:underline">Read More →</span>
+                <span className="inline-block mt-3 text-xs tracking-brand text-primary uppercase group-hover:underline">{isAl ? "Lexo Më Shumë →" : "Read More →"}</span>
               </Link>
             ))}
           </div>

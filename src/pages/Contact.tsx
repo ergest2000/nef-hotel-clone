@@ -8,10 +8,12 @@ import { Button } from "@/components/ui/button";
 import { MapPin, Phone, Mail, Clock } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { usePageContent, usePageSections, getContentValue } from "@/hooks/useCms";
+import { useLanguage } from "@/hooks/useLanguage";
 
 const Contact = () => {
   const { toast } = useToast();
-  const { data: content } = usePageContent("contact", "al");
+  const { lang } = useLanguage();
+  const { data: content } = usePageContent("contact", lang);
   const { data: sections } = usePageSections("contact");
   const [form, setForm] = useState({ firstName: "", lastName: "", phone: "", email: "", message: "" });
   const [newsletterEmail, setNewsletterEmail] = useState("");
