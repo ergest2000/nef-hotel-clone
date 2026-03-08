@@ -28,6 +28,8 @@ import {
   Image as ImageIcon,
   Type,
   Link as LinkIcon,
+  Languages,
+  Loader2,
 } from "lucide-react";
 import type { Tables } from "@/integrations/supabase/types";
 
@@ -130,9 +132,22 @@ const SortableSection = ({
     transition,
   };
 
+  // Get all content for this section (both languages)
   const sectionContent = content.filter(
     (c) => c.section_key === section.section_key && c.page === section.page
   );
+
+  // Group by field_key to show AL + EN together
+  const fieldGroups = new Map<string, { al?: SiteContent; en?: SiteContent }>();
+  sectionContent.forEach((item) => {
+    const key = item.field_key;
+    if (!fieldGroups.has(key)) fieldGroups.set(key, {});
+    const group = fieldGroups.get(key)!;
+    if (item.lang === "al") group.al = item;
+    else if (item.lang === "en") group.en = item;
+  });
+
+  const uniqueFields = Array.from(fieldGroups.entries());
 
   return (
     <div ref={setNodeRef} style={style} className="border border-border bg-background mb-2 rounded-md">
@@ -146,7 +161,7 @@ const SortableSection = ({
             {section.section_key}
           </span>
           <span className="text-[10px] text-muted-foreground ml-2">
-            ({sectionContent.length} fields)
+            ({uniqueFields.length} fields)
           </span>
         </button>
         <button
@@ -158,14 +173,86 @@ const SortableSection = ({
       </div>
 
       {expanded && (
-        <div className="border-t border-border px-4 py-4 space-y-4">
-          {sectionContent.length === 0 ? (
-            <p className="text-xs text-muted-foreground">Nuk ka përmbajtje ({lang.toUpperCase()})</p>
+        <div className="border-t border-border px-4 py-4 space-y-6">
+          {uniqueFields.length === 0 ? (
+            <p className="text-xs text-muted-foreground">Nuk ka përmbajtje.</p>
           ) : (
-            sectionContent.map((item) => (
-              <ContentField key={item.id} item={item} onSave={onSaveField} onUploadImage={onUploadImage} />
+            uniqueFields.map(([fieldKey, group]) => (
+              <BilingualField
+                key={fieldKey}
+                fieldKey={fieldKey}
+                alItem={group.al}
+                enItem={group.en}
+                onSave={onSaveField}
+                onUploadImage={onUploadImage}
+              />
             ))
           )}
+        </div>
+      )}
+    </div>
+  );
+};
+
+const BilingualField = ({
+  fieldKey,
+  alItem,
+  enItem,
+  onSave,
+  onUploadImage,
+}: {
+  fieldKey: string;
+  alItem?: SiteContent;
+  enItem?: SiteContent;
+  onSave: (item: SiteContent, newValue: string) => void;
+  onUploadImage: (item: SiteContent, file: File) => void;
+}) => {
+  const item = alItem || enItem;
+  if (!item) return null;
+  const Icon = typeIcons[item.content_type] || Type;
+  const isTranslatable = item.content_type === "text" || item.content_type === "html";
+
+  return (
+    <div className="space-y-2 pb-4 border-b border-border last:border-0 last:pb-0">
+      <div className="flex items-center gap-2">
+        <Icon size={14} className="text-muted-foreground" />
+        <label className="text-[10px] tracking-brand text-muted-foreground uppercase flex-1">
+          {fieldKey}
+        </label>
+        <span className="text-[9px] px-1.5 py-0.5 bg-muted text-muted-foreground rounded">
+          {item.content_type}
+        </span>
+        {isTranslatable && (
+          <span className="text-[9px] px-1.5 py-0.5 bg-primary/10 text-primary rounded flex items-center gap-1">
+            <Languages size={10} /> Auto-translate
+          </span>
+        )}
+      </div>
+
+      {/* For images/links: show single field (not bilingual) */}
+      {!isTranslatable ? (
+        alItem && <ContentField item={alItem} onSave={onSave} onUploadImage={onUploadImage} />
+      ) : (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
+          {/* AL field */}
+          <div>
+            <div className="flex items-center gap-1 mb-1">
+              <span className="text-[9px] font-semibold bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded">AL</span>
+            </div>
+            {alItem && <ContentField item={alItem} onSave={onSave} onUploadImage={onUploadImage} />}
+          </div>
+          {/* EN field */}
+          <div>
+            <div className="flex items-center gap-1 mb-1">
+              <span className="text-[9px] font-semibold bg-green-100 text-green-700 px-1.5 py-0.5 rounded">EN</span>
+              <span className="text-[9px] text-muted-foreground italic">auto-generated, editable</span>
+            </div>
+            {enItem ? (
+              <ContentField item={enItem} onSave={onSave} onUploadImage={onUploadImage} />
+            ) : (
+              <p className="text-xs text-muted-foreground italic py-2">Do të gjenerohet automatikisht kur ruani AL.</p>
+            )}
+          </div>
         </div>
       )}
     </div>
@@ -184,61 +271,47 @@ const ContentField = ({
   const [value, setValue] = useState(item.value || "");
   const [dirty, setDirty] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
-  const Icon = typeIcons[item.content_type] || Type;
 
   const handleChange = (v: string) => {
     setValue(v);
     setDirty(v !== (item.value || ""));
   };
 
-  return (
-    <div className="space-y-1.5">
-      <div className="flex items-center gap-2">
-        <Icon size={14} className="text-muted-foreground" />
-        <label className="text-[10px] tracking-brand text-muted-foreground uppercase flex-1">
-          {item.field_key}
-        </label>
-        <span className="text-[9px] px-1.5 py-0.5 bg-muted text-muted-foreground rounded">
-          {item.content_type}
-        </span>
+  if (item.content_type === "image") {
+    return (
+      <div className="flex items-center gap-3">
+        {value && !value.startsWith("/src/") && (
+          <img src={value} alt="" className="w-16 h-16 object-cover border border-border rounded" />
+        )}
+        <div className="flex-1 flex gap-2">
+          <Input value={value} onChange={(e) => handleChange(e.target.value)} className="text-xs h-9 flex-1" placeholder="URL e imazhit" />
+          <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) onUploadImage(item, f); }} />
+          <Button variant="outline" size="sm" className="h-9 text-[10px]" onClick={() => fileRef.current?.click()}>
+            <Upload size={14} />
+          </Button>
+        </div>
+        {dirty && (
+          <Button size="sm" className="h-9 text-[10px]" onClick={() => { onSave(item, value); setDirty(false); }}>
+            <Save size={14} />
+          </Button>
+        )}
       </div>
+    );
+  }
 
-      {item.content_type === "image" ? (
-        <div className="flex items-center gap-3">
-          {value && !value.startsWith("/src/") && (
-            <img src={value} alt="" className="w-16 h-16 object-cover border border-border rounded" />
-          )}
-          <div className="flex-1 flex gap-2">
-            <Input value={value} onChange={(e) => handleChange(e.target.value)} className="text-xs h-9 flex-1" placeholder="URL e imazhit" />
-            <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) onUploadImage(item, f); }} />
-            <Button variant="outline" size="sm" className="h-9 text-[10px]" onClick={() => fileRef.current?.click()}>
-              <Upload size={14} />
-            </Button>
-          </div>
-          {dirty && (
-            <Button size="sm" className="h-9 text-[10px]" onClick={() => { onSave(item, value); setDirty(false); }}>
-              <Save size={14} />
-            </Button>
-          )}
-        </div>
-      ) : item.content_type === "html" || (value && value.length > 100) ? (
-        <div className="flex gap-2">
-          <Textarea value={value} onChange={(e) => handleChange(e.target.value)} className="text-xs min-h-[80px] flex-1" />
-          {dirty && (
-            <Button size="sm" className="h-9 text-[10px] self-end" onClick={() => { onSave(item, value); setDirty(false); }}>
-              <Save size={14} />
-            </Button>
-          )}
-        </div>
+  const isLong = item.content_type === "html" || (value && value.length > 100);
+
+  return (
+    <div className="flex gap-2">
+      {isLong ? (
+        <Textarea value={value} onChange={(e) => handleChange(e.target.value)} className="text-xs min-h-[80px] flex-1" />
       ) : (
-        <div className="flex gap-2">
-          <Input value={value} onChange={(e) => handleChange(e.target.value)} className="text-xs h-9 flex-1" />
-          {dirty && (
-            <Button size="sm" className="h-9 text-[10px]" onClick={() => { onSave(item, value); setDirty(false); }}>
-              <Save size={14} />
-            </Button>
-          )}
-        </div>
+        <Input value={value} onChange={(e) => handleChange(e.target.value)} className="text-xs h-9 flex-1" />
+      )}
+      {dirty && (
+        <Button size="sm" className="h-9 text-[10px] self-end" onClick={() => { onSave(item, value); setDirty(false); }}>
+          <Save size={14} />
+        </Button>
       )}
     </div>
   );
