@@ -212,6 +212,10 @@ const AdminDashboard = () => {
         return <AdminLogoManager category="clients" title="Clients Logos" />;
       case "certifications-logos":
         return <AdminLogoManager category="certifications" title="Certifications Logos" />;
+      case "registrations":
+        return <AdminRegistrations />;
+      case "registration-form":
+        return <AdminFormBuilder />;
       case "media":
         return (
           <div>
