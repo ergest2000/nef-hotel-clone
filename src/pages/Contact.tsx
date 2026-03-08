@@ -250,7 +250,7 @@ const Contact = () => {
                   onChange={(e) => setNewsletterEmail(e.target.value)}
                   className="flex-1 px-4 py-3 bg-primary-foreground/10 border border-primary-foreground/30 text-primary-foreground placeholder:text-primary-foreground/50 text-sm focus:outline-none focus:border-primary-foreground"
                 />
-                <button className="px-6 py-3 bg-gold text-primary text-xs tracking-wide-brand uppercase hover:bg-gold/90 transition-colors">
+                <button className="px-6 py-3 bg-primary-foreground text-primary text-xs tracking-wide-brand uppercase hover:bg-primary-foreground/90 transition-colors">
                   Subscribe
                 </button>
               </div>
