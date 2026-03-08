@@ -32,7 +32,7 @@ const BlogPost = () => {
   const shareLinks = [
     {
       label: "WhatsApp",
-      icon: MessageCircle,
+      iconSrc: whatsappIcon,
       href: `https://api.whatsapp.com/send?text=${encodeURIComponent(shareText + " " + shareUrl)}`,
       className: "bg-[#25D366] hover:bg-[#1da851] text-white",
     },
