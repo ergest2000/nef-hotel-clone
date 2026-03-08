@@ -5,7 +5,7 @@ import { allClients } from "@/data/clients";
 
 const Clients = () => {
   return (
-    <div className="min-h-screen bg-background md:overflow-visible overflow-y-auto h-screen overscroll-none">
+    <div className="min-h-screen bg-background md:overflow-visible md:h-auto overflow-y-auto h-screen overscroll-none">
       <SiteHeader />
 
       {/* Hero */}
