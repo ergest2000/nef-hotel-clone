@@ -17,6 +17,7 @@ import { AdminHeader } from "@/components/admin/AdminHeader";
 import { AdminDashboardOverview } from "@/components/admin/AdminDashboardOverview";
 import { AdminSeoEditor } from "@/components/admin/AdminSeoEditor";
 import { AdminMenuManager } from "@/components/admin/AdminMenuManager";
+import { AdminLogoManager } from "@/components/admin/AdminLogoManager";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import type { Tables } from "@/integrations/supabase/types";
 
@@ -33,6 +34,8 @@ const pageTitles: Record<string, string> = {
   "blog-posts": "Blog Posts",
   media: "Media",
   menus: "Menu Management",
+  "clients-logos": "Clients Logos",
+  "certifications-logos": "Certifications Logos",
   settings: "Settings",
 };
 
@@ -201,6 +204,10 @@ const AdminDashboard = () => {
         );
       case "menus":
         return <AdminMenuManager />;
+      case "clients-logos":
+        return <AdminLogoManager category="clients" title="Clients Logos" />;
+      case "certifications-logos":
+        return <AdminLogoManager category="certifications" title="Certifications Logos" />;
       case "media":
         return (
           <div>

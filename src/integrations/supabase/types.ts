@@ -65,6 +65,39 @@ export type Database = {
         }
         Relationships: []
       }
+      managed_logos: {
+        Row: {
+          category: string
+          created_at: string
+          id: string
+          logo_url: string | null
+          name: string
+          sort_order: number
+          updated_at: string
+          visible: boolean
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          id?: string
+          logo_url?: string | null
+          name?: string
+          sort_order?: number
+          updated_at?: string
+          visible?: boolean
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          id?: string
+          logo_url?: string | null
+          name?: string
+          sort_order?: number
+          updated_at?: string
+          visible?: boolean
+        }
+        Relationships: []
+      }
       nav_menus: {
         Row: {
           created_at: string
