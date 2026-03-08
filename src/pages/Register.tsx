@@ -38,8 +38,8 @@ const Register = () => {
       <SiteHeader />
 
       <section className="flex-1 flex items-center justify-center py-16 md:py-24 bg-warm-gray">
-        <div className="w-full max-w-lg mx-auto px-4">
-          <div className="bg-background border border-border p-8 md:p-10">
+        <div className="w-full max-w-2xl mx-auto px-4">
+          <div className="bg-background border border-border p-6 md:p-12">
             <h1 className="text-xl md:text-2xl tracking-wide-brand text-foreground font-light text-center mb-2">
               Client Registration
             </h1>
