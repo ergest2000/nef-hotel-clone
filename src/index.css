@@ -138,9 +138,9 @@
 }
 
 .animate-scroll-clients {
-  animation: scroll-clients 40s linear infinite;
+  animation: scroll-clients 80s linear infinite;
 }
 
 .animate-scroll-clients-reverse {
-  animation: scroll-clients-reverse 40s linear infinite;
+  animation: scroll-clients-reverse 80s linear infinite;
 }
