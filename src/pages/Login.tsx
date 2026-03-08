@@ -1,18 +1,33 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import SiteHeader from "@/components/SiteHeader";
 import SiteFooter from "@/components/SiteFooter";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Mail, Lock } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
+import { useToast } from "@/hooks/use-toast";
 
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const { signIn, isAdmin } = useAuth();
+  const navigate = useNavigate();
+  const { toast } = useToast();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // TODO: integrate with auth
+    setLoading(true);
+    const { error } = await signIn(email, password);
+    setLoading(false);
+    if (error) {
+      toast({ title: "Gabim", description: error.message, variant: "destructive" });
+    } else {
+      toast({ title: "Sukses", description: "U identifikuat me sukses!" });
+      // Small delay to allow admin check to complete
+      setTimeout(() => navigate("/admin"), 500);
+    }
   };
 
   return (
@@ -26,7 +41,7 @@ const Login = () => {
               Account Login
             </h1>
             <p className="text-xs text-muted-foreground text-center tracking-brand mb-10">
-              ALREADY CUSTOMER
+              ADMIN / CLIENT ACCESS
             </p>
 
             <form onSubmit={handleSubmit} className="space-y-5">
@@ -66,9 +81,10 @@ const Login = () => {
 
               <Button
                 type="submit"
+                disabled={loading}
                 className="w-full h-11 text-xs tracking-wide-brand uppercase"
               >
-                Login
+                {loading ? "Duke u identifikuar..." : "Login"}
               </Button>
             </form>
 
