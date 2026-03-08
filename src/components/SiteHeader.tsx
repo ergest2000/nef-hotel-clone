@@ -135,7 +135,7 @@ const SiteHeader = () => {
         {mobileMenuOpen && (
           <div className="border-b border-border bg-background">
             <div className="container py-3 flex flex-col gap-1">
-              {navLinks.map((item) => (
+              {navLinks.filter(item => item.href !== "#").map((item) => (
                 <Link
                   key={item.label}
                   to={item.href}

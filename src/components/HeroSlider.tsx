@@ -5,9 +5,9 @@ import hero2 from "@/assets/hero-2.jpg";
 import hero3 from "@/assets/hero-3.jpg";
 
 const slides = [
-  { image: hero1, title: "Making hotel rooms\nfeel like home", subtitle: "Premium hotel textiles" },
-  { image: hero2, title: "Luxury bathroom\ncollection", subtitle: "Towels, robes & amenities" },
-  { image: hero3, title: "Pool & outdoor\nessentials", subtitle: "For every resort need" },
+  { image: hero1, title: "Making hotel rooms\nfeel like home" },
+  { image: hero2, title: "Luxury bathroom\ncollection" },
+  { image: hero3, title: "Pool & outdoor\nessentials" },
 ];
 
 const HeroSlider = () => {
@@ -50,18 +50,15 @@ const HeroSlider = () => {
       <div className="absolute inset-0 flex items-center">
         <div className="container">
           <div className={`max-w-lg transition-all duration-700 ${isAnimating ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"}`}>
-            <h1 className="text-3xl md:text-5xl lg:text-6xl font-light text-foreground leading-tight whitespace-pre-line">
+            <h1 className="text-3xl md:text-5xl lg:text-6xl font-light text-foreground leading-tight whitespace-pre-line line-clamp-2">
               {slides[current].title}
             </h1>
-            <p className="mt-4 text-sm md:text-base tracking-brand text-muted-foreground uppercase">
-              {slides[current].subtitle}
-            </p>
           </div>
         </div>
       </div>
 
       {/* Navigation dots */}
-      <div className="absolute bottom-8 right-8 flex gap-3">
+      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex gap-3">
         {slides.map((_, i) => (
           <button
             key={i}
