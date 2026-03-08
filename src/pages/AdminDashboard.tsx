@@ -34,6 +34,8 @@ const pageTitles: Record<string, string> = {
   "blog-posts": "Blog Posts",
   media: "Media",
   menus: "Menu Management",
+  "clients-logos": "Clients Logos",
+  "certifications-logos": "Certifications Logos",
   settings: "Settings",
 };
 
