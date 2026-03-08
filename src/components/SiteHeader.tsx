@@ -56,7 +56,7 @@ const SiteHeader = () => {
               <input
                 type="text"
                 placeholder="Kerko per produkte ketu"
-                className="w-full h-7 pl-3 pr-8 text-xs border border-border bg-background rounded-none focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-muted-foreground/60 text-center placeholder:text-center"
+                className="w-full h-7 pl-3 pr-8 text-xs border border-border bg-background rounded-full focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-muted-foreground/60 text-center placeholder:text-center"
               />
               <Search size={13} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
             </div>
