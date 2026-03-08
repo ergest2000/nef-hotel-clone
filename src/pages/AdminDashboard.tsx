@@ -48,8 +48,26 @@ const AdminDashboard = () => {
   const upsertBlogPost = useUpsertBlogPost();
   const deleteBlogPost = useDeleteBlogPost();
 
+  const translateText = useCallback(async (text: string, sourceLang: string, targetLang: string): Promise<string> => {
+    if (!text.trim() || sourceLang === targetLang) return text;
+    try {
+      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/translate`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text, sourceLang, targetLang }),
+      });
+      if (!response.ok) throw new Error("Translation failed");
+      const data = await response.json();
+      return data.translated || text;
+    } catch (e) {
+      console.error("Translation error:", e);
+      return "";
+    }
+  }, []);
+
   const handleSaveField = useCallback(
-    (item: SiteContent, newValue: string) => {
+    async (item: SiteContent, newValue: string) => {
+      // Save the current language version
       upsertContent.mutate(
         {
           page: item.page,
@@ -61,12 +79,33 @@ const AdminDashboard = () => {
           sort_order: item.sort_order,
         },
         {
-          onSuccess: () => toast({ title: "U ruajt!", description: `${item.field_key} u përditësua.` }),
+          onSuccess: async () => {
+            toast({ title: "U ruajt!", description: `${item.field_key} u përditësua.` });
+            
+            // Auto-translate for text/html content types
+            if (item.content_type === "text" || item.content_type === "html") {
+              const targetLang = item.lang === "al" ? "en" : "al";
+              const translated = await translateText(newValue, item.lang, targetLang);
+              if (translated) {
+                upsertContent.mutate({
+                  page: item.page,
+                  section_key: item.section_key,
+                  field_key: item.field_key,
+                  lang: targetLang,
+                  content_type: item.content_type,
+                  value: translated,
+                  sort_order: item.sort_order,
+                }, {
+                  onSuccess: () => toast({ title: "Përkthimi u ruajt!", description: `${item.field_key} (${targetLang.toUpperCase()})` }),
+                });
+              }
+            }
+          },
           onError: (e) => toast({ title: "Gabim", description: e.message, variant: "destructive" }),
         }
       );
     },
-    [upsertContent, toast]
+    [upsertContent, toast, translateText]
   );
 
   const handleUploadImage = useCallback(
