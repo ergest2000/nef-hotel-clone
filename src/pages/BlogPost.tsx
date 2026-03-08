@@ -51,7 +51,7 @@ const BlogPost = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-background md:overflow-visible overflow-y-auto overflow-x-hidden h-screen overscroll-none">
+    <div className="min-h-screen bg-background md:overflow-visible md:h-auto overflow-y-auto overflow-x-hidden h-screen overscroll-none">
       <SiteHeader />
 
       <article className="py-12 md:py-20">

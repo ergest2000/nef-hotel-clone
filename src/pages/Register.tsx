@@ -34,7 +34,7 @@ const Register = () => {
   ] as const;
 
   return (
-    <div className="min-h-screen bg-background flex flex-col md:overflow-visible overflow-y-auto h-screen overscroll-none">
+    <div className="min-h-screen bg-background flex flex-col md:overflow-visible md:h-auto overflow-y-auto h-screen overscroll-none">
       <SiteHeader />
 
       <section className="flex-1 flex items-center justify-center py-16 md:py-24 bg-warm-gray">
