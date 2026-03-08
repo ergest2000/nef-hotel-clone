@@ -8,19 +8,23 @@ const SiteHeader = () => {
   const [desktopMenuOpen, setDesktopMenuOpen] = useState(false);
   const [lang, setLang] = useState<"AL" | "EN">("AL");
 
-  const navLinks = [
-    { label: "Bedroom", href: "#" },
-    { label: "Bathroom", href: "#" },
-    { label: "Mattresses", href: "#" },
-    { label: "Dining", href: "#" },
-    { label: "Pool", href: "#" },
-    { label: "Spa", href: "#" },
-    { label: "Amenities", href: "#" },
-    { label: "Clean & Fresh", href: "#" },
-    { label: "Company", href: "/company" },
-    { label: "Clients", href: "/clients" },
+  const mainLinks = [
+    { label: "About Us", href: "/company" },
+    { label: "Our Clients", href: "/clients" },
+    { label: "Certifications", href: "#certifications" },
+    { label: "Blog", href: "#blog" },
+    { label: "Catalogue", href: "#" },
     { label: "Tailor Made", href: "/tailor-made" },
-    { label: "Contact", href: "/contact" },
+  ];
+
+  const productLinks = [
+    { label: "Dhomë Gjumi", href: "#" },
+    { label: "Spa", href: "#" },
+    { label: "Tualet", href: "#" },
+    { label: "Pishinë", href: "#" },
+    { label: "Dyshek", href: "#" },
+    { label: "Shampoo dhe Amenities", href: "#" },
+    { label: "Restorant", href: "#" },
   ];
 
   return (
@@ -95,14 +99,30 @@ const SiteHeader = () => {
         {/* Desktop dropdown menu */}
         {desktopMenuOpen && (
           <div className="border-b border-border bg-background shadow-sm">
-            <div className="container py-4">
-              <div className="grid grid-cols-4 gap-x-8 gap-y-2">
-                {navLinks.map((item) => (
+            <div className="container py-6 flex gap-16">
+              {/* Main pages */}
+              <div className="flex flex-col gap-1">
+                <span className="text-[10px] tracking-brand text-muted-foreground/60 uppercase mb-2">Menu</span>
+                {mainLinks.map((item) => (
                   <Link
                     key={item.label}
                     to={item.href}
                     onClick={() => setDesktopMenuOpen(false)}
-                    className="text-xs tracking-brand text-muted-foreground hover:text-primary transition-colors uppercase py-2 border-b border-border"
+                    className="text-xs tracking-brand text-muted-foreground hover:text-primary transition-colors uppercase py-2"
+                  >
+                    {item.label}
+                  </Link>
+                ))}
+              </div>
+              {/* Product categories */}
+              <div className="flex flex-col gap-1 border-l border-border pl-16">
+                <span className="text-[10px] tracking-brand text-muted-foreground/60 uppercase mb-2">Produkte</span>
+                {productLinks.map((item) => (
+                  <Link
+                    key={item.label}
+                    to={item.href}
+                    onClick={() => setDesktopMenuOpen(false)}
+                    className="text-xs tracking-brand text-muted-foreground hover:text-primary transition-colors uppercase py-2"
                   >
                     {item.label}
                   </Link>
@@ -151,7 +171,19 @@ const SiteHeader = () => {
         {mobileMenuOpen && (
           <div className="border-b border-border bg-background">
             <div className="container py-3 flex flex-col gap-1">
-              {navLinks.filter(item => item.href !== "#").map((item) => (
+              <span className="text-[10px] tracking-brand text-muted-foreground/60 uppercase mb-1 mt-1">Menu</span>
+              {mainLinks.map((item) => (
+                <Link
+                  key={item.label}
+                  to={item.href}
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="text-sm tracking-brand text-muted-foreground hover:text-primary transition-colors uppercase py-2.5 border-b border-border"
+                >
+                  {item.label}
+                </Link>
+              ))}
+              <span className="text-[10px] tracking-brand text-muted-foreground/60 uppercase mb-1 mt-4">Produkte</span>
+              {productLinks.map((item) => (
                 <Link
                   key={item.label}
                   to={item.href}
