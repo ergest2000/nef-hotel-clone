@@ -39,7 +39,7 @@ const AdminDashboard = () => {
   const [lang, setLang] = useState<"al" | "en">("al");
   const [activePage, setActivePage] = useState("dashboard");
 
-  const { data: content, isLoading: loadingContent } = useAllContent(lang);
+  const { data: content, isLoading: loadingContent } = useAllContent(); // fetch both languages
   const { data: sections, isLoading: loadingSections } = useAllSections();
   const { data: blogPosts, isLoading: loadingBlog } = useBlogPosts();
   const upsertContent = useUpsertContent();
