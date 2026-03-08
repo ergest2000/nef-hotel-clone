@@ -1,6 +1,9 @@
-import { gridClients, carouselClients } from "@/data/clients";
+import { allClients } from "@/data/clients";
 
 const ClientsCarousel = () => {
+  // Duplicate for infinite scroll effect
+  const doubledClients = [...allClients, ...allClients];
+
   return (
     <section className="py-16 md:py-24 bg-warm-gray overflow-hidden">
       <div className="text-center mb-12">
@@ -9,39 +12,35 @@ const ClientsCarousel = () => {
         </h2>
       </div>
 
-      {/* Grid: 9 per row desktop, 3 per row mobile */}
-      <div className="container mb-12">
-        <div className="grid grid-cols-3 md:grid-cols-9 gap-4 md:gap-6">
-          {gridClients.map((client, i) => (
+      {/* Scrolling carousel - responsive */}
+      <div className="relative w-full overflow-hidden">
+        {/* Row 1 */}
+        <div className="flex animate-scroll-clients w-max mb-4">
+          {doubledClients.map((client, i) => (
             <div
-              key={i}
-              className="flex items-center justify-center p-4 bg-background border border-border hover:shadow-md transition-shadow"
+              key={`r1-${i}`}
+              className="flex items-center justify-center px-6 md:px-10 py-4 mx-2 bg-background border border-border shrink-0 hover:shadow-md transition-shadow"
             >
-              <span className="text-[9px] md:text-[10px] tracking-brand text-muted-foreground text-center font-semibold uppercase leading-tight">
+              <span className="text-[9px] md:text-[11px] tracking-brand text-muted-foreground text-center font-semibold uppercase whitespace-nowrap">
+                {client}
+              </span>
+            </div>
+          ))}
+        </div>
+        {/* Row 2 - reverse direction */}
+        <div className="flex animate-scroll-clients-reverse w-max">
+          {[...doubledClients].reverse().map((client, i) => (
+            <div
+              key={`r2-${i}`}
+              className="flex items-center justify-center px-6 md:px-10 py-4 mx-2 bg-background border border-border shrink-0 hover:shadow-md transition-shadow"
+            >
+              <span className="text-[9px] md:text-[11px] tracking-brand text-muted-foreground text-center font-semibold uppercase whitespace-nowrap">
                 {client}
               </span>
             </div>
           ))}
         </div>
       </div>
-
-      {/* Horizontal scrolling carousel for remaining clients */}
-      {carouselClients.length > 0 && (
-        <div className="relative w-full overflow-hidden">
-          <div className="flex animate-scroll-clients w-max">
-            {[...carouselClients, ...carouselClients].map((client, i) => (
-              <div
-                key={i}
-                className="flex items-center justify-center px-8 py-4 mx-3 bg-background border border-border shrink-0"
-              >
-                <span className="text-[9px] md:text-[10px] tracking-brand text-muted-foreground text-center font-semibold uppercase whitespace-nowrap">
-                  {client}
-                </span>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
     </section>
   );
 };
