@@ -1,10 +1,11 @@
-import { Search, Heart, ShoppingCart, UserPlus, Menu, X, Phone } from "lucide-react";
+import { Search, Heart, ShoppingCart, UserPlus, Menu, X } from "lucide-react";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import logo from "@/assets/egjeu-logo.png";
 
 const SiteHeader = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [desktopMenuOpen, setDesktopMenuOpen] = useState(false);
   const [lang, setLang] = useState<"AL" | "EN">("AL");
 
   const navLinks = [
@@ -76,25 +77,40 @@ const SiteHeader = () => {
           </div>
         </div>
 
-        {/* Logo + Nav */}
+        {/* Logo + Hamburger Nav */}
         <div className="border-b border-border">
           <div className="container flex items-center h-20 gap-6">
             <Link to="/" className="flex items-center gap-3 shrink-0">
               <img src={logo} alt="EGJEU" className="h-14 w-auto" />
             </Link>
-            <nav className="flex items-center gap-4 xl:gap-5">
-              {navLinks.map((item) => (
-                <Link
-                  key={item.label}
-                  to={item.href}
-                  className="text-[10px] xl:text-xs tracking-brand text-muted-foreground hover:text-primary transition-colors uppercase whitespace-nowrap"
-                >
-                  {item.label}
-                </Link>
-              ))}
-            </nav>
+            <button
+              className="text-foreground hover:text-primary transition-colors"
+              onClick={() => setDesktopMenuOpen(!desktopMenuOpen)}
+            >
+              {desktopMenuOpen ? <X size={24} /> : <Menu size={24} />}
+            </button>
           </div>
         </div>
+
+        {/* Desktop dropdown menu */}
+        {desktopMenuOpen && (
+          <div className="border-b border-border bg-background shadow-sm">
+            <div className="container py-4">
+              <div className="grid grid-cols-4 gap-x-8 gap-y-2">
+                {navLinks.map((item) => (
+                  <Link
+                    key={item.label}
+                    to={item.href}
+                    onClick={() => setDesktopMenuOpen(false)}
+                    className="text-xs tracking-brand text-muted-foreground hover:text-primary transition-colors uppercase py-2 border-b border-border"
+                  >
+                    {item.label}
+                  </Link>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* === MOBILE === */}
