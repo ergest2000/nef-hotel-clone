@@ -227,7 +227,7 @@ const Contact = () => {
       </section>
 
       {/* Newsletter */}
-      <section className="py-16 md:py-20 bg-navy-light">
+      <section className="py-16 md:py-20 bg-newsletter-bg">
         <div className="container">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
             <div>

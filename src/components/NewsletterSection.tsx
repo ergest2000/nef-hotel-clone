@@ -4,7 +4,7 @@ const NewsletterSection = () => {
   const [email, setEmail] = useState("");
 
   return (
-    <section className="py-16 md:py-24 bg-navy-light">
+    <section className="py-16 md:py-24 bg-newsletter-bg">
       <div className="container">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
           {/* Left side */}
