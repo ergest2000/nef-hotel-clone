@@ -82,10 +82,10 @@ const BlogPost = () => {
           </div>
           <div className="border-t border-border mt-12 pt-8">
             <p className="text-xs tracking-brand text-muted-foreground uppercase mb-4 text-center">{isAl ? "Ndaje postimin" : "Share this post"}</p>
-            <div className="flex justify-center gap-3">
+            <div className="flex flex-wrap justify-center gap-2 md:gap-3">
               {shareLinks.map((item) => (
-                <a key={item.label} href={item.href} target="_blank" rel="noopener noreferrer" className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-xs tracking-brand uppercase transition-colors ${item.className}`}>
-                  {"iconSrc" in item ? <img src={item.iconSrc} alt={item.label} className="w-4 h-4 brightness-0 invert" /> : <item.icon size={16} />}
+                <a key={item.label} href={item.href} target="_blank" rel="noopener noreferrer" className={`inline-flex items-center gap-1.5 px-3 py-2 md:px-5 md:py-2.5 rounded-full text-[10px] md:text-xs tracking-brand uppercase transition-colors ${item.className}`}>
+                  {"iconSrc" in item ? <img src={item.iconSrc} alt={item.label} className="w-3.5 h-3.5 brightness-0 invert" /> : <item.icon size={14} />}
                   {item.label}
                 </a>
               ))}
