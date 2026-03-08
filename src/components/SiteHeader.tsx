@@ -107,7 +107,7 @@ const SiteHeader = () => {
         </div>
         <div className="border-b border-border px-4 py-2">
           <div className="relative w-full">
-            <input type="text" placeholder={isAl ? "Kërko për produkte këtu..." : "Search for products here..."} className="w-full h-11 pl-4 pr-12 text-sm border border-border bg-background rounded-full focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-muted-foreground/50" />
+            <input type="text" inputMode="search" placeholder={isAl ? "Kërko për produkte këtu..." : "Search for products here..."} className="w-full h-11 pl-4 pr-12 text-[16px] border border-border bg-background rounded-full focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-muted-foreground/50" />
             <Search size={18} className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground" />
           </div>
         </div>
