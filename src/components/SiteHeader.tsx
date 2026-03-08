@@ -1,4 +1,4 @@
-import { Search, Heart, ShoppingCart, UserPlus, Menu, X } from "lucide-react";
+import { Search, Heart, ShoppingCart, UserPlus, Menu, X, Phone } from "lucide-react";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import logo from "@/assets/egjeu-logo.png";
@@ -24,115 +24,155 @@ const SiteHeader = () => {
 
   return (
     <header className="w-full">
-      {/* Top bar */}
-      <div className="border-b border-border">
-        <div className="container flex items-center justify-between h-10 text-xs tracking-brand">
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-1">
-              <button
-                onClick={() => setLang("AL")}
-                className={`px-1 ${lang === "AL" ? "text-foreground font-semibold" : "text-muted-foreground"}`}
-              >
-                AL
-              </button>
-              <span className="text-border">|</span>
-              <button
-                onClick={() => setLang("EN")}
-                className={`px-1 ${lang === "EN" ? "text-foreground font-semibold" : "text-muted-foreground"}`}
-              >
-                EN
-              </button>
+      {/* === DESKTOP HEADER === */}
+      <div className="hidden lg:block">
+        {/* Top utility bar */}
+        <div className="border-b border-border">
+          <div className="container flex items-center justify-between h-10 text-xs tracking-brand">
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-1">
+                <button
+                  onClick={() => setLang("AL")}
+                  className={`px-1 ${lang === "AL" ? "text-foreground font-semibold" : "text-muted-foreground"}`}
+                >
+                  AL
+                </button>
+                <span className="text-border">|</span>
+                <button
+                  onClick={() => setLang("EN")}
+                  className={`px-1 ${lang === "EN" ? "text-foreground font-semibold" : "text-muted-foreground"}`}
+                >
+                  EN
+                </button>
+              </div>
+              <span className="text-muted-foreground">
+                CONTACT: <strong className="text-foreground">+355 69 000 0000</strong>
+              </span>
             </div>
-            <span className="hidden sm:inline text-muted-foreground">
-              CONTACT: <strong className="text-foreground">+355 69 000 0000</strong>
-            </span>
+            <div className="flex items-center gap-5">
+              <button className="flex items-center gap-1 text-muted-foreground hover:text-foreground transition-colors">
+                <Heart size={14} /> <span>0</span>
+              </button>
+              <button className="flex items-center gap-1 text-muted-foreground hover:text-foreground transition-colors">
+                <ShoppingCart size={14} /> <span>0</span>
+              </button>
+              <Link to="/register" className="flex items-center gap-1 text-muted-foreground hover:text-foreground transition-colors">
+                <UserPlus size={14} /> <span>REGISTER / LOGIN</span>
+              </Link>
+            </div>
           </div>
-          <div className="flex items-center gap-5">
-            <button className="flex items-center gap-1 text-muted-foreground hover:text-foreground transition-colors">
-              <Heart size={14} /> <span className="hidden sm:inline">0</span>
-            </button>
-            <button className="flex items-center gap-1 text-muted-foreground hover:text-foreground transition-colors">
-              <ShoppingCart size={14} /> <span className="hidden sm:inline">0</span>
-            </button>
-            <Link to="/register" className="flex items-center gap-1 text-muted-foreground hover:text-foreground transition-colors">
-              <UserPlus size={14} /> <span className="hidden sm:inline">REGISTER / LOGIN</span>
+        </div>
+
+        {/* Logo + Nav + Search */}
+        <div className="border-b border-border">
+          <div className="container flex items-center h-20 gap-6">
+            <Link to="/" className="flex items-center gap-3 shrink-0">
+              <img src={logo} alt="EGJEU" className="h-14 w-auto" />
             </Link>
+
+            <nav className="flex items-center gap-4 xl:gap-5 shrink-0">
+              {navLinks.map((item) => (
+                <Link
+                  key={item.label}
+                  to={item.href}
+                  className="text-[10px] xl:text-xs tracking-brand text-muted-foreground hover:text-primary transition-colors uppercase whitespace-nowrap"
+                >
+                  {item.label}
+                </Link>
+              ))}
+            </nav>
+
+            {/* Search bar - after Contact, fills remaining space */}
+            <div className="flex flex-1 justify-end">
+              <div className="relative w-full max-w-xs">
+                <input
+                  type="text"
+                  placeholder="Kerko per produkte ketu"
+                  className="w-full h-9 pl-4 pr-10 text-xs border border-border bg-background rounded-none focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-muted-foreground/60"
+                />
+                <Search size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+              </div>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Logo + Nav + Search bar */}
-      <div className="border-b border-border">
-        <div className="container flex items-center h-16 md:h-20 gap-6">
-          {/* Logo */}
-          <Link to="/" className="flex items-center gap-3 shrink-0">
-            <img src={logo} alt="EGJEU" className="h-10 md:h-14 w-auto" />
-          </Link>
-
-          {/* Desktop: nav links */}
-          <nav className="hidden lg:flex items-center gap-4 xl:gap-5 shrink-0">
-            {navLinks.map((item) => (
-              <Link
-                key={item.label}
-                to={item.href}
-                className="text-[10px] xl:text-xs tracking-brand text-muted-foreground hover:text-primary transition-colors uppercase whitespace-nowrap"
-              >
-                {item.label}
-              </Link>
-            ))}
-          </nav>
-
-          {/* Desktop: Search bar centered */}
-          <div className="hidden lg:flex flex-1 justify-end">
-            <div className="relative w-full max-w-xs">
-              <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-              <input
-                type="text"
-                placeholder="Kerko per produkte ketu"
-                className="w-full h-9 pl-9 pr-3 text-xs border border-border bg-background rounded-none focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-muted-foreground/60"
-              />
-            </div>
-          </div>
-
-          {/* Mobile hamburger */}
-          <div className="lg:hidden ml-auto">
+      {/* === MOBILE HEADER === */}
+      <div className="lg:hidden">
+        {/* Top bar: hamburger + logo + icons */}
+        <div className="border-b border-border">
+          <div className="container flex items-center justify-between h-14">
             <button
               className="text-foreground"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             >
-              {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+              {mobileMenuOpen ? <X size={22} /> : <Menu size={22} />}
             </button>
-          </div>
-        </div>
-      </div>
 
-      {/* Mobile: search + menu below logo */}
-      {mobileMenuOpen && (
-        <div className="lg:hidden border-b border-border bg-background">
-          <div className="container py-4 flex flex-col gap-3">
-            {/* Mobile search */}
-            <div className="relative w-full">
-              <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-              <input
-                type="text"
-                placeholder="Kerko per produkte ketu"
-                className="w-full h-10 pl-9 pr-3 text-sm border border-border bg-background rounded-none focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-muted-foreground/60"
-              />
-            </div>
-            {/* Mobile nav */}
-            {navLinks.map((item) => (
-              <Link
-                key={item.label}
-                to={item.href}
-                onClick={() => setMobileMenuOpen(false)}
-                className="text-sm tracking-brand text-muted-foreground hover:text-primary transition-colors uppercase py-2 border-b border-border"
-              >
-                {item.label}
+            <Link to="/" className="absolute left-1/2 -translate-x-1/2">
+              <img src={logo} alt="EGJEU" className="h-9 w-auto" />
+            </Link>
+
+            <div className="flex items-center gap-4">
+              <a href="tel:+35569000000" className="text-muted-foreground hover:text-foreground">
+                <Phone size={18} />
+              </a>
+              <Link to="/register" className="text-muted-foreground hover:text-foreground">
+                <UserPlus size={18} />
               </Link>
-            ))}
+              <button className="relative text-muted-foreground hover:text-foreground">
+                <ShoppingCart size={18} />
+                <span className="absolute -top-1.5 -right-1.5 bg-destructive text-destructive-foreground text-[9px] w-4 h-4 rounded-full flex items-center justify-center font-bold">0</span>
+              </button>
+            </div>
           </div>
         </div>
-      )}
+
+        {/* Search bar below logo - always visible on mobile */}
+        <div className="border-b border-border px-4 py-2">
+          <div className="relative w-full">
+            <input
+              type="text"
+              placeholder="Kërko për produkte këtu..."
+              className="w-full h-11 pl-4 pr-12 text-sm border border-border bg-background rounded-full focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-muted-foreground/50"
+            />
+            <Search size={18} className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground" />
+          </div>
+        </div>
+
+        {/* Mobile menu dropdown */}
+        {mobileMenuOpen && (
+          <div className="border-b border-border bg-background">
+            <div className="container py-3 flex flex-col gap-1">
+              {navLinks.map((item) => (
+                <Link
+                  key={item.label}
+                  to={item.href}
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="text-sm tracking-brand text-muted-foreground hover:text-primary transition-colors uppercase py-2.5 border-b border-border last:border-b-0"
+                >
+                  {item.label}
+                </Link>
+              ))}
+              <div className="flex items-center gap-2 pt-3 text-xs text-muted-foreground">
+                <button
+                  onClick={() => setLang("AL")}
+                  className={lang === "AL" ? "font-semibold text-foreground" : ""}
+                >
+                  AL
+                </button>
+                <span>|</span>
+                <button
+                  onClick={() => setLang("EN")}
+                  className={lang === "EN" ? "font-semibold text-foreground" : ""}
+                >
+                  EN
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
     </header>
   );
 };

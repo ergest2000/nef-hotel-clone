@@ -11,7 +11,3 @@ export const allClients = [
   "Rochari Hotel", "Royal Olympic", "Stella Hotels", "Sun Beach Resort", "The Syntopia",
   "Theoxenia", "White Olive", "Wyndham Grand", "Sea Side Resort", "Xenos Hotels",
 ];
-
-// First 27 shown in grid (3 rows × 9), rest in carousel
-export const gridClients = allClients.slice(0, 27);
-export const carouselClients = allClients.slice(27);

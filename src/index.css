@@ -125,10 +125,19 @@
   100% { transform: translateX(-50%); }
 }
 
+@keyframes scroll-clients-reverse {
+  0% { transform: translateX(-50%); }
+  100% { transform: translateX(0); }
+}
+
 .animate-hero-in {
   animation: slide-hero 1s ease-out forwards;
 }
 
 .animate-scroll-clients {
-  animation: scroll-clients 30s linear infinite;
+  animation: scroll-clients 40s linear infinite;
+}
+
+.animate-scroll-clients-reverse {
+  animation: scroll-clients-reverse 40s linear infinite;
 }
