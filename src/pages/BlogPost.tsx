@@ -5,30 +5,33 @@ import { useBlogPostBySlug } from "@/hooks/useBlogPosts";
 import { blogPosts as fallbackPosts } from "@/data/blogPosts";
 import { ArrowLeft, Mail, Facebook } from "lucide-react";
 import whatsappIcon from "@/assets/whatsapp-icon.svg";
+import { useLanguage } from "@/hooks/useLanguage";
 
 const BlogPost = () => {
   const { id } = useParams<{ id: string }>();
   const { data: dbPost, isLoading } = useBlogPostBySlug(id || "");
+  const { isAl } = useLanguage();
 
-  // Fallback to static data
   const staticPost = fallbackPosts.find((p) => p.id === id);
 
   const post = dbPost
     ? {
-        title: dbPost.title_al,
+        title: isAl ? dbPost.title_al : dbPost.title_en,
         image: dbPost.image && !dbPost.image.startsWith("/src/") ? dbPost.image : staticPost?.image || "",
-        content: dbPost.content_al,
+        content: isAl ? dbPost.content_al : dbPost.content_en,
       }
     : staticPost
     ? { title: staticPost.title, image: staticPost.image, content: staticPost.content }
     : null;
+
+  const backLabel = isAl ? "Kthehu te Blogu" : "Back to Blog";
 
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background flex flex-col">
         <SiteHeader />
         <div className="flex-1 flex items-center justify-center">
-          <p className="text-sm text-muted-foreground">Duke ngarkuar...</p>
+          <p className="text-sm text-muted-foreground">{isAl ? "Duke ngarkuar..." : "Loading..."}</p>
         </div>
         <SiteFooter />
       </div>
@@ -41,8 +44,8 @@ const BlogPost = () => {
         <SiteHeader />
         <div className="flex-1 flex items-center justify-center">
           <div className="text-center">
-            <h1 className="text-2xl tracking-wide-brand text-foreground mb-4">Postimi nuk u gjet</h1>
-            <Link to="/blog" className="text-sm text-primary hover:underline tracking-brand uppercase">← Kthehu te Blogu</Link>
+            <h1 className="text-2xl tracking-wide-brand text-foreground mb-4">{isAl ? "Postimi nuk u gjet" : "Post not found"}</h1>
+            <Link to="/blog" className="text-sm text-primary hover:underline tracking-brand uppercase">← {backLabel}</Link>
           </div>
         </div>
         <SiteFooter />
@@ -64,7 +67,7 @@ const BlogPost = () => {
       <article className="py-12 md:py-20">
         <div className="container max-w-3xl">
           <Link to="/blog" className="inline-flex items-center gap-2 text-xs tracking-brand text-muted-foreground hover:text-primary transition-colors uppercase mb-8">
-            <ArrowLeft size={14} /> Kthehu te Blogu
+            <ArrowLeft size={14} /> {backLabel}
           </Link>
           <h1 className="text-2xl md:text-4xl font-light text-foreground leading-tight normal-case tracking-normal mb-8">{post.title}</h1>
           {post.image && (
@@ -78,7 +81,7 @@ const BlogPost = () => {
             ))}
           </div>
           <div className="border-t border-border mt-12 pt-8">
-            <p className="text-xs tracking-brand text-muted-foreground uppercase mb-4 text-center">Ndaje postimin</p>
+            <p className="text-xs tracking-brand text-muted-foreground uppercase mb-4 text-center">{isAl ? "Ndaje postimin" : "Share this post"}</p>
             <div className="flex justify-center gap-3">
               {shareLinks.map((item) => (
                 <a key={item.label} href={item.href} target="_blank" rel="noopener noreferrer" className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-xs tracking-brand uppercase transition-colors ${item.className}`}>

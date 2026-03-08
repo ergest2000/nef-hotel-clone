@@ -2,6 +2,7 @@ import SiteHeader from "@/components/SiteHeader";
 import SiteFooter from "@/components/SiteFooter";
 import { Globe, Hotel, Handshake } from "lucide-react";
 import { usePageContent, usePageSections, getContentValue } from "@/hooks/useCms";
+import { useLanguage } from "@/hooks/useLanguage";
 
 import heroImg from "@/assets/company-hero.jpg";
 import philosophyImg from "@/assets/company-philosophy.jpg";
@@ -35,7 +36,8 @@ const AlternatingSection = ({ title, text, image, imageLeft = false }: SectionPr
 );
 
 const Company = () => {
-  const { data: content } = usePageContent("company", "al");
+  const { lang } = useLanguage();
+  const { data: content } = usePageContent("company", lang);
   const { data: sections } = usePageSections("company");
 
   const isSectionVisible = (key: string) => {

@@ -3,9 +3,11 @@ import SiteFooter from "@/components/SiteFooter";
 import { Building2 } from "lucide-react";
 import { useManagedLogos } from "@/hooks/useManagedLogos";
 import { usePageContent, usePageSections, getContentValue } from "@/hooks/useCms";
+import { useLanguage } from "@/hooks/useLanguage";
 
 const Clients = () => {
-  const { data: content } = usePageContent("clients", "al");
+  const { lang } = useLanguage();
+  const { data: content } = usePageContent("clients", lang);
   const { data: sections } = usePageSections("clients");
   const { data: logos } = useManagedLogos("clients");
 

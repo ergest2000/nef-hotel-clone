@@ -9,20 +9,14 @@ import BlogSection from "@/components/BlogSection";
 import MembershipSection from "@/components/MembershipSection";
 import CertificationsSection from "@/components/CertificationsSection";
 import SiteFooter from "@/components/SiteFooter";
-import { usePageContent, usePageSections, getContentValue } from "@/hooks/useCms";
+import { usePageContent, usePageSections } from "@/hooks/useCms";
+import { useLanguage } from "@/hooks/useLanguage";
 
 const Index = () => {
-  const { data: content } = usePageContent("home", "al");
+  const { lang } = useLanguage();
+  const { data: content } = usePageContent("home", lang);
   const { data: sections } = usePageSections("home");
 
-  // Helper to check if a section is visible
-  const isSectionVisible = (sectionKey: string) => {
-    if (!sections) return true;
-    const section = sections.find((s) => s.section_key === sectionKey);
-    return section ? section.visible : true;
-  };
-
-  // Get sections sorted by sort_order for rendering order
   const orderedSectionKeys = sections
     ? sections
         .filter((s) => s.visible)
