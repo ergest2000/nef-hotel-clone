@@ -69,10 +69,10 @@ const HeroSlider = ({ content }: { content?: SiteContent[] }) => {
       </div>
 
       {/* Glass arrows */}
-      <button onClick={() => goTo((current - 1 + slides.length) % slides.length)} className="absolute left-3 md:left-6 top-1/2 -translate-y-1/2 w-9 h-9 md:w-11 md:h-11 rounded-full backdrop-blur-md bg-background/10 border border-primary-foreground/10 flex items-center justify-center text-primary-foreground/70 hover:text-primary-foreground hover:bg-background/20 transition-all">
+      <button onClick={() => goTo((current - 1 + slides.length) % slides.length)} className="absolute left-3 md:left-6 bottom-16 md:bottom-8 w-9 h-9 md:w-11 md:h-11 rounded-full backdrop-blur-md bg-background/10 border border-primary-foreground/10 flex items-center justify-center text-primary-foreground/70 hover:text-primary-foreground hover:bg-background/20 transition-all">
         <ChevronLeft size={18} strokeWidth={1.5} />
       </button>
-      <button onClick={() => goTo((current + 1) % slides.length)} className="absolute right-3 md:right-6 top-1/2 -translate-y-1/2 w-9 h-9 md:w-11 md:h-11 rounded-full backdrop-blur-md bg-background/10 border border-primary-foreground/10 flex items-center justify-center text-primary-foreground/70 hover:text-primary-foreground hover:bg-background/20 transition-all">
+      <button onClick={() => goTo((current + 1) % slides.length)} className="absolute right-3 md:right-6 bottom-16 md:bottom-8 w-9 h-9 md:w-11 md:h-11 rounded-full backdrop-blur-md bg-background/10 border border-primary-foreground/10 flex items-center justify-center text-primary-foreground/70 hover:text-primary-foreground hover:bg-background/20 transition-all">
         <ChevronRight size={18} strokeWidth={1.5} />
       </button>
 
