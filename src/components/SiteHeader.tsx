@@ -30,7 +30,7 @@ const SiteHeader = () => {
   ];
 
   return (
-    <header className="w-full">
+    <header className="w-full sticky top-0 z-50 bg-background">
       {/* === DESKTOP === */}
       <div className="hidden lg:block">
         {/* Top bar: AL|EN | SEARCH | CONTACT | REGISTER/LOGIN */}
