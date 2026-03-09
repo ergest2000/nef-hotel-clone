@@ -222,6 +222,8 @@ const AdminDashboard = () => {
         return <AdminFormBuilder />;
       case "slugs":
         return <AdminSlugManager />;
+      case "design":
+        return <AdminDesignSettings />;
       case "media":
         return (
           <div>
