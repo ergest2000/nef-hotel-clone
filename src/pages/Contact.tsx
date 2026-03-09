@@ -115,8 +115,8 @@ const Contact = () => {
             <h2 className="text-lg md:text-xl tracking-wide-brand text-foreground font-light mb-4">BËHUNI ANËTAR</h2>
             <p className="text-sm text-muted-foreground leading-relaxed mb-8">Regjistrohuni dhe bashkohuni me platformën tonë për të pasur akses në oferta ekskluzive.</p>
             <div className="flex items-center justify-center gap-4">
-              <SlugLink to="/register" className="inline-block px-10 py-3 bg-primary text-primary-foreground text-xs tracking-wide-brand uppercase hover:bg-primary/90 transition-colors">REGJISTROHU</SlugLink>
-              <SlugLink to="/login" className="inline-block px-10 py-3 border border-foreground text-foreground text-xs tracking-wide-brand uppercase hover:bg-foreground hover:text-background transition-colors">HYR</SlugLink>
+              <SlugLink to="/register" className="rounded inline-block px-10 py-3 bg-primary text-primary-foreground text-xs tracking-wide-brand uppercase hover:bg-primary/90 transition-colors">REGJISTROHU</SlugLink>
+              <SlugLink to="/login" className="rounded inline-block px-10 py-3 border border-foreground text-foreground text-xs tracking-wide-brand uppercase hover:bg-foreground hover:text-background transition-colors">HYR</SlugLink>
             </div>
           </div>
         </section>

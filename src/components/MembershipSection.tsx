@@ -18,8 +18,8 @@ const MembershipSection = ({ content }: { content?: SiteContent[] }) => {
         <h2 className="text-xl md:text-2xl tracking-wide-brand text-primary-foreground font-light mb-6">{title}</h2>
         <p className="text-sm md:text-base text-primary-foreground/80 leading-relaxed mb-10">{description}</p>
         <div className="flex justify-center gap-4">
-          <a href="/register" className="px-8 py-3 bg-primary-foreground text-primary text-xs tracking-wide-brand uppercase hover:bg-primary-foreground/90 transition-colors">Sign Up</a>
-          <a href="/login" className="px-8 py-3 border border-primary-foreground text-primary-foreground text-xs tracking-wide-brand uppercase hover:bg-primary-foreground hover:text-primary transition-colors">Sign In</a>
+          <a href="/register" className="rounded px-8 py-3 bg-primary-foreground text-primary text-xs tracking-wide-brand uppercase hover:bg-primary-foreground/90 transition-colors">Sign Up</a>
+          <a href="/login" className="rounded px-8 py-3 border border-primary-foreground text-primary-foreground text-xs tracking-wide-brand uppercase hover:bg-primary-foreground hover:text-primary transition-colors">Sign In</a>
         </div>
       </div>
     </section>
