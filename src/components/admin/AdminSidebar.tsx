@@ -12,6 +12,7 @@ import {
   Menu as MenuIcon,
   Award,
   ImageIcon,
+  Link as LinkIcon,
 } from "lucide-react";
 import {
   Sidebar,
@@ -43,6 +44,7 @@ const menuItems = [
   { key: "registrations", label: "Registrations", icon: Users, group: "content" },
   { key: "registration-form", label: "Registration Form", icon: FileText, group: "content" },
   { key: "media", label: "Media", icon: Image, group: "content" },
+  { key: "slugs", label: "URL Slugs", icon: LinkIcon, group: "system" },
   { key: "settings", label: "Settings", icon: Settings, group: "system" },
 ];
 
