@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import SlugLink from "@/components/SlugLink";
 import logo from "@/assets/egjeu-logo.png";
 import { useNavMenusByLocation } from "@/hooks/useNavMenus";
 
@@ -48,7 +49,7 @@ const SiteFooter = () => {
               <ul className="space-y-2">
                 {links.map((link) => (
                   <li key={link.label}>
-                    <Link to={link.href} className="text-xs text-primary-foreground/70 hover:text-primary-foreground transition-colors normal-case tracking-normal">{link.label}</Link>
+                    <SlugLink to={link.href} className="text-xs text-primary-foreground/70 hover:text-primary-foreground transition-colors normal-case tracking-normal">{link.label}</SlugLink>
                   </li>
                 ))}
               </ul>
