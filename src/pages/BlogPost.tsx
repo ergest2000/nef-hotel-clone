@@ -1,4 +1,5 @@
-import { useParams, Link } from "react-router-dom";
+import { useParams } from "react-router-dom";
+import SlugLink from "@/components/SlugLink";
 import SiteHeader from "@/components/SiteHeader";
 import SiteFooter from "@/components/SiteFooter";
 import { useBlogPostBySlug } from "@/hooks/useBlogPosts";
@@ -45,7 +46,7 @@ const BlogPost = () => {
         <div className="flex-1 flex items-center justify-center">
           <div className="text-center">
             <h1 className="text-2xl tracking-wide-brand text-foreground mb-4">{isAl ? "Postimi nuk u gjet" : "Post not found"}</h1>
-            <Link to="/blog" className="text-sm text-primary hover:underline tracking-brand uppercase">← {backLabel}</Link>
+            <SlugLink to="/blog" className="text-sm text-primary hover:underline tracking-brand uppercase">← {backLabel}</SlugLink>
           </div>
         </div>
         <SiteFooter />
@@ -66,9 +67,9 @@ const BlogPost = () => {
       <SiteHeader />
       <article className="py-12 md:py-20">
         <div className="container max-w-3xl">
-          <Link to="/blog" className="inline-flex items-center gap-2 text-xs tracking-brand text-muted-foreground hover:text-primary transition-colors uppercase mb-8">
+          <SlugLink to="/blog" className="inline-flex items-center gap-2 text-xs tracking-brand text-muted-foreground hover:text-primary transition-colors uppercase mb-8">
             <ArrowLeft size={14} /> {backLabel}
-          </Link>
+          </SlugLink>
           <h1 className="text-2xl md:text-4xl font-light text-foreground leading-tight normal-case tracking-normal mb-8">{post.title}</h1>
           {post.image && (
             <div className="aspect-[16/9] overflow-hidden mb-10">
