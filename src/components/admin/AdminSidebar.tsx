@@ -45,6 +45,7 @@ const menuItems = [
   { key: "registration-form", label: "Registration Form", icon: FileText, group: "content" },
   { key: "media", label: "Media", icon: Image, group: "content" },
   { key: "slugs", label: "URL Slugs", icon: LinkIcon, group: "system" },
+  { key: "design", label: "Design Settings", icon: Settings, group: "system" },
   { key: "settings", label: "Settings", icon: Settings, group: "system" },
 ];
 

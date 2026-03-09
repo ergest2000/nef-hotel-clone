@@ -21,6 +21,7 @@ import { AdminLogoManager } from "@/components/admin/AdminLogoManager";
 import { AdminRegistrations } from "@/components/admin/AdminRegistrations";
 import { AdminFormBuilder } from "@/components/admin/AdminFormBuilder";
 import { AdminSlugManager } from "@/components/admin/AdminSlugManager";
+import { AdminDesignSettings } from "@/components/admin/AdminDesignSettings";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import type { Tables } from "@/integrations/supabase/types";
 
@@ -42,6 +43,7 @@ const pageTitles: Record<string, string> = {
   registrations: "Registrations",
   "registration-form": "Registration Form",
   slugs: "URL Slugs",
+  design: "Design Settings",
   settings: "Settings",
 };
 
