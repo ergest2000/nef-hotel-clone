@@ -1,6 +1,6 @@
-import { useEffect } from "react";
-import { useParams, useNavigate, Navigate } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { usePageSlugs, resolveSlug } from "@/hooks/usePageSlugs";
+import NotFound from "@/pages/NotFound";
 import { useLanguage } from "@/hooks/useLanguage";
 
 // Page components
@@ -33,7 +33,6 @@ const pageComponents: Record<string, React.ComponentType> = {
 const SlugRouter = () => {
   const { slug } = useParams<{ slug: string }>();
   const { data: slugs, isLoading } = usePageSlugs();
-  const { lang } = useLanguage();
 
   if (isLoading) {
     return (
@@ -48,11 +47,11 @@ const SlugRouter = () => {
   const pageKey = resolveSlug(slugs, slug);
   
   if (!pageKey) {
-    return null; // Will fall through to NotFound via catch-all
+    return <NotFound />;
   }
 
   const PageComponent = pageComponents[pageKey];
-  if (!PageComponent) return null;
+  if (!PageComponent) return <NotFound />;
 
   return <PageComponent />;
 };
