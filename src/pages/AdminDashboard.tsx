@@ -20,6 +20,7 @@ import { AdminMenuManager } from "@/components/admin/AdminMenuManager";
 import { AdminLogoManager } from "@/components/admin/AdminLogoManager";
 import { AdminRegistrations } from "@/components/admin/AdminRegistrations";
 import { AdminFormBuilder } from "@/components/admin/AdminFormBuilder";
+import { AdminSlugManager } from "@/components/admin/AdminSlugManager";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import type { Tables } from "@/integrations/supabase/types";
 
@@ -40,6 +41,7 @@ const pageTitles: Record<string, string> = {
   "certifications-logos": "Certifications Logos",
   registrations: "Registrations",
   "registration-form": "Registration Form",
+  slugs: "URL Slugs",
   settings: "Settings",
 };
 
@@ -216,6 +218,8 @@ const AdminDashboard = () => {
         return <AdminRegistrations />;
       case "registration-form":
         return <AdminFormBuilder />;
+      case "slugs":
+        return <AdminSlugManager />;
       case "media":
         return (
           <div>
