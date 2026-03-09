@@ -52,7 +52,7 @@ const TailorMade = () => {
             <p className="max-w-2xl text-sm md:text-base text-primary-foreground/90 leading-relaxed mb-8">
               {getContentValue(content, "hero", "subtitle", "Why not have the experience of pleasure and hospitality with your name on the linen?")}
             </p>
-            <a href="#contact-form" className="inline-block px-10 py-3 bg-primary text-primary-foreground text-xs tracking-wide-brand uppercase hover:bg-navy-dark transition-colors">
+            <a href="#contact-form" className="rounded inline-block px-10 py-3 bg-primary text-primary-foreground text-xs tracking-wide-brand uppercase hover:bg-navy-dark transition-colors">
               {getContentValue(content, "hero", "cta_text", "Tailor Made Applications")}
             </a>
           </div>

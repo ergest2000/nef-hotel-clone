@@ -21,14 +21,14 @@ const CustomTextiles = ({ content }: { content?: SiteContent[] }) => {
             <h2 className="text-xl md:text-2xl tracking-wide-brand text-foreground font-light mb-6">{title}</h2>
             <p className="text-sm md:text-base text-muted-foreground leading-relaxed mb-4">{p1}</p>
             <p className="text-sm md:text-base text-muted-foreground leading-relaxed mb-8">{p2}</p>
-            <a href={ctaLink} className="hidden md:inline-block px-8 py-3 bg-primary text-primary-foreground text-xs tracking-wide-brand uppercase hover:bg-navy-dark transition-colors">
+            <a href={ctaLink} className="hidden md:inline-block rounded px-8 py-3 bg-primary text-primary-foreground text-xs tracking-wide-brand uppercase hover:bg-navy-dark transition-colors">
               {ctaText}
             </a>
           </div>
           <div className="overflow-hidden">
             <img src={image} alt="Custom hotel textiles embroidery" className="w-full h-[300px] md:h-[450px] object-cover hover:scale-105 transition-transform duration-500" loading="lazy" />
           </div>
-          <a href={ctaLink} className="md:hidden inline-block px-8 py-3 bg-primary text-primary-foreground text-xs tracking-wide-brand uppercase hover:bg-navy-dark transition-colors text-center">
+          <a href={ctaLink} className="md:hidden inline-block rounded px-8 py-3 bg-primary text-primary-foreground text-xs tracking-wide-brand uppercase hover:bg-navy-dark transition-colors text-center">
             {ctaText}
           </a>
         </div>
