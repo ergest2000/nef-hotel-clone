@@ -65,6 +65,39 @@ export type Database = {
         }
         Relationships: []
       }
+      design_settings: {
+        Row: {
+          created_at: string
+          id: string
+          label: string
+          setting_group: string
+          setting_key: string
+          setting_type: string
+          setting_value: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          label?: string
+          setting_group?: string
+          setting_key: string
+          setting_type?: string
+          setting_value?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          label?: string
+          setting_group?: string
+          setting_key?: string
+          setting_type?: string
+          setting_value?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       managed_logos: {
         Row: {
           category: string
