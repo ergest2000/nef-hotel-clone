@@ -1,7 +1,7 @@
 import { useParams } from "react-router-dom";
 import { usePageSlugs, resolveSlug } from "@/hooks/usePageSlugs";
 import NotFound from "@/pages/NotFound";
-import { useLanguage } from "@/hooks/useLanguage";
+
 
 // Page components
 import Company from "@/pages/Company";
