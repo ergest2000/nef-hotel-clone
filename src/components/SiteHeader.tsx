@@ -1,6 +1,7 @@
 import { Search, Heart, ShoppingCart, UserPlus, Menu, X, ChevronDown, ChevronUp } from "lucide-react";
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import SlugLink from "@/components/SlugLink";
 import logo from "@/assets/egjeu-logo.png";
 import { useNavMenusByLocation } from "@/hooks/useNavMenus";
 import { useLanguage } from "@/hooks/useLanguage";
