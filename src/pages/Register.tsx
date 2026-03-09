@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import SlugLink from "@/components/SlugLink";
 import { useQuery } from "@tanstack/react-query";
 import SiteHeader from "@/components/SiteHeader";
 import SiteFooter from "@/components/SiteFooter";
@@ -120,9 +121,9 @@ const Register = () => {
             </form>
 
             <div className="mt-6 text-center">
-              <Link to="/login" className="text-xs text-muted-foreground hover:text-primary tracking-brand transition-colors">
+              <SlugLink to="/login" className="text-xs text-muted-foreground hover:text-primary tracking-brand transition-colors">
                 ALREADY HAVE AN ACCOUNT? LOGIN
-              </Link>
+              </SlugLink>
             </div>
           </div>
         </div>

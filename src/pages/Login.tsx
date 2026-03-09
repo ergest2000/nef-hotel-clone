@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import SlugLink from "@/components/SlugLink";
 import SiteHeader from "@/components/SiteHeader";
 import SiteFooter from "@/components/SiteFooter";
 import { Input } from "@/components/ui/input";
@@ -96,12 +97,12 @@ const Login = () => {
                 FORGOT MY PASSWORD
               </Link>
               <div className="w-12 h-px bg-border" />
-              <Link
+              <SlugLink
                 to="/register"
                 className="text-xs text-primary hover:text-primary/80 tracking-brand transition-colors"
               >
                 REGISTER AS A NEW CLIENT
-              </Link>
+              </SlugLink>
             </div>
           </div>
         </div>

@@ -1,6 +1,7 @@
 import { Search, Heart, ShoppingCart, UserPlus, Menu, X, ChevronDown, ChevronUp } from "lucide-react";
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import SlugLink from "@/components/SlugLink";
 import logo from "@/assets/egjeu-logo.png";
 import { useNavMenusByLocation } from "@/hooks/useNavMenus";
 import { useLanguage } from "@/hooks/useLanguage";
@@ -55,7 +56,7 @@ const SiteHeader = () => {
             <div className="flex items-center gap-5 shrink-0 ml-auto">
               <button className="flex items-center gap-1 text-muted-foreground hover:text-foreground transition-colors"><Heart size={14} /> <span>0</span></button>
               <button className="flex items-center gap-1 text-muted-foreground hover:text-foreground transition-colors"><ShoppingCart size={14} /> <span>0</span></button>
-              <Link to="/register" className="flex items-center gap-1 text-muted-foreground hover:text-foreground transition-colors"><UserPlus size={14} /> <span>{isAl ? "REGJISTROHU / HYR" : "REGISTER / LOGIN"}</span></Link>
+              <SlugLink to="/register" className="flex items-center gap-1 text-muted-foreground hover:text-foreground transition-colors"><UserPlus size={14} /> <span>{isAl ? "REGJISTROHU / HYR" : "REGISTER / LOGIN"}</span></SlugLink>
             </div>
           </div>
         </div>
@@ -68,7 +69,7 @@ const SiteHeader = () => {
             </button>
             <nav className="flex items-center gap-4 xl:gap-5">
               {productLinks.map((item) => (
-                <Link key={item.label} to={item.href} className="text-[10px] xl:text-xs tracking-brand text-muted-foreground hover:text-primary transition-colors uppercase whitespace-nowrap">{item.label}</Link>
+                <SlugLink key={item.label} to={item.href} className="text-[10px] xl:text-xs tracking-brand text-muted-foreground hover:text-primary transition-colors uppercase whitespace-nowrap">{item.label}</SlugLink>
               ))}
             </nav>
           </div>
@@ -79,7 +80,7 @@ const SiteHeader = () => {
             <div className="container py-6">
               <div className="flex flex-col gap-1">
                 {mainLinks.map((item) => (
-                  <Link key={item.label} to={item.href} onClick={() => setDesktopMenuOpen(false)} className="text-xs tracking-brand text-muted-foreground hover:text-primary transition-colors uppercase py-2">{item.label}</Link>
+                  <SlugLink key={item.label} to={item.href} onClick={() => setDesktopMenuOpen(false)} className="text-xs tracking-brand text-muted-foreground hover:text-primary transition-colors uppercase py-2">{item.label}</SlugLink>
                 ))}
               </div>
             </div>
@@ -97,7 +98,7 @@ const SiteHeader = () => {
             <Link to="/" className="absolute left-1/2 -translate-x-1/2"><img src={logo} alt="EGJEU" className="h-9 w-auto" /></Link>
             <div className="flex items-center gap-4">
               <button className="text-muted-foreground hover:text-foreground"><Heart size={18} /></button>
-              <Link to="/register" className="text-muted-foreground hover:text-foreground"><UserPlus size={18} /></Link>
+              <SlugLink to="/register" className="text-muted-foreground hover:text-foreground"><UserPlus size={18} /></SlugLink>
               <button className="relative text-muted-foreground hover:text-foreground">
                 <ShoppingCart size={18} />
                 <span className="absolute -top-1.5 -right-1.5 bg-destructive text-destructive-foreground text-[9px] w-4 h-4 rounded-full flex items-center justify-center font-bold">0</span>
@@ -121,12 +122,12 @@ const SiteHeader = () => {
               {mobileProductsOpen && (
                 <div className="flex flex-col gap-1 pl-4">
                   {productLinks.map((item) => (
-                    <Link key={item.label} to={item.href} onClick={() => { setMobileMenuOpen(false); setMobileProductsOpen(false); }} className="text-sm tracking-brand text-muted-foreground/80 hover:text-primary transition-colors uppercase py-2 border-b border-border/50 last:border-b-0">{item.label}</Link>
+                    <SlugLink key={item.label} to={item.href} onClick={() => { setMobileMenuOpen(false); setMobileProductsOpen(false); }} className="text-sm tracking-brand text-muted-foreground/80 hover:text-primary transition-colors uppercase py-2 border-b border-border/50 last:border-b-0">{item.label}</SlugLink>
                   ))}
                 </div>
               )}
               {mainLinks.map((item) => (
-                <Link key={item.label} to={item.href} onClick={() => setMobileMenuOpen(false)} className="text-sm tracking-brand text-muted-foreground hover:text-primary transition-colors uppercase py-2.5 border-b border-border last:border-b-0">{item.label}</Link>
+                <SlugLink key={item.label} to={item.href} onClick={() => setMobileMenuOpen(false)} className="text-sm tracking-brand text-muted-foreground hover:text-primary transition-colors uppercase py-2.5 border-b border-border last:border-b-0">{item.label}</SlugLink>
               ))}
               <div className="flex items-center gap-2 pt-3 text-xs text-muted-foreground">
                 <button onClick={() => setLang("al")} className={isAl ? "font-semibold text-foreground" : ""}>AL</button>

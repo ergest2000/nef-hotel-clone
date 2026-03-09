@@ -131,6 +131,33 @@ export type Database = {
         }
         Relationships: []
       }
+      page_slugs: {
+        Row: {
+          created_at: string
+          id: string
+          page_key: string
+          slug_al: string
+          slug_en: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          page_key: string
+          slug_al: string
+          slug_en: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          page_key?: string
+          slug_al?: string
+          slug_en?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       registration_fields: {
         Row: {
           created_at: string
