@@ -1,3 +1,4 @@
+import { forwardRef } from "react";
 import { Link, type LinkProps } from "react-router-dom";
 import { usePageSlugs, getSlugForPage } from "@/hooks/usePageSlugs";
 import { useLanguage } from "@/hooks/useLanguage";
@@ -22,13 +23,13 @@ interface SlugLinkProps extends Omit<LinkProps, "to"> {
 }
 
 /** A Link that automatically resolves the href to the correct language slug */
-const SlugLink = ({ to, ...props }: SlugLinkProps) => {
+const SlugLink = forwardRef<HTMLAnchorElement, SlugLinkProps>(({ to, ...props }, ref) => {
   const { data: slugs } = usePageSlugs();
   const { lang } = useLanguage();
 
   const resolvedTo = resolveHref(to, slugs, lang);
-  return <Link {...props} to={resolvedTo} />;
-};
+  return <Link {...props} to={resolvedTo} ref={ref} />;
+});
 
 export const resolveHref = (
   href: string,

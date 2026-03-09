@@ -94,13 +94,24 @@
 
   body {
     @apply bg-background text-foreground;
-    font-family: 'Century Gothic', 'Avantgarde', 'CenturyGothic', 'AppleGothic', sans-serif;
+    font-family: var(--ds-font-family, 'Century Gothic', 'Avantgarde', 'CenturyGothic', 'AppleGothic', sans-serif);
+    font-size: var(--ds-font-size-body, 16px);
+    font-weight: var(--ds-font-weight, 400);
   }
 
   h1, h2, h3, h4, h5, h6 {
-    font-family: 'Century Gothic', 'Avantgarde', 'CenturyGothic', 'AppleGothic', sans-serif;
+    font-family: var(--ds-font-family, 'Century Gothic', 'Avantgarde', 'CenturyGothic', 'AppleGothic', sans-serif);
     letter-spacing: 0.15em;
     text-transform: uppercase;
+  }
+
+  h1 { font-size: var(--ds-font-size-h1, 36px); }
+  h2 { font-size: var(--ds-font-size-h2, 24px); }
+  h3 { font-size: var(--ds-font-size-h3, 20px); }
+
+  /* Global button radius from design settings */
+  .rounded, .rounded-md {
+    border-radius: var(--ds-btn-radius, 4px) !important;
   }
 }
 
