@@ -22,6 +22,9 @@ import { AdminRegistrations } from "@/components/admin/AdminRegistrations";
 import { AdminFormBuilder } from "@/components/admin/AdminFormBuilder";
 import { AdminSlugManager } from "@/components/admin/AdminSlugManager";
 import { AdminDesignSettings } from "@/components/admin/AdminDesignSettings";
+import { AdminUsers } from "@/components/admin/AdminUsers";
+import { AdminAuthLogs } from "@/components/admin/AdminAuthLogs";
+import { AdminAuthTexts } from "@/components/admin/AdminAuthTexts";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import type { Tables } from "@/integrations/supabase/types";
 
