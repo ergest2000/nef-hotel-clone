@@ -1,61 +1,74 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
 import SlugLink from "@/components/SlugLink";
-import { useQuery } from "@tanstack/react-query";
 import SiteHeader from "@/components/SiteHeader";
 import SiteFooter from "@/components/SiteFooter";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { Building2, User, Mail, Phone, MapPin, MessageSquare, Globe, Hash, FileText } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Building2, User, Mail, Phone, MapPin, Lock, Globe } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
-const iconMap: Record<string, React.ComponentType<any>> = {
-  Building2, User, Mail, Phone, MapPin, MessageSquare, Globe, Hash, FileText,
+const COUNTRIES_CITIES: Record<string, string[]> = {
+  "Albania": ["Tiranë", "Durrës", "Vlorë", "Shkodër", "Elbasan", "Korçë", "Fier", "Berat", "Lushnjë", "Pogradec", "Kavajë", "Gjirokastër", "Sarandë", "Lezhë", "Kukës", "Peshkopi", "Burrel", "Gramsh", "Përmet", "Tepelenë"],
+  "Kosovo": ["Prishtinë", "Prizren", "Pejë", "Gjakovë", "Mitrovicë", "Ferizaj", "Gjilan", "Podujevë", "Vushtrri", "Suharekë"],
+  "North Macedonia": ["Shkup", "Tetovë", "Kumanovë", "Manastir", "Ohër", "Prilep", "Gostivar", "Strugë", "Veles", "Shtip"],
+  "Montenegro": ["Podgoricë", "Ulqin", "Tuz", "Bar", "Budvë", "Tivar", "Nikshiq", "Plav", "Guci", "Rozhajë"],
+  "Italy": ["Rome", "Milan", "Naples", "Turin", "Palermo", "Genoa", "Bologna", "Florence", "Bari", "Venice"],
+  "Greece": ["Athens", "Thessaloniki", "Patras", "Heraklion", "Larissa", "Volos", "Ioannina", "Kavala", "Rhodes", "Corfu"],
+  "Germany": ["Berlin", "Munich", "Hamburg", "Frankfurt", "Cologne", "Stuttgart", "Düsseldorf", "Leipzig", "Dortmund", "Essen"],
+  "Switzerland": ["Zürich", "Geneva", "Basel", "Bern", "Lausanne", "Winterthur", "Lucerne", "St. Gallen", "Lugano", "Biel"],
+  "Austria": ["Vienna", "Graz", "Linz", "Salzburg", "Innsbruck", "Klagenfurt", "Villach", "Wels", "Sankt Pölten", "Dornbirn"],
+  "Turkey": ["Istanbul", "Ankara", "Izmir", "Bursa", "Antalya", "Adana", "Gaziantep", "Konya", "Mersin", "Kayseri"],
+  "Other": [],
 };
-
-interface RegField {
-  id: string;
-  field_key: string;
-  label: string;
-  field_type: string;
-  placeholder: string;
-  icon: string;
-  required: boolean;
-  visible: boolean;
-  sort_order: number;
-}
 
 const Register = () => {
   const { toast } = useToast();
-  const [form, setForm] = useState<Record<string, string>>({});
+  const [fullName, setFullName] = useState("");
+  const [businessName, setBusinessName] = useState("");
+  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
+  const [country, setCountry] = useState("");
+  const [city, setCity] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
-  const { data: fields = [] } = useQuery({
-    queryKey: ["registration_fields"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("registration_fields")
-        .select("*")
-        .eq("visible", true)
-        .order("sort_order");
-      if (error) throw error;
-      return data as RegField[];
-    },
-  });
-
-  const update = (key: string, value: string) =>
-    setForm((prev) => ({ ...prev, [key]: value }));
+  const cities = country && country !== "Other" ? COUNTRIES_CITIES[country] || [] : [];
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (password.length < 6) {
+      toast({ title: "Gabim", description: "Fjalëkalimi duhet të ketë të paktën 6 karaktere.", variant: "destructive" });
+      return;
+    }
+    if (password !== confirmPassword) {
+      toast({ title: "Gabim", description: "Fjalëkalimet nuk përputhen.", variant: "destructive" });
+      return;
+    }
     setSubmitting(true);
     try {
-      const { error } = await supabase.from("registrations").insert({ data: form });
+      const { error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            full_name: fullName,
+            business_name: businessName,
+            phone,
+            country,
+            city,
+          },
+        },
+      });
       if (error) throw error;
-      toast({ title: "Regjistrimi u dërgua!", description: "Do t'ju kontaktojmë së shpejti." });
-      setForm({});
+      toast({
+        title: "Regjistrimi u krye!",
+        description: "Ju lutem kontrolloni email-in tuaj për të konfirmuar llogarinë.",
+      });
+      setFullName(""); setBusinessName(""); setEmail(""); setPhone("");
+      setCountry(""); setCity(""); setPassword(""); setConfirmPassword("");
     } catch (err: any) {
       toast({ title: "Gabim", description: err.message, variant: "destructive" });
     } finally {
@@ -74,49 +87,107 @@ const Register = () => {
               Client Registration
             </h1>
             <p className="text-xs text-muted-foreground text-center tracking-brand mb-10">
-              B2B PARTNER APPLICATION
+              CREATE YOUR ACCOUNT
             </p>
 
             <form onSubmit={handleSubmit} className="space-y-5">
-              {fields.map((field) => {
-                const Icon = iconMap[field.icon] || Hash;
-                if (field.field_type === "textarea") {
-                  return (
-                    <div key={field.id} className="space-y-1.5">
-                      <label className="text-xs tracking-brand text-muted-foreground uppercase">{field.label}</label>
-                      <div className="relative">
-                        <Icon size={16} className="absolute left-3 top-3 text-muted-foreground" />
-                        <Textarea
-                          value={form[field.field_key] || ""}
-                          onChange={(e) => update(field.field_key, e.target.value)}
-                          className="pl-10 min-h-[100px] border-border bg-background"
-                          placeholder={field.placeholder}
-                          required={field.required}
-                        />
-                      </div>
-                    </div>
-                  );
-                }
-                return (
-                  <div key={field.id} className="space-y-1.5">
-                    <label className="text-xs tracking-brand text-muted-foreground uppercase">{field.label}</label>
-                    <div className="relative">
-                      <Icon size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-                      <Input
-                        type={field.field_type}
-                        value={form[field.field_key] || ""}
-                        onChange={(e) => update(field.field_key, e.target.value)}
-                        className="pl-10 h-11 border-border bg-background"
-                        placeholder={field.placeholder}
-                        required={field.required}
-                      />
-                    </div>
-                  </div>
-                );
-              })}
+              {/* Full Name */}
+              <div className="space-y-1.5">
+                <label className="text-xs tracking-brand text-muted-foreground uppercase">Full Name</label>
+                <div className="relative">
+                  <User size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                  <Input value={fullName} onChange={(e) => setFullName(e.target.value)} className="pl-10 h-11 border-border bg-background" placeholder="John Doe" required />
+                </div>
+              </div>
 
-              <Button type="submit" className="w-full h-11 text-xs tracking-wide-brand uppercase" disabled={submitting}>
-                {submitting ? "Duke dërguar..." : "Submit Registration"}
+              {/* Business Name */}
+              <div className="space-y-1.5">
+                <label className="text-xs tracking-brand text-muted-foreground uppercase">Business Name</label>
+                <div className="relative">
+                  <Building2 size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                  <Input value={businessName} onChange={(e) => setBusinessName(e.target.value)} className="pl-10 h-11 border-border bg-background" placeholder="Company LLC" required />
+                </div>
+              </div>
+
+              {/* Email */}
+              <div className="space-y-1.5">
+                <label className="text-xs tracking-brand text-muted-foreground uppercase">E-mail</label>
+                <div className="relative">
+                  <Mail size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                  <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} className="pl-10 h-11 border-border bg-background" placeholder="your@email.com" required />
+                </div>
+              </div>
+
+              {/* Phone */}
+              <div className="space-y-1.5">
+                <label className="text-xs tracking-brand text-muted-foreground uppercase">Phone</label>
+                <div className="relative">
+                  <Phone size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                  <Input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} className="pl-10 h-11 border-border bg-background" placeholder="+355 69 123 4567" required />
+                </div>
+              </div>
+
+              {/* Country & City */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <div className="space-y-1.5">
+                  <label className="text-xs tracking-brand text-muted-foreground uppercase">Country</label>
+                  <div className="relative">
+                    <Globe size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground z-10" />
+                    <Select value={country} onValueChange={(v) => { setCountry(v); setCity(""); }}>
+                      <SelectTrigger className="pl-10 h-11 border-border bg-background">
+                        <SelectValue placeholder="Select country" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {Object.keys(COUNTRIES_CITIES).map((c) => (
+                          <SelectItem key={c} value={c}>{c}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-xs tracking-brand text-muted-foreground uppercase">City</label>
+                  <div className="relative">
+                    <MapPin size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground z-10" />
+                    {cities.length > 0 ? (
+                      <Select value={city} onValueChange={setCity}>
+                        <SelectTrigger className="pl-10 h-11 border-border bg-background">
+                          <SelectValue placeholder="Select city" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {cities.map((c) => (
+                            <SelectItem key={c} value={c}>{c}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    ) : (
+                      <Input value={city} onChange={(e) => setCity(e.target.value)} className="pl-10 h-11 border-border bg-background" placeholder="Your city" required />
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Password */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <div className="space-y-1.5">
+                  <label className="text-xs tracking-brand text-muted-foreground uppercase">Password</label>
+                  <div className="relative">
+                    <Lock size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                    <Input type="password" value={password} onChange={(e) => setPassword(e.target.value)} className="pl-10 h-11 border-border bg-background" placeholder="••••••••" required minLength={6} />
+                  </div>
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-xs tracking-brand text-muted-foreground uppercase">Confirm Password</label>
+                  <div className="relative">
+                    <Lock size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                    <Input type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} className="pl-10 h-11 border-border bg-background" placeholder="••••••••" required minLength={6} />
+                  </div>
+                </div>
+              </div>
+
+              <Button type="submit" className="w-full h-11 text-xs tracking-wide-brand uppercase rounded" disabled={submitting}>
+                {submitting ? "Duke u regjistruar..." : "Create Account"}
               </Button>
             </form>
 
