@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Mail, Lock } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
+import { useAuthTexts, logAuthEvent } from "@/hooks/useAuthTexts";
 import { supabase } from "@/integrations/supabase/client";
 
 const Login = () => {
@@ -20,6 +21,7 @@ const Login = () => {
   const { signIn } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { t } = useAuthTexts();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -29,7 +31,8 @@ const Login = () => {
     if (error) {
       toast({ title: "Gabim", description: error.message, variant: "destructive" });
     } else {
-      toast({ title: "Sukses", description: "U identifikuat me sukses!" });
+      await logAuthEvent(email, "login");
+      toast({ title: "Sukses", description: t("login_success", "U identifikuat me sukses!") });
       setTimeout(() => navigate("/admin"), 500);
     }
   };
@@ -44,9 +47,10 @@ const Login = () => {
     if (error) {
       toast({ title: "Gabim", description: error.message, variant: "destructive" });
     } else {
+      await logAuthEvent(forgotEmail, "password_reset_request");
       toast({
         title: "Email u dërgua!",
-        description: "Kontrolloni email-in tuaj për linkun e rivendosjes së fjalëkalimit.",
+        description: t("forgot_success", "Kontrolloni email-in tuaj për linkun e rivendosjes së fjalëkalimit."),
       });
       setForgotMode(false);
     }
@@ -62,23 +66,23 @@ const Login = () => {
             {!forgotMode ? (
               <>
                 <h1 className="text-xl md:text-2xl tracking-wide-brand text-foreground font-light text-center mb-2">
-                  Account Login
+                  {t("login_title", "Account Login")}
                 </h1>
                 <p className="text-xs text-muted-foreground text-center tracking-brand mb-10">
-                  ADMIN / CLIENT ACCESS
+                  {t("login_subtitle", "ADMIN / CLIENT ACCESS")}
                 </p>
 
                 <form onSubmit={handleSubmit} className="space-y-5">
                   <div className="space-y-1.5">
-                    <label className="text-xs tracking-brand text-muted-foreground uppercase">E-mail</label>
+                    <label className="text-xs tracking-brand text-muted-foreground uppercase">{t("login_email_label", "E-mail")}</label>
                     <div className="relative">
                       <Mail size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-                      <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} className="pl-10 h-11 border-border bg-background" placeholder="your@email.com" required />
+                      <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} className="pl-10 h-11 border-border bg-background" placeholder={t("ph_email", "your@email.com")} required />
                     </div>
                   </div>
 
                   <div className="space-y-1.5">
-                    <label className="text-xs tracking-brand text-muted-foreground uppercase">Password</label>
+                    <label className="text-xs tracking-brand text-muted-foreground uppercase">{t("login_password_label", "Password")}</label>
                     <div className="relative">
                       <Lock size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
                       <Input type="password" value={password} onChange={(e) => setPassword(e.target.value)} className="pl-10 h-11 border-border bg-background" placeholder="••••••••" required />
@@ -86,7 +90,7 @@ const Login = () => {
                   </div>
 
                   <Button type="submit" disabled={loading} className="w-full h-11 text-xs tracking-wide-brand uppercase rounded">
-                    {loading ? "Duke u identifikuar..." : "Login"}
+                    {loading ? t("login_loading", "Duke u identifikuar...") : t("login_button", "Login")}
                   </Button>
                 </form>
 
@@ -95,34 +99,34 @@ const Login = () => {
                     onClick={() => setForgotMode(true)}
                     className="text-xs text-muted-foreground hover:text-primary tracking-brand transition-colors uppercase"
                   >
-                    FORGOT MY PASSWORD
+                    {t("login_forgot_link", "FORGOT MY PASSWORD")}
                   </button>
                   <div className="w-12 h-px bg-border" />
                   <SlugLink to="/register" className="text-xs text-primary hover:text-primary/80 tracking-brand transition-colors">
-                    REGISTER AS A NEW CLIENT
+                    {t("login_register_link", "REGISTER AS A NEW CLIENT")}
                   </SlugLink>
                 </div>
               </>
             ) : (
               <>
                 <h1 className="text-xl md:text-2xl tracking-wide-brand text-foreground font-light text-center mb-2">
-                  Reset Password
+                  {t("forgot_title", "Reset Password")}
                 </h1>
                 <p className="text-xs text-muted-foreground text-center tracking-brand mb-10">
-                  ENTER YOUR EMAIL TO RECEIVE A RESET LINK
+                  {t("forgot_subtitle", "ENTER YOUR EMAIL TO RECEIVE A RESET LINK")}
                 </p>
 
                 <form onSubmit={handleForgotPassword} className="space-y-5">
                   <div className="space-y-1.5">
-                    <label className="text-xs tracking-brand text-muted-foreground uppercase">E-mail</label>
+                    <label className="text-xs tracking-brand text-muted-foreground uppercase">{t("login_email_label", "E-mail")}</label>
                     <div className="relative">
                       <Mail size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-                      <Input type="email" value={forgotEmail} onChange={(e) => setForgotEmail(e.target.value)} className="pl-10 h-11 border-border bg-background" placeholder="your@email.com" required />
+                      <Input type="email" value={forgotEmail} onChange={(e) => setForgotEmail(e.target.value)} className="pl-10 h-11 border-border bg-background" placeholder={t("ph_email", "your@email.com")} required />
                     </div>
                   </div>
 
                   <Button type="submit" disabled={forgotLoading} className="w-full h-11 text-xs tracking-wide-brand uppercase rounded">
-                    {forgotLoading ? "Duke dërguar..." : "Send Reset Link"}
+                    {forgotLoading ? "Duke dërguar..." : t("forgot_button", "Send Reset Link")}
                   </Button>
                 </form>
 
@@ -131,7 +135,7 @@ const Login = () => {
                     onClick={() => setForgotMode(false)}
                     className="text-xs text-muted-foreground hover:text-primary tracking-brand transition-colors uppercase"
                   >
-                    ← BACK TO LOGIN
+                    {t("forgot_back_link", "← BACK TO LOGIN")}
                   </button>
                 </div>
               </>
