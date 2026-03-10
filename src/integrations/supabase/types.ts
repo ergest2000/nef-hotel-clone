@@ -191,6 +191,39 @@ export type Database = {
         }
         Relationships: []
       }
+      profiles: {
+        Row: {
+          business_name: string
+          city: string
+          country: string
+          created_at: string
+          full_name: string
+          id: string
+          phone: string
+          updated_at: string
+        }
+        Insert: {
+          business_name?: string
+          city?: string
+          country?: string
+          created_at?: string
+          full_name?: string
+          id: string
+          phone?: string
+          updated_at?: string
+        }
+        Update: {
+          business_name?: string
+          city?: string
+          country?: string
+          created_at?: string
+          full_name?: string
+          id?: string
+          phone?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       registration_fields: {
         Row: {
           created_at: string
