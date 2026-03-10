@@ -14,6 +14,9 @@ import {
   ImageIcon,
   Link as LinkIcon,
   Paintbrush,
+  UserCog,
+  ScrollText,
+  Type,
 } from "lucide-react";
 import {
   Sidebar,
@@ -45,6 +48,9 @@ const menuItems = [
   { key: "registrations", label: "Registrations", icon: Users, group: "content" },
   { key: "registration-form", label: "Registration Form", icon: FileText, group: "content" },
   { key: "media", label: "Media", icon: Image, group: "content" },
+  { key: "users", label: "Users", icon: UserCog, group: "users" },
+  { key: "auth-logs", label: "Auth Logs", icon: ScrollText, group: "users" },
+  { key: "auth-texts", label: "Auth Texts", icon: Type, group: "users" },
   { key: "slugs", label: "URL Slugs", icon: LinkIcon, group: "system" },
   { key: "design", label: "Design Settings", icon: Paintbrush, group: "system" },
   { key: "settings", label: "Settings", icon: Settings, group: "system" },
@@ -54,6 +60,7 @@ const groups = [
   { key: "main", label: "" },
   { key: "pages", label: "Faqet" },
   { key: "content", label: "Përmbajtja" },
+  { key: "users", label: "Përdoruesit" },
   { key: "system", label: "Sistemi" },
 ];
 

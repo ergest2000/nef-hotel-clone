@@ -22,6 +22,9 @@ import { AdminRegistrations } from "@/components/admin/AdminRegistrations";
 import { AdminFormBuilder } from "@/components/admin/AdminFormBuilder";
 import { AdminSlugManager } from "@/components/admin/AdminSlugManager";
 import { AdminDesignSettings } from "@/components/admin/AdminDesignSettings";
+import { AdminUsers } from "@/components/admin/AdminUsers";
+import { AdminAuthLogs } from "@/components/admin/AdminAuthLogs";
+import { AdminAuthTexts } from "@/components/admin/AdminAuthTexts";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import type { Tables } from "@/integrations/supabase/types";
 
@@ -42,6 +45,9 @@ const pageTitles: Record<string, string> = {
   "certifications-logos": "Certifications Logos",
   registrations: "Registrations",
   "registration-form": "Registration Form",
+  users: "Users",
+  "auth-logs": "Auth Logs",
+  "auth-texts": "Auth Form Texts",
   slugs: "URL Slugs",
   design: "Design Settings",
   settings: "Settings",
@@ -220,6 +226,12 @@ const AdminDashboard = () => {
         return <AdminRegistrations />;
       case "registration-form":
         return <AdminFormBuilder />;
+      case "users":
+        return <AdminUsers />;
+      case "auth-logs":
+        return <AdminAuthLogs />;
+      case "auth-texts":
+        return <AdminAuthTexts />;
       case "slugs":
         return <AdminSlugManager />;
       case "design":
