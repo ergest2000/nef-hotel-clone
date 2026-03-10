@@ -60,6 +60,7 @@ const groups = [
   { key: "main", label: "" },
   { key: "pages", label: "Faqet" },
   { key: "content", label: "Përmbajtja" },
+  { key: "users", label: "Përdoruesit" },
   { key: "system", label: "Sistemi" },
 ];
 

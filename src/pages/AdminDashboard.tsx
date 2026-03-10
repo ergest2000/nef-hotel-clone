@@ -226,6 +226,12 @@ const AdminDashboard = () => {
         return <AdminRegistrations />;
       case "registration-form":
         return <AdminFormBuilder />;
+      case "users":
+        return <AdminUsers />;
+      case "auth-logs":
+        return <AdminAuthLogs />;
+      case "auth-texts":
+        return <AdminAuthTexts />;
       case "slugs":
         return <AdminSlugManager />;
       case "design":
