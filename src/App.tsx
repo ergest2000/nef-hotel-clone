@@ -13,6 +13,7 @@ import AdminRoute from "./components/AdminRoute";
 import ScrollToTop from "./components/ScrollToTop";
 import NotFound from "./pages/NotFound";
 import SlugRouter from "./components/SlugRouter";
+import ResetPassword from "./pages/ResetPassword";
 
 const queryClient = new QueryClient();
 
