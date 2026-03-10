@@ -13,6 +13,7 @@ import AdminRoute from "./components/AdminRoute";
 import ScrollToTop from "./components/ScrollToTop";
 import NotFound from "./pages/NotFound";
 import SlugRouter from "./components/SlugRouter";
+import ResetPassword from "./pages/ResetPassword";
 
 const queryClient = new QueryClient();
 
@@ -29,6 +30,7 @@ const App = () => (
             <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
+              <Route path="/reset-password" element={<ResetPassword />} />
               {/* Blog post with nested slug */}
               <Route path="/:slug/:id" element={<BlogPost />} />
               {/* Dynamic slug-based routing for all pages */}
