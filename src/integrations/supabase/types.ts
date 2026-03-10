@@ -14,6 +14,30 @@ export type Database = {
   }
   public: {
     Tables: {
+      auth_logs: {
+        Row: {
+          created_at: string
+          event_type: string
+          id: string
+          metadata: Json | null
+          user_email: string
+        }
+        Insert: {
+          created_at?: string
+          event_type?: string
+          id?: string
+          metadata?: Json | null
+          user_email?: string
+        }
+        Update: {
+          created_at?: string
+          event_type?: string
+          id?: string
+          metadata?: Json | null
+          user_email?: string
+        }
+        Relationships: []
+      }
       blog_posts: {
         Row: {
           author: string

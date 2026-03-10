@@ -1,0 +1,137 @@
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
+
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+};
+
+Deno.serve(async (req) => {
+  if (req.method === "OPTIONS") {
+    return new Response("ok", { headers: corsHeaders });
+  }
+
+  try {
+    const authHeader = req.headers.get("authorization");
+    if (!authHeader) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const anonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
+
+    // Verify caller is admin
+    const callerClient = createClient(supabaseUrl, anonKey, {
+      global: { headers: { authorization: authHeader } },
+    });
+    const { data: { user: caller } } = await callerClient.auth.getUser();
+    if (!caller) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const { data: isAdmin } = await callerClient.rpc("has_role", {
+      _user_id: caller.id,
+      _role: "admin",
+    });
+    if (!isAdmin) {
+      return new Response(JSON.stringify({ error: "Forbidden" }), {
+        status: 403,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const adminClient = createClient(supabaseUrl, serviceRoleKey, {
+      auth: { autoRefreshToken: false, persistSession: false },
+    });
+
+    const { action, userId } = await req.json();
+
+    switch (action) {
+      case "list": {
+        const { data, error } = await adminClient.auth.admin.listUsers({
+          perPage: 1000,
+        });
+        if (error) throw error;
+
+        // Get profiles
+        const { data: profiles } = await adminClient
+          .from("profiles")
+          .select("*");
+        const profileMap = new Map(
+          (profiles || []).map((p: any) => [p.id, p])
+        );
+
+        // Get roles
+        const { data: roles } = await adminClient
+          .from("user_roles")
+          .select("*");
+        const roleMap = new Map<string, string[]>();
+        (roles || []).forEach((r: any) => {
+          const existing = roleMap.get(r.user_id) || [];
+          existing.push(r.role);
+          roleMap.set(r.user_id, existing);
+        });
+
+        const users = data.users.map((u: any) => ({
+          id: u.id,
+          email: u.email,
+          created_at: u.created_at,
+          last_sign_in_at: u.last_sign_in_at,
+          banned_until: u.banned_until,
+          email_confirmed_at: u.email_confirmed_at,
+          profile: profileMap.get(u.id) || null,
+          roles: roleMap.get(u.id) || [],
+        }));
+
+        return new Response(JSON.stringify({ users }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      case "ban": {
+        const { error } = await adminClient.auth.admin.updateUserById(userId, {
+          ban_duration: "876000h", // ~100 years
+        });
+        if (error) throw error;
+        return new Response(JSON.stringify({ success: true }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      case "unban": {
+        const { error } = await adminClient.auth.admin.updateUserById(userId, {
+          ban_duration: "none",
+        });
+        if (error) throw error;
+        return new Response(JSON.stringify({ success: true }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      case "delete": {
+        const { error } = await adminClient.auth.admin.deleteUser(userId);
+        if (error) throw error;
+        return new Response(JSON.stringify({ success: true }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      default:
+        return new Response(JSON.stringify({ error: "Invalid action" }), {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+    }
+  } catch (err: any) {
+    return new Response(JSON.stringify({ error: err.message }), {
+      status: 500,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
+});
