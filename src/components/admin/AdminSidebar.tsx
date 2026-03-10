@@ -14,6 +14,9 @@ import {
   ImageIcon,
   Link as LinkIcon,
   Paintbrush,
+  UserCog,
+  ScrollText,
+  Type,
 } from "lucide-react";
 import {
   Sidebar,
