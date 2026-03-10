@@ -30,6 +30,7 @@ const App = () => (
             <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
+              <Route path="/reset-password" element={<ResetPassword />} />
               {/* Blog post with nested slug */}
               <Route path="/:slug/:id" element={<BlogPost />} />
               {/* Dynamic slug-based routing for all pages */}
