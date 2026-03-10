@@ -1,8 +1,11 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { useLanguage } from "@/hooks/useLanguage";
 
-// Hook to fetch auth form texts from design_settings
+// Hook to fetch auth form texts from design_settings (bilingual)
 export const useAuthTexts = () => {
+  const { lang } = useLanguage();
+
   const { data: texts = [] } = useQuery({
     queryKey: ["auth-texts-live"],
     queryFn: async () => {
@@ -20,7 +23,11 @@ export const useAuthTexts = () => {
 
   const map = new Map(texts.map((t) => [t.setting_key, t.setting_value]));
 
-  const t = (key: string, fallback: string) => map.get(key) || fallback;
+  // Look up key with language suffix first, then without suffix as fallback
+  const t = (key: string, fallback: string) => {
+    const langKey = `${key}_${lang}`;
+    return map.get(langKey) || map.get(key) || fallback;
+  };
 
   return { t };
 };

@@ -73,7 +73,7 @@ const ResetPassword = () => {
 
             {!ready ? (
               <p className="text-sm text-muted-foreground text-center">
-                Duke verifikuar linkun... Ju lutem prisni.
+                {t("reset_verifying", "Duke verifikuar linkun... Ju lutem prisni.")}
               </p>
             ) : (
               <form onSubmit={handleSubmit} className="space-y-5">
@@ -94,7 +94,7 @@ const ResetPassword = () => {
                 </div>
 
                 <Button type="submit" disabled={loading} className="w-full h-11 text-xs tracking-wide-brand uppercase rounded">
-                  {loading ? "Duke ndryshuar..." : t("reset_button", "Update Password")}
+                  {loading ? "..." : t("reset_button", "Update Password")}
                 </Button>
               </form>
             )}
