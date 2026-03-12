@@ -125,9 +125,14 @@ const Register = () => {
                       <SelectTrigger className="pl-10 h-11 border-border bg-background">
                         <SelectValue placeholder={t("ph_country", "Select country")} />
                       </SelectTrigger>
-                      <SelectContent>
-                        {Object.keys(COUNTRIES_CITIES).map((c) => (
-                          <SelectItem key={c} value={c}>{c}</SelectItem>
+                      <SelectContent className="max-h-60">
+                        {countries.map((c) => (
+                          <SelectItem key={c.code} value={c.code}>
+                            <span className="flex items-center gap-2">
+                              <span>{c.flag}</span>
+                              <span>{isAl ? c.name_al : c.name_en}</span>
+                            </span>
+                          </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
