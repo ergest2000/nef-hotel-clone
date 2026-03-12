@@ -26,7 +26,8 @@ const Register = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
-  const cities = country && country !== "Other" ? COUNTRIES_CITIES[country] || [] : [];
+  const selectedCountry = countries.find(c => c.code === country);
+  const cities: string[] = [];
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
