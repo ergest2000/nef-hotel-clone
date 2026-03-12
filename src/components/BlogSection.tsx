@@ -37,7 +37,6 @@ const BlogSection = ({ content }: { content?: SiteContent[] }) => {
           <SlugLink to="/blog" className="rounded inline-block px-10 py-3 border border-primary text-primary text-xs tracking-wide-brand uppercase hover:bg-primary hover:text-primary-foreground transition-colors">
             {viewAllText}
           </SlugLink>
-          </SlugLink>
         </div>
       </div>
     </section>
