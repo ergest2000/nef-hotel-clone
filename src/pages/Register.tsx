@@ -27,7 +27,7 @@ const Register = () => {
   const [submitting, setSubmitting] = useState(false);
 
   const selectedCountry = countries.find(c => c.code === country);
-  const cities: string[] = [];
+  const cities = selectedCountry?.cities ?? [];
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -143,7 +143,20 @@ const Register = () => {
                   <label className="text-xs tracking-brand text-muted-foreground uppercase">{t("label_city", "City")}</label>
                   <div className="relative">
                     <MapPin size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground z-10" />
-                    <Input value={city} onChange={(e) => setCity(e.target.value)} className="pl-10 h-11 border-border bg-background" placeholder={t("ph_city", "Your city")} required />
+                    {cities.length > 0 ? (
+                      <Select value={city} onValueChange={setCity}>
+                        <SelectTrigger className="pl-10 h-11 border-border bg-background">
+                          <SelectValue placeholder={t("ph_city", isAl ? "Zgjidhni qytetin" : "Select city")} />
+                        </SelectTrigger>
+                        <SelectContent className="max-h-60">
+                          {cities.map((c) => (
+                            <SelectItem key={c} value={c}>{c}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    ) : (
+                      <Input value={city} onChange={(e) => setCity(e.target.value)} className="pl-10 h-11 border-border bg-background" placeholder={t("ph_city", isAl ? "Shkruani qytetin" : "Your city")} required />
+                    )}
                   </div>
                 </div>
               </div>
