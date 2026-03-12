@@ -15,6 +15,7 @@ import { countries } from "@/data/countries";
 const Register = () => {
   const { toast } = useToast();
   const { t } = useAuthTexts();
+  const { isAl } = useLanguage();
   const [fullName, setFullName] = useState("");
   const [businessName, setBusinessName] = useState("");
   const [email, setEmail] = useState("");
