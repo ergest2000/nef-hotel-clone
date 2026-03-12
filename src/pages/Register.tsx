@@ -9,24 +9,13 @@ import { Building2, User, Mail, Phone, MapPin, Lock, Globe } from "lucide-react"
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useAuthTexts, logAuthEvent } from "@/hooks/useAuthTexts";
-
-const COUNTRIES_CITIES: Record<string, string[]> = {
-  "Albania": ["Tiranë", "Durrës", "Vlorë", "Shkodër", "Elbasan", "Korçë", "Fier", "Berat", "Lushnjë", "Pogradec", "Kavajë", "Gjirokastër", "Sarandë", "Lezhë", "Kukës", "Peshkopi", "Burrel", "Gramsh", "Përmet", "Tepelenë"],
-  "Kosovo": ["Prishtinë", "Prizren", "Pejë", "Gjakovë", "Mitrovicë", "Ferizaj", "Gjilan", "Podujevë", "Vushtrri", "Suharekë"],
-  "North Macedonia": ["Shkup", "Tetovë", "Kumanovë", "Manastir", "Ohër", "Prilep", "Gostivar", "Strugë", "Veles", "Shtip"],
-  "Montenegro": ["Podgoricë", "Ulqin", "Tuz", "Bar", "Budvë", "Tivar", "Nikshiq", "Plav", "Guci", "Rozhajë"],
-  "Italy": ["Rome", "Milan", "Naples", "Turin", "Palermo", "Genoa", "Bologna", "Florence", "Bari", "Venice"],
-  "Greece": ["Athens", "Thessaloniki", "Patras", "Heraklion", "Larissa", "Volos", "Ioannina", "Kavala", "Rhodes", "Corfu"],
-  "Germany": ["Berlin", "Munich", "Hamburg", "Frankfurt", "Cologne", "Stuttgart", "Düsseldorf", "Leipzig", "Dortmund", "Essen"],
-  "Switzerland": ["Zürich", "Geneva", "Basel", "Bern", "Lausanne", "Winterthur", "Lucerne", "St. Gallen", "Lugano", "Biel"],
-  "Austria": ["Vienna", "Graz", "Linz", "Salzburg", "Innsbruck", "Klagenfurt", "Villach", "Wels", "Sankt Pölten", "Dornbirn"],
-  "Turkey": ["Istanbul", "Ankara", "Izmir", "Bursa", "Antalya", "Adana", "Gaziantep", "Konya", "Mersin", "Kayseri"],
-  "Other": [],
-};
+import { useLanguage } from "@/hooks/useLanguage";
+import { countries } from "@/data/countries";
 
 const Register = () => {
   const { toast } = useToast();
   const { t } = useAuthTexts();
+  const { isAl } = useLanguage();
   const [fullName, setFullName] = useState("");
   const [businessName, setBusinessName] = useState("");
   const [email, setEmail] = useState("");
@@ -37,7 +26,8 @@ const Register = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
-  const cities = country && country !== "Other" ? COUNTRIES_CITIES[country] || [] : [];
+  const selectedCountry = countries.find(c => c.code === country);
+  const cities: string[] = [];
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -133,11 +123,16 @@ const Register = () => {
                     <Globe size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground z-10" />
                     <Select value={country} onValueChange={(v) => { setCountry(v); setCity(""); }}>
                       <SelectTrigger className="pl-10 h-11 border-border bg-background">
-                        <SelectValue placeholder={t("ph_country", "Select country")} />
+                        <SelectValue placeholder={t("ph_country", isAl ? "Zgjidhni shtetin" : "Select country")} />
                       </SelectTrigger>
-                      <SelectContent>
-                        {Object.keys(COUNTRIES_CITIES).map((c) => (
-                          <SelectItem key={c} value={c}>{c}</SelectItem>
+                      <SelectContent className="max-h-60">
+                        {countries.map((c) => (
+                          <SelectItem key={c.code} value={c.code}>
+                            <span className="flex items-center gap-2">
+                              <span>{c.flag}</span>
+                              <span>{isAl ? c.name_al : c.name_en}</span>
+                            </span>
+                          </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
@@ -148,20 +143,7 @@ const Register = () => {
                   <label className="text-xs tracking-brand text-muted-foreground uppercase">{t("label_city", "City")}</label>
                   <div className="relative">
                     <MapPin size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground z-10" />
-                    {cities.length > 0 ? (
-                      <Select value={city} onValueChange={setCity}>
-                        <SelectTrigger className="pl-10 h-11 border-border bg-background">
-                          <SelectValue placeholder={t("ph_city", "Select city")} />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {cities.map((c) => (
-                            <SelectItem key={c} value={c}>{c}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    ) : (
-                      <Input value={city} onChange={(e) => setCity(e.target.value)} className="pl-10 h-11 border-border bg-background" placeholder={t("ph_city", "Your city")} required />
-                    )}
+                    <Input value={city} onChange={(e) => setCity(e.target.value)} className="pl-10 h-11 border-border bg-background" placeholder={t("ph_city", "Your city")} required />
                   </div>
                 </div>
               </div>

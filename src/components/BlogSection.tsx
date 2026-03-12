@@ -1,12 +1,15 @@
 import SlugLink from "@/components/SlugLink";
 import { getContentValue } from "@/hooks/useCms";
 import { blogPosts } from "@/data/blogPosts";
+import { useLanguage } from "@/hooks/useLanguage";
 import type { Tables } from "@/integrations/supabase/types";
 
 type SiteContent = Tables<"site_content">;
 
 const BlogSection = ({ content }: { content?: SiteContent[] }) => {
+  const { isAl } = useLanguage();
   const title = getContentValue(content, "blog", "title", "BLOG");
+  const viewAllText = getContentValue(content, "blog", "view_all_button", isAl ? "Shiko të gjitha postimet" : "View all posts");
 
   const postsWithCmsImages = blogPosts.map((post, i) => {
     const imageVal = getContentValue(content, "blog", `post${i + 1}_image`, "");
@@ -32,7 +35,7 @@ const BlogSection = ({ content }: { content?: SiteContent[] }) => {
         </div>
         <div className="text-center mt-10">
           <SlugLink to="/blog" className="rounded inline-block px-10 py-3 border border-primary text-primary text-xs tracking-wide-brand uppercase hover:bg-primary hover:text-primary-foreground transition-colors">
-            Shiko të gjitha postimet
+            {viewAllText}
           </SlugLink>
         </div>
       </div>
