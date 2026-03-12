@@ -9,20 +9,8 @@ import { Building2, User, Mail, Phone, MapPin, Lock, Globe } from "lucide-react"
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useAuthTexts, logAuthEvent } from "@/hooks/useAuthTexts";
-
-const COUNTRIES_CITIES: Record<string, string[]> = {
-  "Albania": ["Tiranë", "Durrës", "Vlorë", "Shkodër", "Elbasan", "Korçë", "Fier", "Berat", "Lushnjë", "Pogradec", "Kavajë", "Gjirokastër", "Sarandë", "Lezhë", "Kukës", "Peshkopi", "Burrel", "Gramsh", "Përmet", "Tepelenë"],
-  "Kosovo": ["Prishtinë", "Prizren", "Pejë", "Gjakovë", "Mitrovicë", "Ferizaj", "Gjilan", "Podujevë", "Vushtrri", "Suharekë"],
-  "North Macedonia": ["Shkup", "Tetovë", "Kumanovë", "Manastir", "Ohër", "Prilep", "Gostivar", "Strugë", "Veles", "Shtip"],
-  "Montenegro": ["Podgoricë", "Ulqin", "Tuz", "Bar", "Budvë", "Tivar", "Nikshiq", "Plav", "Guci", "Rozhajë"],
-  "Italy": ["Rome", "Milan", "Naples", "Turin", "Palermo", "Genoa", "Bologna", "Florence", "Bari", "Venice"],
-  "Greece": ["Athens", "Thessaloniki", "Patras", "Heraklion", "Larissa", "Volos", "Ioannina", "Kavala", "Rhodes", "Corfu"],
-  "Germany": ["Berlin", "Munich", "Hamburg", "Frankfurt", "Cologne", "Stuttgart", "Düsseldorf", "Leipzig", "Dortmund", "Essen"],
-  "Switzerland": ["Zürich", "Geneva", "Basel", "Bern", "Lausanne", "Winterthur", "Lucerne", "St. Gallen", "Lugano", "Biel"],
-  "Austria": ["Vienna", "Graz", "Linz", "Salzburg", "Innsbruck", "Klagenfurt", "Villach", "Wels", "Sankt Pölten", "Dornbirn"],
-  "Turkey": ["Istanbul", "Ankara", "Izmir", "Bursa", "Antalya", "Adana", "Gaziantep", "Konya", "Mersin", "Kayseri"],
-  "Other": [],
-};
+import { useLanguage } from "@/hooks/useLanguage";
+import { countries } from "@/data/countries";
 
 const Register = () => {
   const { toast } = useToast();

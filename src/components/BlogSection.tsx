@@ -1,6 +1,7 @@
 import SlugLink from "@/components/SlugLink";
 import { getContentValue } from "@/hooks/useCms";
 import { blogPosts } from "@/data/blogPosts";
+import { useLanguage } from "@/hooks/useLanguage";
 import type { Tables } from "@/integrations/supabase/types";
 
 type SiteContent = Tables<"site_content">;

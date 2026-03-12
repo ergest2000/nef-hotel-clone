@@ -63,7 +63,7 @@ const HeroSlider = ({ content }: { content?: SiteContent[] }) => {
       <div className="absolute inset-0 flex items-center">
         <div className="container">
           <div className={`max-w-lg transition-all duration-700 ${isAnimating ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"}`}>
-            <h1 className="text-3xl md:text-5xl lg:text-6xl font-light text-foreground leading-tight whitespace-pre-line line-clamp-2">
+            <h1 className="text-3xl md:text-5xl lg:text-6xl font-light text-foreground leading-tight whitespace-pre-line">
               {slides[current].title}
             </h1>
           </div>
