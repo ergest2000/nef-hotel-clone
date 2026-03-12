@@ -123,7 +123,7 @@ const Register = () => {
                     <Globe size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground z-10" />
                     <Select value={country} onValueChange={(v) => { setCountry(v); setCity(""); }}>
                       <SelectTrigger className="pl-10 h-11 border-border bg-background">
-                        <SelectValue placeholder={t("ph_country", "Select country")} />
+                        <SelectValue placeholder={t("ph_country", isAl ? "Zgjidhni shtetin" : "Select country")} />
                       </SelectTrigger>
                       <SelectContent className="max-h-60">
                         {countries.map((c) => (
