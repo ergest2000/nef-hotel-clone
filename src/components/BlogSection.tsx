@@ -35,7 +35,8 @@ const BlogSection = ({ content }: { content?: SiteContent[] }) => {
         </div>
         <div className="text-center mt-10">
           <SlugLink to="/blog" className="rounded inline-block px-10 py-3 border border-primary text-primary text-xs tracking-wide-brand uppercase hover:bg-primary hover:text-primary-foreground transition-colors">
-            Shiko të gjitha postimet
+            {viewAllText}
+          </SlugLink>
           </SlugLink>
         </div>
       </div>
