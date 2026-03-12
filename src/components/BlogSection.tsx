@@ -7,7 +7,9 @@ import type { Tables } from "@/integrations/supabase/types";
 type SiteContent = Tables<"site_content">;
 
 const BlogSection = ({ content }: { content?: SiteContent[] }) => {
+  const { isAl } = useLanguage();
   const title = getContentValue(content, "blog", "title", "BLOG");
+  const viewAllText = getContentValue(content, "blog", "view_all_button", isAl ? "Shiko të gjitha postimet" : "View all posts");
 
   const postsWithCmsImages = blogPosts.map((post, i) => {
     const imageVal = getContentValue(content, "blog", `post${i + 1}_image`, "");
