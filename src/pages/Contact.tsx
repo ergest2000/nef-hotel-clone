@@ -1,8 +1,8 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
 import SlugLink from "@/components/SlugLink";
 import SiteHeader from "@/components/SiteHeader";
 import SiteFooter from "@/components/SiteFooter";
+import MembershipSection from "@/components/MembershipSection";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
@@ -10,6 +10,7 @@ import { MapPin, Phone, Mail, Clock } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { usePageContent, usePageSections, getContentValue } from "@/hooks/useCms";
 import { useLanguage } from "@/hooks/useLanguage";
+import { supabase } from "@/integrations/supabase/client";
 
 const Contact = () => {
   const { toast } = useToast();
@@ -27,13 +28,41 @@ const Contact = () => {
 
   const update = (field: string, value: string) => setForm((prev) => ({ ...prev, [field]: value }));
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    // Save to registrations table
+    try {
+      await supabase.from("registrations").insert({
+        data: {
+          type: "contact",
+          fullName: `${form.firstName} ${form.lastName}`.trim(),
+          email: form.email,
+          phone: form.phone,
+          message: form.message,
+        },
+      });
+    } catch {}
     const subject = encodeURIComponent("Kërkesë e re nga faqja e internetit");
     const body = encodeURIComponent(`Emri: ${form.firstName}\nMbiemri: ${form.lastName}\nTelefoni: ${form.phone}\nEmail: ${form.email}\n\nMesazhi:\n${form.message}`);
     window.open(`mailto:shitje@egjeu.al?subject=${subject}&body=${body}`);
     toast({ title: "Formulari u dërgua!", description: "Ekipi ynë do t'ju kontaktojë sa më shpejt." });
     setForm({ firstName: "", lastName: "", phone: "", email: "", message: "" });
+  };
+
+  const handleNewsletterSubmit = async () => {
+    if (!newsletterEmail) return;
+    try {
+      await supabase.from("registrations").insert({
+        data: {
+          type: "newsletter",
+          email: newsletterEmail,
+        },
+      });
+      toast({ title: "U regjistruat me sukses!", description: "Do të merrni të rejat tona." });
+      setNewsletterEmail("");
+    } catch {
+      toast({ title: "Gabim", description: "Provoni përsëri.", variant: "destructive" });
+    }
   };
 
   const contactInfo = [
@@ -110,16 +139,7 @@ const Contact = () => {
       )}
 
       {isSectionVisible("membership-cta") && (
-        <section className="py-16 md:py-20 bg-warm-gray">
-          <div className="container text-center max-w-2xl mx-auto">
-            <h2 className="text-lg md:text-xl tracking-wide-brand text-foreground font-light mb-4">BËHUNI ANËTAR</h2>
-            <p className="text-sm text-muted-foreground leading-relaxed mb-8">Regjistrohuni dhe bashkohuni me platformën tonë për të pasur akses në oferta ekskluzive.</p>
-            <div className="flex items-center justify-center gap-4">
-              <SlugLink to="/register" className="rounded inline-block px-10 py-3 bg-primary text-primary-foreground text-xs tracking-wide-brand uppercase hover:bg-primary/90 transition-colors">REGJISTROHU</SlugLink>
-              <SlugLink to="/login" className="rounded inline-block px-10 py-3 border border-foreground text-foreground text-xs tracking-wide-brand uppercase hover:bg-foreground hover:text-background transition-colors">HYR</SlugLink>
-            </div>
-          </div>
-        </section>
+        <MembershipSection />
       )}
 
       <section className="py-16 md:py-20 bg-newsletter-bg">
@@ -133,7 +153,7 @@ const Contact = () => {
               <p className="text-sm text-primary-foreground/80 mb-4 md:text-right">Vendosni adresën tuaj të email-it.</p>
               <div className="flex gap-0">
                 <input type="email" placeholder="E-mail" value={newsletterEmail} onChange={(e) => setNewsletterEmail(e.target.value)} className="flex-1 px-4 py-3 bg-primary-foreground/10 border border-primary-foreground/30 text-primary-foreground placeholder:text-primary-foreground/50 text-sm focus:outline-none focus:border-primary-foreground" />
-                <button className="px-6 py-3 bg-primary-foreground text-primary text-xs tracking-wide-brand uppercase hover:bg-primary-foreground/90 transition-colors">Subscribe</button>
+                <button type="button" onClick={handleNewsletterSubmit} className="px-6 py-3 bg-primary-foreground text-primary text-xs tracking-wide-brand uppercase hover:bg-primary-foreground/90 transition-colors">Subscribe</button>
               </div>
             </div>
           </div>
