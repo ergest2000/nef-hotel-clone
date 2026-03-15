@@ -76,10 +76,14 @@ const BlogPost = () => {
               <img src={post.image} alt={post.title} className="w-full h-full object-cover" />
             </div>
           )}
-          <div className="prose prose-sm max-w-none">
-            {post.content.split("\n\n").map((paragraph, i) => (
-              <p key={i} className="text-sm md:text-base text-muted-foreground leading-relaxed mb-6 normal-case tracking-normal">{paragraph}</p>
-            ))}
+          <div className="prose prose-sm max-w-none text-sm md:text-base text-muted-foreground leading-relaxed [&_p]:mb-6 [&_p]:normal-case [&_p]:tracking-normal">
+            {post.content.includes("<") ? (
+              <div dangerouslySetInnerHTML={{ __html: post.content }} />
+            ) : (
+              post.content.split("\n\n").map((paragraph, i) => (
+                <p key={i} className="mb-6">{paragraph}</p>
+              ))
+            )}
           </div>
           <div className="border-t border-border mt-12 pt-8">
             <p className="text-xs tracking-brand text-muted-foreground uppercase mb-4 text-center">{isAl ? "Ndaje postimin" : "Share this post"}</p>
