@@ -77,11 +77,11 @@ export const AdminRegistrations = () => {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Biznesi</TableHead>
+              <TableHead>Lloji</TableHead>
               <TableHead>Emri</TableHead>
               <TableHead>Email</TableHead>
               <TableHead>Telefoni</TableHead>
-              <TableHead>Qyteti</TableHead>
+              <TableHead>Biznesi/Qyteti</TableHead>
               <TableHead>Data</TableHead>
               <TableHead className="w-[100px]">Veprime</TableHead>
             </TableRow>
