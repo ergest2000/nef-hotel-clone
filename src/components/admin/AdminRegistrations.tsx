@@ -77,11 +77,11 @@ export const AdminRegistrations = () => {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Biznesi</TableHead>
+              <TableHead>Lloji</TableHead>
               <TableHead>Emri</TableHead>
               <TableHead>Email</TableHead>
               <TableHead>Telefoni</TableHead>
-              <TableHead>Qyteti</TableHead>
+              <TableHead>Biznesi/Qyteti</TableHead>
               <TableHead>Data</TableHead>
               <TableHead className="w-[100px]">Veprime</TableHead>
             </TableRow>
@@ -92,11 +92,19 @@ export const AdminRegistrations = () => {
             ) : (
               registrations.map((r) => (
                 <TableRow key={r.id}>
-                  <TableCell className="font-medium">{r.data.business || "—"}</TableCell>
-                  <TableCell>{r.data.fullName || "—"}</TableCell>
+                  <TableCell>
+                    <span className={`text-[10px] px-2 py-0.5 rounded uppercase tracking-wide ${
+                      r.data.type === "newsletter" ? "bg-blue-100 text-blue-800" :
+                      r.data.type === "contact" ? "bg-amber-100 text-amber-800" :
+                      "bg-muted text-muted-foreground"
+                    }`}>
+                      {r.data.type || "register"}
+                    </span>
+                  </TableCell>
+                  <TableCell>{r.data.fullName || r.data.full_name || "—"}</TableCell>
                   <TableCell>{r.data.email || "—"}</TableCell>
                   <TableCell>{r.data.phone || "—"}</TableCell>
-                  <TableCell>{r.data.city || "—"}</TableCell>
+                  <TableCell>{r.data.business || r.data.city || "—"}</TableCell>
                   <TableCell className="text-muted-foreground text-xs">{new Date(r.created_at).toLocaleDateString("sq-AL")}</TableCell>
                   <TableCell>
                     <div className="flex gap-1">

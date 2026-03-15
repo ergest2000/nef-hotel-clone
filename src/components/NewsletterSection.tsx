@@ -1,14 +1,33 @@
 import { useState } from "react";
 import { getContentValue } from "@/hooks/useCms";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 import type { Tables } from "@/integrations/supabase/types";
 
 type SiteContent = Tables<"site_content">;
 
 const NewsletterSection = ({ content }: { content?: SiteContent[] }) => {
   const [email, setEmail] = useState("");
+  const { toast } = useToast();
   const title = getContentValue(content, "newsletter", "title", "STAY UPDATED");
   const subtitle = getContentValue(content, "newsletter", "subtitle", "Subscribe to our newsletter and never miss an update.");
   const description = getContentValue(content, "newsletter", "description", "Be the first to learn about our offers and our news.");
+
+  const handleSubscribe = async () => {
+    if (!email) return;
+    try {
+      await supabase.from("registrations").insert({
+        data: {
+          type: "newsletter",
+          email,
+        },
+      });
+      toast({ title: "Subscribed!", description: "You'll receive our latest updates." });
+      setEmail("");
+    } catch {
+      toast({ title: "Error", description: "Please try again.", variant: "destructive" });
+    }
+  };
 
   return (
     <section className="py-12 md:py-24 bg-newsletter-bg">
@@ -28,7 +47,7 @@ const NewsletterSection = ({ content }: { content?: SiteContent[] }) => {
                 onChange={(e) => setEmail(e.target.value)}
                 className="flex-1 rounded px-4 py-3 bg-primary-foreground/10 border border-primary-foreground/30 text-primary-foreground placeholder:text-primary-foreground/50 text-sm focus:outline-none focus:border-primary-foreground"
               />
-              <button className="rounded px-6 py-3 bg-primary-foreground text-primary text-xs tracking-wide-brand uppercase hover:bg-primary-foreground/90 transition-colors">Subscribe</button>
+              <button type="button" onClick={handleSubscribe} className="rounded px-6 py-3 bg-primary-foreground text-primary text-xs tracking-wide-brand uppercase hover:bg-primary-foreground/90 transition-colors">Subscribe</button>
             </div>
           </div>
         </div>
