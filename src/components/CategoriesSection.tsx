@@ -47,14 +47,14 @@ const CategoriesSection = ({ content }: { content?: SiteContent[] }) => {
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
           {categories.map((cat) => (
-            <a key={cat.name} href="#" className="group relative aspect-square overflow-hidden">
-              <img src={cat.image} alt={cat.name} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" loading="lazy" />
-              <div className="absolute inset-0 bg-foreground/20 group-hover:bg-foreground/40 transition-colors" />
-              <div className="absolute inset-0 flex items-center justify-center">
-                <span className="text-xs md:text-sm tracking-wide-brand text-primary-foreground font-semibold">
-                  {cat.name.toUpperCase()}
-                </span>
+            <a key={cat.name} href="#" className="group flex flex-col">
+              <div className="relative aspect-square overflow-hidden">
+                <img src={cat.image} alt={cat.name} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" loading="lazy" />
+                <div className="absolute inset-0 bg-foreground/10 group-hover:bg-foreground/25 transition-colors" />
               </div>
+              <span className="mt-3 text-xs md:text-sm tracking-wide-brand text-foreground font-semibold text-center">
+                {cat.name.toUpperCase()}
+              </span>
             </a>
           ))}
         </div>
