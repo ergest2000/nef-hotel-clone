@@ -40,23 +40,23 @@ const SiteHeader = () => {
       {/* === DESKTOP === */}
       <div className="hidden lg:block">
         <div className="border-b border-border">
-          <div className="container flex items-center h-10 gap-4 text-xs tracking-brand">
-            <div className="flex items-center gap-1 shrink-0">
-              <button onClick={() => setLang("al")} className={`px-1 ${isAl ? "text-foreground font-semibold" : "text-muted-foreground"}`}>AL</button>
+          <div className="container flex items-center h-12 gap-8 text-[13px] tracking-brand">
+            <div className="flex items-center gap-2 shrink-0">
+              <button onClick={() => setLang("al")} className={`px-1.5 py-0.5 ${isAl ? "text-foreground font-semibold" : "text-muted-foreground"}`}>AL</button>
               <span className="text-border">|</span>
-              <button onClick={() => setLang("en")} className={`px-1 ${!isAl ? "text-foreground font-semibold" : "text-muted-foreground"}`}>EN</button>
+              <button onClick={() => setLang("en")} className={`px-1.5 py-0.5 ${!isAl ? "text-foreground font-semibold" : "text-muted-foreground"}`}>EN</button>
             </div>
             <span className="text-muted-foreground shrink-0">
               CONTACT: <strong className="text-foreground">+355 69 000 0000</strong>
             </span>
             <div className="relative flex-1 mx-auto max-w-sm">
-              <input type="text" placeholder={isAl ? "Kerko per produkte ketu" : "Search for products here"} className="w-full h-7 pl-3 pr-8 text-xs border border-border bg-background rounded-full focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-muted-foreground/60 text-center placeholder:text-center" />
-              <Search size={13} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
+              <input type="text" placeholder={isAl ? "Kerko per produkte ketu" : "Search for products here"} className="w-full h-8 pl-4 pr-9 text-[13px] border border-border bg-background rounded-full focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-muted-foreground/60 text-center placeholder:text-center" />
+              <Search size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
             </div>
-            <div className="flex items-center gap-5 shrink-0 ml-auto">
-              <button className="flex items-center gap-1 text-muted-foreground hover:text-foreground transition-colors"><Heart size={14} /> <span>0</span></button>
-              <button className="flex items-center gap-1 text-muted-foreground hover:text-foreground transition-colors"><ShoppingCart size={14} /> <span>0</span></button>
-              <SlugLink to="/register" className="flex items-center gap-1.5 text-muted-foreground hover:text-foreground transition-colors px-2"><UserPlus size={14} /> <span className="whitespace-nowrap">{isAl ? "REGJISTROHU / HYR" : "REGISTER / LOGIN"}</span></SlugLink>
+            <div className="flex items-center gap-7 shrink-0 ml-auto">
+              <button className="flex items-center gap-1.5 text-muted-foreground hover:text-foreground transition-colors"><Heart size={15} /> <span>0</span></button>
+              <button className="flex items-center gap-1.5 text-muted-foreground hover:text-foreground transition-colors"><ShoppingCart size={15} /> <span>0</span></button>
+              <SlugLink to="/register" className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors px-3"><UserPlus size={15} /> <span className="whitespace-nowrap">{isAl ? "REGJISTROHU / HYR" : "REGISTER / LOGIN"}</span></SlugLink>
             </div>
           </div>
         </div>
