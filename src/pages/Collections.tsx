@@ -279,9 +279,9 @@ const Collections = () => {
   // ─── Collections listing (no slug) ───
   if (!slug || !currentCollection) {
     return (
-      <div className="min-h-screen bg-background">
+      <div className="min-h-screen bg-background flex flex-col">
         <SiteHeader />
-        <div className="max-w-7xl mx-auto px-4 py-12">
+        <div className="max-w-7xl mx-auto px-4 py-12 flex-1">
           <h1 className="text-3xl font-light tracking-wide text-foreground mb-8">
             {t("Koleksionet", "Collections")}
           </h1>
@@ -316,7 +316,7 @@ const Collections = () => {
 
   // ─── Collection detail page ───
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background flex flex-col">
       <SiteHeader />
 
       {/* Cover Banner */}
@@ -384,7 +384,7 @@ const Collections = () => {
       )}
 
       {/* Main content: sidebar + products */}
-      <div className="max-w-7xl mx-auto px-4 py-8">
+      <div className="max-w-7xl mx-auto px-4 py-8 flex-1">
         {/* Mobile filter button */}
         <div className="lg:hidden mb-4">
           <Button
