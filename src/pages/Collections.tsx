@@ -1,6 +1,7 @@
 import { useState, useMemo } from "react";
+import { Link, useParams } from "react-router-dom";
 import {
-  useCollections, useProducts, useProductImages,
+  useCollections, useProducts,
   useAllProductColors, useAllProductSizes,
   type ProductColor, type ProductSize,
 } from "@/hooks/useCollections";
@@ -11,69 +12,24 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { ChevronRight, ChevronLeft, Package, Heart, Filter, X } from "lucide-react";
-import { Link, useParams } from "react-router-dom";
+import { Package, Heart, Filter } from "lucide-react";
 
 const ITEMS_PER_PAGE = 9;
 
-// ─── Product Image Gallery (for dialog) ─────────────────────────
-const ProductImageGallery = ({ mainImage, productId }: { mainImage?: string | null; productId: string }) => {
-  const { data: extraImages } = useProductImages(productId);
-  const allImages = useMemo(() => {
-    const imgs: string[] = [];
-    if (mainImage) imgs.push(mainImage);
-    extraImages?.forEach((img) => {
-      if (img.image_url && !imgs.includes(img.image_url)) imgs.push(img.image_url);
-    });
-    return imgs;
-  }, [mainImage, extraImages]);
 
-  const [selected, setSelected] = useState(0);
 
-  if (!allImages.length) {
-    return (
-      <div className="aspect-square bg-muted flex items-center justify-center">
-        <Package className="h-20 w-20 text-muted-foreground/20" />
-      </div>
-    );
-  }
-
-  return (
-    <div className="space-y-3">
-      <div className="aspect-square bg-muted overflow-hidden">
-        <img src={allImages[selected]} alt="" className="w-full h-full object-cover" />
-      </div>
-      {allImages.length > 1 && (
-        <div className="flex gap-2 overflow-x-auto pb-1">
-          {allImages.map((img, i) => (
-            <button
-              key={i}
-              onClick={() => setSelected(i)}
-              className={`flex-shrink-0 w-16 h-16 overflow-hidden border-2 transition-colors ${
-                i === selected ? "border-primary" : "border-transparent hover:border-border"
-              }`}
-            >
-              <img src={img} alt="" className="w-full h-full object-cover" />
-            </button>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-};
 
 // ─── Product Card ────────────────────────────────────────────────
-const ProductCard = ({ product, isAl, allColors, allSizes, onClick, t }: {
-  product: any; isAl: boolean; allColors?: ProductColor[]; allSizes?: ProductSize[];
-  onClick: () => void; t: (al: string, en: string) => string;
+const ProductCard = ({ product, isAl, allColors, collectionSlug, t }: {
+  product: any; isAl: boolean; allColors?: ProductColor[];
+  collectionSlug: string; t: (al: string, en: string) => string;
 }) => {
   const productColors = allColors?.filter(c => c.product_id === product.id) ?? [];
   const [wishlisted, setWishlisted] = useState(false);
 
   return (
     <div className="group">
-      <div className="relative aspect-[4/5] bg-muted overflow-hidden mb-3 cursor-pointer" onClick={onClick}>
+      <Link to={`/koleksionet/${collectionSlug}/${product.id}`} className="relative aspect-[4/5] bg-muted overflow-hidden mb-3 block">
         {product.image_url ? (
           <img
             src={product.image_url}
@@ -105,8 +61,8 @@ const ProductCard = ({ product, isAl, allColors, allSizes, onClick, t }: {
             <Badge className="text-[10px] bg-primary/90">{t("Personalizuar", "Customizable")}</Badge>
           </div>
         )}
-      </div>
-      <div className="cursor-pointer" onClick={onClick}>
+      </Link>
+      <Link to={`/koleksionet/${collectionSlug}/${product.id}`} className="block">
         <h4 className="text-sm font-semibold text-foreground leading-tight">
           {isAl ? product.title_al : product.title_en}
         </h4>
@@ -121,7 +77,7 @@ const ProductCard = ({ product, isAl, allColors, allSizes, onClick, t }: {
         <p className="text-xs text-muted-foreground">
           {t("Dimensioni:", "Dimension:")} {isAl ? product.dimensions_al : product.dimensions_en}
         </p>
-      </div>
+      </Link>
       {/* Color swatches */}
       {productColors.length > 0 && (
         <div className="flex items-center gap-1.5 mt-2">
@@ -139,99 +95,8 @@ const ProductCard = ({ product, isAl, allColors, allSizes, onClick, t }: {
   );
 };
 
-// ─── Product Detail View ─────────────────────────────────────────
-const ProductDetailView = ({ product, isAl, t, allColors, allSizes }: {
-  product: any; isAl: boolean; t: (al: string, en: string) => string;
-  allColors?: ProductColor[]; allSizes?: ProductSize[];
-}) => {
-  const productColors = allColors?.filter(c => c.product_id === product.id) ?? [];
-  const productSizes = allSizes?.filter(s => s.product_id === product.id) ?? [];
 
-  return (
-    <>
-      <DialogHeader>
-        <DialogTitle className="text-xl font-light">
-          {isAl ? product.title_al : product.title_en}
-        </DialogTitle>
-      </DialogHeader>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
-        <ProductImageGallery mainImage={product.image_url} productId={product.id} />
-        <div className="space-y-4">
-          <div>
-            <p className="text-sm text-muted-foreground">{t("Kodi", "Code")} {product.code}</p>
-            <p className="text-foreground mt-2">{isAl ? product.description_al : product.description_en}</p>
-          </div>
-          {productColors.length > 0 && (
-            <div>
-              <p className="text-xs font-medium text-muted-foreground mb-2">{t("Ngjyrat", "Colors")}</p>
-              <div className="flex flex-wrap gap-2">
-                {productColors.map(c => (
-                  <div key={c.id} className="flex items-center gap-1.5 px-2 py-1 bg-muted text-xs">
-                    <div className="w-4 h-4 rounded-full border border-border" style={{ backgroundColor: c.color_hex }} />
-                    {c.color_name}
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-          {productSizes.length > 0 && (
-            <div>
-              <p className="text-xs font-medium text-muted-foreground mb-2">{t("Përmasat", "Sizes")}</p>
-              <div className="flex flex-wrap gap-2">
-                {productSizes.map(s => (
-                  <Badge key={s.id} variant="outline" className="text-xs">{s.size_label}</Badge>
-                ))}
-              </div>
-            </div>
-          )}
-          <div className="border overflow-hidden">
-            <table className="w-full text-sm">
-              <tbody>
-                {(product.weight_gsm ?? 0) > 0 && (
-                  <tr className="border-b"><td className="px-3 py-2 bg-muted/50 font-medium w-1/2">{t("Pesha", "Weight")}</td><td className="px-3 py-2">{product.weight_gsm} gsm</td></tr>
-                )}
-                <tr className="border-b"><td className="px-3 py-2 bg-muted/50 font-medium">{t("Përbërja", "Composition")}</td><td className="px-3 py-2">{isAl ? product.composition_al : product.composition_en}</td></tr>
-                <tr className="border-b"><td className="px-3 py-2 bg-muted/50 font-medium">{t("Dimensionet", "Dimensions")}</td><td className="px-3 py-2">{isAl ? product.dimensions_al : product.dimensions_en}</td></tr>
-                {(product.box_quantity ?? 0) > 0 && (
-                  <tr className="border-b"><td className="px-3 py-2 bg-muted/50 font-medium">{t("Kuti", "Box")}</td><td className="px-3 py-2">{product.box_quantity}</td></tr>
-                )}
-                {(product.pieces_per_box ?? 0) > 0 && (
-                  <tr><td className="px-3 py-2 bg-muted/50 font-medium">{t("Copë / Kuti", "Pieces / Box")}</td><td className="px-3 py-2">{product.pieces_per_box}</td></tr>
-                )}
-              </tbody>
-            </table>
-          </div>
-          <div className="flex gap-3">
-            <Badge variant={product.in_stock ? "default" : "destructive"}>
-              {product.in_stock ? t("Në stok", "In stock") : t("Jo në stok", "Out of stock")}
-            </Badge>
-            {product.customizable && <Badge variant="outline">{t("I personalizueshëm", "Customizable")}</Badge>}
-          </div>
-        </div>
-      </div>
-      <Accordion type="multiple" className="mt-6">
-        {(isAl ? product.product_info_al : product.product_info_en) && (
-          <AccordionItem value="info">
-            <AccordionTrigger>{t("Informacion mbi Produktin", "Product Information")}</AccordionTrigger>
-            <AccordionContent><p className="text-sm text-muted-foreground whitespace-pre-wrap">{isAl ? product.product_info_al : product.product_info_en}</p></AccordionContent>
-          </AccordionItem>
-        )}
-        {(isAl ? product.return_policy_al : product.return_policy_en) && (
-          <AccordionItem value="returns">
-            <AccordionTrigger>{t("Politika e Kthimit", "Returns Policy")}</AccordionTrigger>
-            <AccordionContent><p className="text-sm text-muted-foreground whitespace-pre-wrap">{isAl ? product.return_policy_al : product.return_policy_en}</p></AccordionContent>
-          </AccordionItem>
-        )}
-        {(isAl ? product.tech_specs_al : product.tech_specs_en) && (
-          <AccordionItem value="specs">
-            <AccordionTrigger>{t("Specifikimet Teknike", "Technical Specifications")}</AccordionTrigger>
-            <AccordionContent><p className="text-sm text-muted-foreground whitespace-pre-wrap">{isAl ? product.tech_specs_al : product.tech_specs_en}</p></AccordionContent>
-          </AccordionItem>
-        )}
-      </Accordion>
-    </>
-  );
-};
+
 
 // ─── Sidebar Filter Section ─────────────────────────────────────
 const FilterSection = ({ title, options, selected, onToggle }: {
@@ -278,7 +143,7 @@ const Collections = () => {
   const [sizeFilters, setSizeFilters] = useState<string[]>([]);
   const [compositionFilters, setCompositionFilters] = useState<string[]>([]);
   const [stockFilter, setStockFilter] = useState<string[]>([]);
-  const [selectedProduct, setSelectedProduct] = useState<any>(null);
+  
   const [currentPage, setCurrentPage] = useState(1);
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
 
@@ -547,8 +412,7 @@ const Collections = () => {
                       product={product}
                       isAl={isAl}
                       allColors={allColors}
-                      allSizes={allSizes}
-                      onClick={() => setSelectedProduct(product)}
+                      collectionSlug={slug ?? ""}
                       t={t}
                     />
                   ))}
@@ -607,14 +471,8 @@ const Collections = () => {
         </DialogContent>
       </Dialog>
 
-      {/* Product Detail Dialog */}
-      <Dialog open={!!selectedProduct} onOpenChange={() => setSelectedProduct(null)}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-          {selectedProduct && (
-            <ProductDetailView product={selectedProduct} isAl={isAl} t={t} allColors={allColors} allSizes={allSizes} />
-          )}
-        </DialogContent>
-      </Dialog>
+
+
 
       <SiteFooter />
     </div>
