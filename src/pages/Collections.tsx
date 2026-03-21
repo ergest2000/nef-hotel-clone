@@ -606,14 +606,8 @@ const Collections = () => {
         </DialogContent>
       </Dialog>
 
-      {/* Product Detail Dialog */}
-      <Dialog open={!!selectedProduct} onOpenChange={() => setSelectedProduct(null)}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-          {selectedProduct && (
-            <ProductDetailView product={selectedProduct} isAl={isAl} t={t} allColors={allColors} allSizes={allSizes} />
-          )}
-        </DialogContent>
-      </Dialog>
+
+
 
       <SiteFooter />
     </div>
