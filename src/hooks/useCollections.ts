@@ -220,7 +220,7 @@ export const useProductColors = (productId?: string) =>
 export const useAddProductColor = () => {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async (item: { product_id: string; color_name: string; color_hex: string; sort_order: number }) => {
+    mutationFn: async (item: { product_id: string; color_name: string; color_name_al: string; color_name_en: string; color_hex: string; sort_order: number }) => {
       const { data, error } = await supabase
         .from("product_colors" as any)
         .insert(item)
