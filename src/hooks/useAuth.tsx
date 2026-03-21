@@ -10,7 +10,7 @@ interface AuthContext {
   isAdmin: boolean;
   role: AppRole;
   loading: boolean;
-  signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
+  signIn: (email: string, password: string) => Promise<{ error: Error | null; role: AppRole; user: User | null }>;
   signOut: () => Promise<void>;
 }
 
@@ -20,7 +20,7 @@ const AuthCtx = createContext<AuthContext>({
   isAdmin: false,
   role: "user",
   loading: true,
-  signIn: async () => ({ error: null }),
+  signIn: async () => ({ error: null, role: "user", user: null }),
   signOut: async () => {},
 });
 
@@ -32,33 +32,44 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [loading, setLoading] = useState(true);
 
   const checkRole = async (userId: string): Promise<AppRole> => {
-    const priorityRoles = ["admin", "manager", "editor"] as const;
-    const results = await Promise.all(
-      priorityRoles.map(async (candidateRole) => {
-        const { data } = await supabase.rpc("has_role", { _user_id: userId, _role: candidateRole });
-        return { candidateRole, hasRole: Boolean(data) };
-      })
-    );
+    try {
+      const priorityRoles = ["admin", "manager", "editor"] as const;
+      const results = await Promise.all(
+        priorityRoles.map(async (candidateRole) => {
+          const { data, error } = await supabase.rpc("has_role", { _user_id: userId, _role: candidateRole });
+          if (error) {
+            console.error(`Role check failed for ${candidateRole}:`, error.message);
+            return { candidateRole, hasRole: false };
+          }
+          return { candidateRole, hasRole: Boolean(data) };
+        })
+      );
 
-    const matchedRole = results.find((result) => result.hasRole)?.candidateRole;
-    return matchedRole ?? "user";
+      const matchedRole = results.find((result) => result.hasRole)?.candidateRole;
+      return matchedRole ?? "user";
+    } catch (error) {
+      console.error("Failed to resolve user role:", error);
+      return "user";
+    }
   };
 
   const applySessionState = async (nextSession: Session | null) => {
-    setSession(nextSession);
-    setUser(nextSession?.user ?? null);
+    try {
+      setSession(nextSession);
+      setUser(nextSession?.user ?? null);
 
-    if (!nextSession?.user) {
-      setIsAdmin(false);
-      setRole("user");
+      if (!nextSession?.user) {
+        setIsAdmin(false);
+        setRole("user");
+        return;
+      }
+
+      const resolvedRole = await checkRole(nextSession.user.id);
+      setRole(resolvedRole);
+      setIsAdmin(resolvedRole === "admin");
+    } finally {
       setLoading(false);
-      return;
     }
-
-    const resolvedRole = await checkRole(nextSession.user.id);
-    setRole(resolvedRole);
-    setIsAdmin(resolvedRole === "admin");
-    setLoading(false);
   };
 
   useEffect(() => {
@@ -71,8 +82,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     };
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (_event, nextSession) => {
-        await syncSession(nextSession);
+      (_event, nextSession) => {
+        void syncSession(nextSession);
       }
     );
 
@@ -85,12 +96,41 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   const signIn = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
-    return { error: error as Error | null };
+    setLoading(true);
+    const normalizedEmail = email.trim().toLowerCase();
+
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: normalizedEmail,
+        password,
+      });
+
+      if (error) {
+        setLoading(false);
+        return { error: error as Error, role: "user" as AppRole, user: null };
+      }
+
+      const nextUser = data.user ?? null;
+      const nextSession = data.session ?? null;
+      const resolvedRole = nextUser ? await checkRole(nextUser.id) : "user";
+
+      setSession(nextSession);
+      setUser(nextUser);
+      setRole(resolvedRole);
+      setIsAdmin(resolvedRole === "admin");
+      setLoading(false);
+
+      return { error: null, role: resolvedRole, user: nextUser };
+    } catch (error) {
+      setLoading(false);
+      return { error: error as Error, role: "user" as AppRole, user: null };
+    }
   };
 
   const signOut = async () => {
     await supabase.auth.signOut();
+    setSession(null);
+    setUser(null);
     setIsAdmin(false);
     setRole("user");
   };
