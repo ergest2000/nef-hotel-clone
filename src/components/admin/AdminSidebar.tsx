@@ -79,6 +79,7 @@ interface AdminSidebarProps {
 
 export const AdminSidebar = ({ activePage, onPageChange }: AdminSidebarProps) => {
   const { state } = useSidebar();
+  const { role } = useAuth();
   const collapsed = state === "collapsed";
 
   return (
