@@ -123,7 +123,7 @@ export const AdminDesignSettings = () => {
     buttons: "Buttons",
     typography: "Typography",
     colors: "Global Colors",
-    footer: "Footer Settings",
+    footer: "Footer (Colors, Logo, Texts, Newsletter, Social)",
   };
 
   const renderField = (setting: DesignSetting) => {
