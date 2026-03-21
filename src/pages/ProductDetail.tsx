@@ -279,40 +279,71 @@ const ProductDetail = () => {
               {isAl ? product.description_al : product.description_en}
             </p>
 
-            {/* Colors as swatches */}
+            {/* Colors as selectable swatches */}
             {productColors.length > 0 && (
               <div>
                 <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
-                  {t("Ngjyrat", "Colors")}
+                  {t("Ngjyra", "Color")}
+                  {selectedColorId && (
+                    <span className="ml-2 font-normal normal-case text-foreground">
+                      — {(() => {
+                        const c = productColors.find((c) => c.id === selectedColorId);
+                        return c ? (isAl ? (c.color_name_al || c.color_name) : (c.color_name_en || c.color_name)) : "";
+                      })()}
+                    </span>
+                  )}
                 </p>
                 <div className="flex flex-wrap gap-3">
                   {productColors.map((c) => (
-                    <div key={c.id} className="flex flex-col items-center gap-1">
+                    <button
+                      key={c.id}
+                      onClick={() => setSelectedColorId(selectedColorId === c.id ? null : c.id)}
+                      className="flex flex-col items-center gap-1 group"
+                      title={isAl ? (c.color_name_al || c.color_name) : (c.color_name_en || c.color_name)}
+                    >
                       <div
-                        className="w-8 h-8 rounded-full border-2 border-border shadow-sm"
+                        className={`w-9 h-9 rounded-full border-2 shadow-sm transition-all ${
+                          selectedColorId === c.id
+                            ? "border-primary ring-2 ring-primary/30 scale-110"
+                            : "border-border group-hover:border-foreground/40"
+                        }`}
                         style={{ backgroundColor: c.color_hex }}
-                        title={isAl ? (c.color_name_al || c.color_name) : (c.color_name_en || c.color_name)}
                       />
-                      <span className="text-[10px] text-muted-foreground">
+                      <span className={`text-[10px] transition-colors ${
+                        selectedColorId === c.id ? "text-foreground font-medium" : "text-muted-foreground"
+                      }`}>
                         {isAl ? (c.color_name_al || c.color_name) : (c.color_name_en || c.color_name)}
                       </span>
-                    </div>
+                    </button>
                   ))}
                 </div>
               </div>
             )}
 
-            {/* Sizes */}
+            {/* Sizes as selectable chips */}
             {productSizes.length > 0 && (
               <div>
                 <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
-                  {t("Përmasat", "Sizes")}
+                  {t("Përmasa", "Size")}
+                  {selectedSizeId && (
+                    <span className="ml-2 font-normal normal-case text-foreground">
+                      — {productSizes.find((s) => s.id === selectedSizeId)?.size_label}
+                    </span>
+                  )}
                 </p>
                 <div className="flex flex-wrap gap-2">
                   {productSizes.map((s) => (
-                    <Badge key={s.id} variant="outline" className="text-xs px-3 py-1">
+                    <button
+                      key={s.id}
+                      onClick={() => setSelectedSizeId(selectedSizeId === s.id ? null : s.id)}
+                      className={`text-xs px-4 py-2 border rounded-sm transition-all ${
+                        selectedSizeId === s.id
+                          ? "border-primary bg-primary text-primary-foreground font-medium"
+                          : "border-border text-foreground hover:border-foreground/40"
+                      }`}
+                    >
                       {s.size_label}
-                    </Badge>
+                    </button>
                   ))}
                 </div>
               </div>
