@@ -25,6 +25,8 @@ import { AdminDesignSettings } from "@/components/admin/AdminDesignSettings";
 import { AdminUsers } from "@/components/admin/AdminUsers";
 import { AdminAuthLogs } from "@/components/admin/AdminAuthLogs";
 import { AdminAuthTexts } from "@/components/admin/AdminAuthTexts";
+import { AdminCollectionsManager } from "@/components/admin/AdminCollectionsManager";
+import { AdminProductsManager } from "@/components/admin/AdminProductsManager";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import type { Tables } from "@/integrations/supabase/types";
 
@@ -49,6 +51,8 @@ const pageTitles: Record<string, string> = {
   "auth-logs": "Auth Logs",
   "auth-texts": "Auth Form Texts",
   slugs: "URL Slugs",
+  collections: "Koleksionet",
+  products: "Produktet",
   design: "Design Settings",
   settings: "Settings",
 };
@@ -234,6 +238,10 @@ const AdminDashboard = () => {
         return <AdminAuthTexts />;
       case "slugs":
         return <AdminSlugManager />;
+      case "collections":
+        return <AdminCollectionsManager />;
+      case "products":
+        return <AdminProductsManager />;
       case "design":
         return <AdminDesignSettings />;
       case "media":

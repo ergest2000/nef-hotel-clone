@@ -89,6 +89,59 @@ export type Database = {
         }
         Relationships: []
       }
+      collections: {
+        Row: {
+          created_at: string
+          description_al: string
+          description_en: string
+          id: string
+          image_url: string | null
+          parent_id: string | null
+          slug: string
+          sort_order: number
+          title_al: string
+          title_en: string
+          updated_at: string
+          visible: boolean
+        }
+        Insert: {
+          created_at?: string
+          description_al?: string
+          description_en?: string
+          id?: string
+          image_url?: string | null
+          parent_id?: string | null
+          slug: string
+          sort_order?: number
+          title_al?: string
+          title_en?: string
+          updated_at?: string
+          visible?: boolean
+        }
+        Update: {
+          created_at?: string
+          description_al?: string
+          description_en?: string
+          id?: string
+          image_url?: string | null
+          parent_id?: string | null
+          slug?: string
+          sort_order?: number
+          title_al?: string
+          title_en?: string
+          updated_at?: string
+          visible?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "collections_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "collections"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       design_settings: {
         Row: {
           created_at: string
@@ -214,6 +267,142 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      product_images: {
+        Row: {
+          created_at: string
+          id: string
+          image_url: string
+          product_id: string
+          sort_order: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          image_url?: string
+          product_id: string
+          sort_order?: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          image_url?: string
+          product_id?: string
+          sort_order?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_images_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      products: {
+        Row: {
+          box_quantity: number | null
+          code: string | null
+          collection_id: string
+          color: string | null
+          color_hex: string | null
+          composition_al: string | null
+          composition_en: string | null
+          created_at: string
+          customizable: boolean
+          description_al: string
+          description_en: string
+          dimensions_al: string | null
+          dimensions_en: string | null
+          id: string
+          image_url: string | null
+          in_stock: boolean
+          pieces_per_box: number | null
+          product_info_al: string | null
+          product_info_en: string | null
+          return_policy_al: string | null
+          return_policy_en: string | null
+          sort_order: number
+          tech_specs_al: string | null
+          tech_specs_en: string | null
+          title_al: string
+          title_en: string
+          updated_at: string
+          visible: boolean
+          weight_gsm: number | null
+        }
+        Insert: {
+          box_quantity?: number | null
+          code?: string | null
+          collection_id: string
+          color?: string | null
+          color_hex?: string | null
+          composition_al?: string | null
+          composition_en?: string | null
+          created_at?: string
+          customizable?: boolean
+          description_al?: string
+          description_en?: string
+          dimensions_al?: string | null
+          dimensions_en?: string | null
+          id?: string
+          image_url?: string | null
+          in_stock?: boolean
+          pieces_per_box?: number | null
+          product_info_al?: string | null
+          product_info_en?: string | null
+          return_policy_al?: string | null
+          return_policy_en?: string | null
+          sort_order?: number
+          tech_specs_al?: string | null
+          tech_specs_en?: string | null
+          title_al?: string
+          title_en?: string
+          updated_at?: string
+          visible?: boolean
+          weight_gsm?: number | null
+        }
+        Update: {
+          box_quantity?: number | null
+          code?: string | null
+          collection_id?: string
+          color?: string | null
+          color_hex?: string | null
+          composition_al?: string | null
+          composition_en?: string | null
+          created_at?: string
+          customizable?: boolean
+          description_al?: string
+          description_en?: string
+          dimensions_al?: string | null
+          dimensions_en?: string | null
+          id?: string
+          image_url?: string | null
+          in_stock?: boolean
+          pieces_per_box?: number | null
+          product_info_al?: string | null
+          product_info_en?: string | null
+          return_policy_al?: string | null
+          return_policy_en?: string | null
+          sort_order?: number
+          tech_specs_al?: string | null
+          tech_specs_en?: string | null
+          title_al?: string
+          title_en?: string
+          updated_at?: string
+          visible?: boolean
+          weight_gsm?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "products_collection_id_fkey"
+            columns: ["collection_id"]
+            isOneToOne: false
+            referencedRelation: "collections"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       profiles: {
         Row: {

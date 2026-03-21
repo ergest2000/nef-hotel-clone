@@ -8,6 +8,7 @@ import { LanguageProvider } from "@/hooks/useLanguage";
 import { DesignProvider } from "@/hooks/useDesignSettings";
 import Index from "./pages/Index";
 import BlogPost from "./pages/BlogPost";
+import Collections from "./pages/Collections";
 import AdminDashboard from "./pages/AdminDashboard";
 import AdminRoute from "./components/AdminRoute";
 import ScrollToTop from "./components/ScrollToTop";
@@ -31,6 +32,8 @@ const App = () => (
               <Route path="/" element={<Index />} />
               <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
               <Route path="/reset-password" element={<ResetPassword />} />
+              <Route path="/koleksionet" element={<Collections />} />
+              <Route path="/koleksionet/:slug" element={<Collections />} />
               {/* Blog post with nested slug */}
               <Route path="/:slug/:id" element={<BlogPost />} />
               {/* Dynamic slug-based routing for all pages */}
