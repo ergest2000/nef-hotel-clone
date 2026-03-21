@@ -116,12 +116,14 @@ export const AdminDesignSettings = () => {
     buttons: MousePointer,
     typography: Type,
     colors: Palette,
+    footer: Palette,
   };
 
   const groupLabels: Record<string, string> = {
     buttons: "Buttons",
     typography: "Typography",
     colors: "Global Colors",
+    footer: "Footer Settings",
   };
 
   const renderField = (setting: DesignSetting) => {
