@@ -1,8 +1,10 @@
 import { Navigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 
+const DASHBOARD_ROLES = ["admin", "manager", "editor"];
+
 const AdminRoute = ({ children }: { children: React.ReactNode }) => {
-  const { user, isAdmin, loading } = useAuth();
+  const { user, role, loading } = useAuth();
 
   if (loading) {
     return (
@@ -12,7 +14,7 @@ const AdminRoute = ({ children }: { children: React.ReactNode }) => {
     );
   }
 
-  if (!user || !isAdmin) {
+  if (!user || !DASHBOARD_ROLES.includes(role)) {
     return <Navigate to="/login" replace />;
   }
 

@@ -34,8 +34,12 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import logo from "@/assets/egjeu-logo.png";
+import { useAuth, type AppRole } from "@/hooks/useAuth";
 
-const menuItems = [
+// Roles that can see each menu item. undefined = all dashboard roles.
+type RoleAccess = AppRole[];
+
+const menuItems: { key: string; label: string; icon: any; group: string; roles?: RoleAccess }[] = [
   { key: "dashboard", label: "Dashboard", icon: LayoutDashboard, group: "main" },
   { key: "home", label: "Faqja Kryesore", icon: Home, group: "pages" },
   { key: "company", label: "Company", icon: Building2, group: "pages" },
@@ -44,20 +48,20 @@ const menuItems = [
   { key: "contact", label: "Contact", icon: Phone, group: "pages" },
   { key: "blog", label: "Blog", icon: FileText, group: "pages" },
   { key: "blog-posts", label: "Blog Posts", icon: PenSquare, group: "content" },
-  { key: "menus", label: "Menus", icon: MenuIcon, group: "content" },
+  { key: "menus", label: "Menus", icon: MenuIcon, group: "content", roles: ["admin", "manager"] },
   { key: "clients-logos", label: "Clients Logos", icon: ImageIcon, group: "content" },
   { key: "certifications-logos", label: "Certifications Logos", icon: Award, group: "content" },
-  { key: "registrations", label: "Registrations", icon: Users, group: "content" },
-  { key: "registration-form", label: "Registration Form", icon: FileText, group: "content" },
+  { key: "registrations", label: "Registrations", icon: Users, group: "content", roles: ["admin", "manager"] },
+  { key: "registration-form", label: "Registration Form", icon: FileText, group: "content", roles: ["admin", "manager"] },
   { key: "collections", label: "Koleksionet", icon: FolderOpen, group: "content" },
   { key: "products", label: "Produktet", icon: Package, group: "content" },
   { key: "media", label: "Media", icon: Image, group: "content" },
-  { key: "users", label: "Users", icon: UserCog, group: "users" },
-  { key: "auth-logs", label: "Auth Logs", icon: ScrollText, group: "users" },
-  { key: "auth-texts", label: "Auth Texts", icon: Type, group: "users" },
-  { key: "slugs", label: "URL Slugs", icon: LinkIcon, group: "system" },
-  { key: "design", label: "Design Settings", icon: Paintbrush, group: "system" },
-  { key: "settings", label: "Settings", icon: Settings, group: "system" },
+  { key: "users", label: "Users", icon: UserCog, group: "users", roles: ["admin", "manager"] },
+  { key: "auth-logs", label: "Auth Logs", icon: ScrollText, group: "users", roles: ["admin"] },
+  { key: "auth-texts", label: "Auth Texts", icon: Type, group: "users", roles: ["admin", "manager"] },
+  { key: "slugs", label: "URL Slugs", icon: LinkIcon, group: "system", roles: ["admin"] },
+  { key: "design", label: "Design Settings", icon: Paintbrush, group: "system", roles: ["admin", "manager"] },
+  { key: "settings", label: "Settings", icon: Settings, group: "system", roles: ["admin"] },
 ];
 
 const groups = [
