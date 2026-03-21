@@ -1,7 +1,7 @@
 import { useState, useMemo } from "react";
 import { Link, useParams } from "react-router-dom";
 import {
-  useCollections, useProducts, useProductImages,
+  useCollections, useProducts,
   useAllProductColors, useAllProductSizes,
   type ProductColor, type ProductSize,
 } from "@/hooks/useCollections";
