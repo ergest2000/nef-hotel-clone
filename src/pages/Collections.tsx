@@ -1,4 +1,5 @@
 import { useState, useMemo } from "react";
+import { Link, useParams } from "react-router-dom";
 import {
   useCollections, useProducts, useProductImages,
   useAllProductColors, useAllProductSizes,
