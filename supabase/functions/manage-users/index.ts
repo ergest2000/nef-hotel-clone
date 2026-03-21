@@ -50,7 +50,7 @@ Deno.serve(async (req) => {
       auth: { autoRefreshToken: false, persistSession: false },
     });
 
-    const { action, userId } = await req.json();
+    const { action, userId, role } = await req.json();
 
     switch (action) {
       case "list": {
@@ -94,9 +94,28 @@ Deno.serve(async (req) => {
         });
       }
 
+      case "set_role": {
+        if (!userId || !role) {
+          return new Response(JSON.stringify({ error: "userId and role required" }), {
+            status: 400,
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          });
+        }
+        // Delete existing roles for user
+        await adminClient.from("user_roles").delete().eq("user_id", userId);
+        // Insert new role if not "user" (user = no role row)
+        if (role !== "user") {
+          const { error } = await adminClient.from("user_roles").insert({ user_id: userId, role });
+          if (error) throw error;
+        }
+        return new Response(JSON.stringify({ success: true }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
       case "ban": {
         const { error } = await adminClient.auth.admin.updateUserById(userId, {
-          ban_duration: "876000h", // ~100 years
+          ban_duration: "876000h",
         });
         if (error) throw error;
         return new Response(JSON.stringify({ success: true }), {
