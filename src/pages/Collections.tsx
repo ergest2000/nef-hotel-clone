@@ -17,51 +17,8 @@ import { ChevronRight, ChevronLeft, Package, Heart, Filter, X } from "lucide-rea
 
 const ITEMS_PER_PAGE = 9;
 
-// ─── Product Image Gallery (for dialog) ─────────────────────────
-const ProductImageGallery = ({ mainImage, productId }: { mainImage?: string | null; productId: string }) => {
-  const { data: extraImages } = useProductImages(productId);
-  const allImages = useMemo(() => {
-    const imgs: string[] = [];
-    if (mainImage) imgs.push(mainImage);
-    extraImages?.forEach((img) => {
-      if (img.image_url && !imgs.includes(img.image_url)) imgs.push(img.image_url);
-    });
-    return imgs;
-  }, [mainImage, extraImages]);
 
-  const [selected, setSelected] = useState(0);
 
-  if (!allImages.length) {
-    return (
-      <div className="aspect-square bg-muted flex items-center justify-center">
-        <Package className="h-20 w-20 text-muted-foreground/20" />
-      </div>
-    );
-  }
-
-  return (
-    <div className="space-y-3">
-      <div className="aspect-square bg-muted overflow-hidden">
-        <img src={allImages[selected]} alt="" className="w-full h-full object-cover" />
-      </div>
-      {allImages.length > 1 && (
-        <div className="flex gap-2 overflow-x-auto pb-1">
-          {allImages.map((img, i) => (
-            <button
-              key={i}
-              onClick={() => setSelected(i)}
-              className={`flex-shrink-0 w-16 h-16 overflow-hidden border-2 transition-colors ${
-                i === selected ? "border-primary" : "border-transparent hover:border-border"
-              }`}
-            >
-              <img src={img} alt="" className="w-full h-full object-cover" />
-            </button>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-};
 
 // ─── Product Card ────────────────────────────────────────────────
 const ProductCard = ({ product, isAl, allColors, collectionSlug, t }: {
