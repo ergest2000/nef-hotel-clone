@@ -94,13 +94,16 @@ const ProductColorsManager = ({ productId }: { productId: string }) => {
   const { data: colors } = useProductColors(productId);
   const addColor = useAddProductColor();
   const removeColor = useDeleteProductColor();
-  const [newName, setNewName] = useState("");
+  const [newNameAl, setNewNameAl] = useState("");
+  const [newNameEn, setNewNameEn] = useState("");
   const [newHex, setNewHex] = useState("#FFFFFF");
 
   const handleAdd = () => {
-    if (!newName.trim()) return;
-    addColor.mutate({ product_id: productId, color_name: newName, color_hex: newHex, sort_order: colors?.length ?? 0 });
-    setNewName("");
+    if (!newNameAl.trim() && !newNameEn.trim()) return;
+    const name = newNameAl || newNameEn;
+    addColor.mutate({ product_id: productId, color_name: name, color_name_al: newNameAl, color_name_en: newNameEn, color_hex: newHex, sort_order: colors?.length ?? 0 });
+    setNewNameAl("");
+    setNewNameEn("");
     setNewHex("#FFFFFF");
   };
 
@@ -111,16 +114,17 @@ const ProductColorsManager = ({ productId }: { productId: string }) => {
         {colors?.map((c) => (
           <div key={c.id} className="flex items-center gap-1.5 bg-muted px-2 py-1 rounded text-xs">
             <div className="w-4 h-4 rounded-full border border-border" style={{ backgroundColor: c.color_hex }} />
-            {c.color_name}
+            {c.color_name_al || c.color_name} / {c.color_name_en || c.color_name}
             <button onClick={() => removeColor.mutate({ id: c.id, product_id: productId })}>
               <X className="h-3 w-3 text-muted-foreground hover:text-destructive" />
             </button>
           </div>
         ))}
       </div>
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2 flex-wrap">
         <Input type="color" value={newHex} onChange={(e) => setNewHex(e.target.value)} className="w-10 h-8 p-0.5" />
-        <Input value={newName} onChange={(e) => setNewName(e.target.value)} placeholder="Emri i ngjyrës" className="h-8 text-xs flex-1" />
+        <Input value={newNameAl} onChange={(e) => setNewNameAl(e.target.value)} placeholder="Emri AL" className="h-8 text-xs flex-1 min-w-[100px]" />
+        <Input value={newNameEn} onChange={(e) => setNewNameEn(e.target.value)} placeholder="Name EN" className="h-8 text-xs flex-1 min-w-[100px]" />
         <Button size="sm" variant="outline" className="h-8 text-xs" onClick={handleAdd}>
           <Plus className="h-3 w-3 mr-1" /> Shto
         </Button>
