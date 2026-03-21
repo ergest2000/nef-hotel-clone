@@ -123,7 +123,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       return { error: null, role: resolvedRole, user: nextUser };
     } catch (error) {
       setLoading(false);
-      return { error: error as Error, role: "user", user: null };
+      return { error: error as Error, role: "user" as AppRole, user: null };
     }
   };
 

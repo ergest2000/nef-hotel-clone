@@ -23,31 +23,44 @@ const Login = () => {
   const { toast } = useToast();
   const { t } = useAuthTexts();
 
-  const resolveRedirectPath = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return "/";
-
-    const privilegedRoles = ["admin", "manager", "editor"] as const;
-    const roleChecks = await Promise.all(
-      privilegedRoles.map(async (role) => {
-        const { data } = await supabase.rpc("has_role", { _user_id: user.id, _role: role });
-        return Boolean(data);
-      })
-    );
-
-    return roleChecks.some(Boolean) ? "/admin" : "/";
-  };
+  const isValidEmail = (value: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    const normalizedEmail = email.trim().toLowerCase();
+    const normalizedPassword = password.trim();
+
+    if (!isValidEmail(normalizedEmail)) {
+      toast({
+        title: "Gabim",
+        description: t("login_invalid_email", "Ju lutem vendosni një email të vlefshëm."),
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (normalizedPassword.length < 6) {
+      toast({
+        title: "Gabim",
+        description: t("login_invalid_password", "Fjalëkalimi duhet të ketë të paktën 6 karaktere."),
+        variant: "destructive",
+      });
+      return;
+    }
+
     setLoading(true);
-    const { error } = await signIn(email, password);
+    const { error, role } = await signIn(normalizedEmail, normalizedPassword);
     setLoading(false);
+
     if (error) {
-      toast({ title: "Gabim", description: error.message, variant: "destructive" });
+      const message = error.message.toLowerCase().includes("invalid login credentials")
+        ? t("login_invalid_credentials", "Email ose fjalëkalim i pasaktë.")
+        : error.message;
+
+      toast({ title: "Gabim", description: message, variant: "destructive" });
     } else {
-      await logAuthEvent(email, "login");
-      const redirectPath = await resolveRedirectPath();
+      await logAuthEvent(normalizedEmail, "login");
+      const redirectPath = ["admin", "manager", "editor"].includes(role) ? "/admin" : "/";
       toast({ title: "Sukses", description: t("login_success", "U identifikuat me sukses!") });
       setTimeout(() => navigate(redirectPath), 500);
     }
@@ -93,7 +106,7 @@ const Login = () => {
                     <label className="text-xs tracking-brand text-muted-foreground uppercase">{t("login_email_label", "E-mail")}</label>
                     <div className="relative">
                       <Mail size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-                      <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} className="pl-10 h-11 border-border bg-background" placeholder={t("ph_email", "your@email.com")} required />
+                       <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} className="pl-10 h-11 border-border bg-background" placeholder={t("ph_email", "your@email.com")} autoComplete="email" required />
                     </div>
                   </div>
 
@@ -101,7 +114,7 @@ const Login = () => {
                     <label className="text-xs tracking-brand text-muted-foreground uppercase">{t("login_password_label", "Password")}</label>
                     <div className="relative">
                       <Lock size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-                      <Input type="password" value={password} onChange={(e) => setPassword(e.target.value)} className="pl-10 h-11 border-border bg-background" placeholder="••••••••" required />
+                       <Input type="password" value={password} onChange={(e) => setPassword(e.target.value)} className="pl-10 h-11 border-border bg-background" placeholder="••••••••" autoComplete="current-password" required />
                     </div>
                   </div>
 
