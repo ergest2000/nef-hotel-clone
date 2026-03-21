@@ -98,7 +98,11 @@ export const AdminSidebar = ({ activePage, onPageChange }: AdminSidebarProps) =>
 
       <SidebarContent className="bg-[hsl(207,56%,25%)]">
         {groups.map((group) => {
-          const items = menuItems.filter((m) => m.group === group.key);
+          const items = menuItems.filter((m) => {
+            if (m.group !== group.key) return false;
+            if (m.roles && !m.roles.includes(role)) return false;
+            return true;
+          });
           if (items.length === 0) return null;
           return (
             <SidebarGroup key={group.key} className="py-1">
