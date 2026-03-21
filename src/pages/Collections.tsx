@@ -105,8 +105,8 @@ const ProductCard = ({ product, isAl, allColors, collectionSlug, t }: {
             <Badge className="text-[10px] bg-primary/90">{t("Personalizuar", "Customizable")}</Badge>
           </div>
         )}
-      </div>
-      <div className="cursor-pointer" onClick={onClick}>
+      </Link>
+      <Link to={`/koleksionet/${collectionSlug}/${product.id}`} className="block">
         <h4 className="text-sm font-semibold text-foreground leading-tight">
           {isAl ? product.title_al : product.title_en}
         </h4>
