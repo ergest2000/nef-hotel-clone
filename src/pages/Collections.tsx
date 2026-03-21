@@ -281,7 +281,7 @@ const Collections = () => {
     return (
       <div className="min-h-screen bg-background flex flex-col">
         <SiteHeader />
-        <div className="max-w-7xl mx-auto px-4 py-12">
+        <div className="max-w-7xl mx-auto px-4 py-12 flex-1">
           <h1 className="text-3xl font-light tracking-wide text-foreground mb-8">
             {t("Koleksionet", "Collections")}
           </h1>
