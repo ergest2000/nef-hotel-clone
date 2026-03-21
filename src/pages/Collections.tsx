@@ -139,11 +139,14 @@ const FilterSection = ({ title, options, selected, onToggle }: {
 // ─── Main Collections Page ───────────────────────────────────────
 const Collections = () => {
   const { isAl } = useLanguage();
+  const { user } = useAuth();
   const { slug } = useParams();
   const { data: collections } = useCollections();
   const { data: allProducts } = useProducts();
   const { data: allColors } = useAllProductColors();
   const { data: allSizes } = useAllProductSizes();
+  const { data: wishlistItems } = useWishlist(user?.id);
+  const toggleWishlist = useToggleWishlist();
 
   const [colorFilters, setColorFilters] = useState<string[]>([]);
   const [sizeFilters, setSizeFilters] = useState<string[]>([]);
