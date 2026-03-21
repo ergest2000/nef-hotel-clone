@@ -17,6 +17,8 @@ import {
   UserCog,
   ScrollText,
   Type,
+  FolderOpen,
+  Package,
 } from "lucide-react";
 import {
   Sidebar,
