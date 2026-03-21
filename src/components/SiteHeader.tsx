@@ -1,10 +1,11 @@
-import { Search, Heart, ShoppingCart, UserPlus, Menu, X, ChevronDown, ChevronUp } from "lucide-react";
-import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Search, Heart, ShoppingCart, UserPlus, Menu, X, ChevronDown, ChevronUp, Package } from "lucide-react";
+import { useState, useRef, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import SlugLink from "@/components/SlugLink";
 import logo from "@/assets/egjeu-logo.png";
 import { useNavMenusByLocation } from "@/hooks/useNavMenus";
 import { useLanguage } from "@/hooks/useLanguage";
+import { useProductSearch } from "@/hooks/useProductSearch";
 
 const productLinks = [
   { label: "Dhomë Gjumi", href: "#" },
@@ -16,10 +17,68 @@ const productLinks = [
   { label: "Restorant", href: "#" },
 ];
 
+// ─── Search Dropdown ────────────────────────────────────────────
+const SearchDropdown = ({ query, isAl, onSelect }: {
+  query: string; isAl: boolean; onSelect: () => void;
+}) => {
+  const { results, hasQuery } = useProductSearch(query);
+  const navigate = useNavigate();
+
+  if (!hasQuery) return null;
+
+  return (
+    <div className="absolute top-full left-0 right-0 mt-1 bg-background border border-border rounded-lg shadow-lg z-50 max-h-[400px] overflow-y-auto">
+      {results.length === 0 ? (
+        <div className="px-4 py-6 text-center text-sm text-muted-foreground">
+          {isAl ? "Nuk u gjetën produkte" : "No products found"}
+        </div>
+      ) : (
+        <div>
+          {results.map((product) => (
+            <button
+              key={product.id}
+              className="w-full flex items-center gap-3 px-4 py-3 hover:bg-muted/50 transition-colors text-left border-b border-border last:border-b-0"
+              onClick={() => {
+                navigate(`/koleksionet/${product.collectionSlug}/${product.id}`);
+                onSelect();
+              }}
+            >
+              <div className="w-12 h-12 rounded bg-muted overflow-hidden flex-shrink-0">
+                {product.image_url ? (
+                  <img src={product.image_url} alt="" className="w-full h-full object-cover" />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center">
+                    <Package className="w-5 h-5 text-muted-foreground/30" />
+                  </div>
+                )}
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="text-sm font-medium text-foreground truncate">
+                  {isAl ? product.title_al : product.title_en || product.title_al}
+                </p>
+                <p className="text-xs text-muted-foreground truncate">
+                  {isAl ? product.collectionTitle_al : product.collectionTitle_en || product.collectionTitle_al}
+                  {product.code ? ` • ${product.code}` : ""}
+                </p>
+              </div>
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
 const SiteHeader = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [desktopMenuOpen, setDesktopMenuOpen] = useState(false);
   const [mobileProductsOpen, setMobileProductsOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchFocused, setSearchFocused] = useState(false);
+  const [mobileSearchQuery, setMobileSearchQuery] = useState("");
+  const [mobileSearchFocused, setMobileSearchFocused] = useState(false);
+  const searchRef = useRef<HTMLDivElement>(null);
+  const mobileSearchRef = useRef<HTMLDivElement>(null);
   const { lang, setLang } = useLanguage();
   const { data: headerMenus } = useNavMenusByLocation("header");
 
@@ -35,6 +94,30 @@ const SiteHeader = () => {
 
   const isAl = lang === "al";
 
+  // Close dropdown on outside click
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (searchRef.current && !searchRef.current.contains(e.target as Node)) {
+        setSearchFocused(false);
+      }
+      if (mobileSearchRef.current && !mobileSearchRef.current.contains(e.target as Node)) {
+        setMobileSearchFocused(false);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
+  const clearDesktopSearch = () => {
+    setSearchQuery("");
+    setSearchFocused(false);
+  };
+
+  const clearMobileSearch = () => {
+    setMobileSearchQuery("");
+    setMobileSearchFocused(false);
+  };
+
   return (
     <header className="w-full sticky top-0 z-50 bg-background">
       {/* === DESKTOP === */}
@@ -49,9 +132,23 @@ const SiteHeader = () => {
             <span className="text-muted-foreground shrink-0">
               CONTACT: <strong className="text-foreground">+355 69 000 0000</strong>
             </span>
-            <div className="relative flex-1 mx-auto max-w-sm">
-              <input type="text" placeholder={isAl ? "Kerko per produkte ketu" : "Search for products here"} className="w-full h-8 pl-4 pr-9 text-[13px] border border-border bg-background rounded-full focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-muted-foreground/60 text-center placeholder:text-center" />
+            <div className="relative flex-1 mx-auto max-w-sm" ref={searchRef}>
+              <input
+                type="text"
+                placeholder={isAl ? "Kerko per produkte ketu" : "Search for products here"}
+                className="w-full h-8 pl-4 pr-9 text-[13px] border border-border bg-background rounded-full focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-muted-foreground/60 text-center placeholder:text-center"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onFocus={() => setSearchFocused(true)}
+              />
               <Search size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+              {searchFocused && (
+                <SearchDropdown
+                  query={searchQuery}
+                  isAl={isAl}
+                  onSelect={clearDesktopSearch}
+                />
+              )}
             </div>
             <div className="flex items-center gap-7 shrink-0 ml-auto">
               <button className="flex items-center gap-1.5 text-muted-foreground hover:text-foreground transition-colors"><Heart size={15} /> <span>0</span></button>
@@ -106,10 +203,25 @@ const SiteHeader = () => {
             </div>
           </div>
         </div>
-        <div className="border-b border-border px-4 py-2">
+        <div className="border-b border-border px-4 py-2" ref={mobileSearchRef}>
           <div className="relative w-full">
-            <input type="text" inputMode="search" placeholder={isAl ? "Kërko për produkte këtu..." : "Search for products here..."} className="w-full h-11 pl-4 pr-12 text-[16px] border border-border bg-background rounded-full focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-muted-foreground/50" />
+            <input
+              type="text"
+              inputMode="search"
+              placeholder={isAl ? "Kërko për produkte këtu..." : "Search for products here..."}
+              className="w-full h-11 pl-4 pr-12 text-[16px] border border-border bg-background rounded-full focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-muted-foreground/50"
+              value={mobileSearchQuery}
+              onChange={(e) => setMobileSearchQuery(e.target.value)}
+              onFocus={() => setMobileSearchFocused(true)}
+            />
             <Search size={18} className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground" />
+            {mobileSearchFocused && (
+              <SearchDropdown
+                query={mobileSearchQuery}
+                isAl={isAl}
+                onSelect={clearMobileSearch}
+              />
+            )}
           </div>
         </div>
         {mobileMenuOpen && (
