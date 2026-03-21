@@ -423,6 +423,9 @@ const Collections = () => {
                       allColors={allColors}
                       collectionSlug={slug ?? ""}
                       t={t}
+                      user={user}
+                      wishlistItems={wishlistItems ?? []}
+                      toggleWishlist={toggleWishlist}
                     />
                   ))}
                 </div>
