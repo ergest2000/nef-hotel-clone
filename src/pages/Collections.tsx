@@ -73,7 +73,7 @@ const ProductCard = ({ product, isAl, allColors, collectionSlug, t }: {
 
   return (
     <div className="group">
-      <div className="relative aspect-[4/5] bg-muted overflow-hidden mb-3 cursor-pointer" onClick={onClick}>
+      <Link to={`/koleksionet/${collectionSlug}/${product.id}`} className="relative aspect-[4/5] bg-muted overflow-hidden mb-3 block">
         {product.image_url ? (
           <img
             src={product.image_url}
