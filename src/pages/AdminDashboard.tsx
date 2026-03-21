@@ -238,6 +238,10 @@ const AdminDashboard = () => {
         return <AdminAuthTexts />;
       case "slugs":
         return <AdminSlugManager />;
+      case "collections":
+        return <AdminCollectionsManager />;
+      case "products":
+        return <AdminProductsManager />;
       case "design":
         return <AdminDesignSettings />;
       case "media":
