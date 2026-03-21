@@ -1,11 +1,13 @@
 import { useState, useMemo } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useParams, useNavigate } from "react-router-dom";
 import {
   useCollections, useProducts,
   useAllProductColors, useAllProductSizes,
+  useWishlist, useToggleWishlist,
   type ProductColor, type ProductSize,
 } from "@/hooks/useCollections";
 import { useLanguage } from "@/hooks/useLanguage";
+import { useAuth } from "@/hooks/useAuth";
 import SiteHeader from "@/components/SiteHeader";
 import SiteFooter from "@/components/SiteFooter";
 import { Badge } from "@/components/ui/badge";
