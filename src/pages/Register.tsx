@@ -45,6 +45,7 @@ const Register = () => {
         email,
         password,
         options: {
+          emailRedirectTo: window.location.origin,
           data: {
             full_name: fullName,
             business_name: businessName,

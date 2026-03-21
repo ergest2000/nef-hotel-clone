@@ -31,45 +31,57 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [role, setRole] = useState<AppRole>("user");
   const [loading, setLoading] = useState(true);
 
-  const checkRole = async (userId: string) => {
-    // Check roles in priority order using the security definer function
-    for (const r of ["admin", "manager", "editor"] as const) {
-      const { data } = await supabase.rpc("has_role", { _user_id: userId, _role: r });
-      if (data) {
-        setRole(r);
-        setIsAdmin(r === "admin");
-        return;
-      }
+  const checkRole = async (userId: string): Promise<AppRole> => {
+    const priorityRoles = ["admin", "manager", "editor"] as const;
+    const results = await Promise.all(
+      priorityRoles.map(async (candidateRole) => {
+        const { data } = await supabase.rpc("has_role", { _user_id: userId, _role: candidateRole });
+        return { candidateRole, hasRole: Boolean(data) };
+      })
+    );
+
+    const matchedRole = results.find((result) => result.hasRole)?.candidateRole;
+    return matchedRole ?? "user";
+  };
+
+  const applySessionState = async (nextSession: Session | null) => {
+    setSession(nextSession);
+    setUser(nextSession?.user ?? null);
+
+    if (!nextSession?.user) {
+      setIsAdmin(false);
+      setRole("user");
+      setLoading(false);
+      return;
     }
-    setRole("user");
-    setIsAdmin(false);
+
+    const resolvedRole = await checkRole(nextSession.user.id);
+    setRole(resolvedRole);
+    setIsAdmin(resolvedRole === "admin");
+    setLoading(false);
   };
 
   useEffect(() => {
+    let isMounted = true;
+
+    const syncSession = async (nextSession: Session | null) => {
+      if (!isMounted) return;
+      setLoading(true);
+      await applySessionState(nextSession);
+    };
+
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (_event, session) => {
-        setSession(session);
-        setUser(session?.user ?? null);
-        if (session?.user) {
-          setTimeout(() => checkRole(session.user.id), 0);
-        } else {
-          setIsAdmin(false);
-          setRole("user");
-        }
-        setLoading(false);
+      async (_event, nextSession) => {
+        await syncSession(nextSession);
       }
     );
 
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      if (session?.user) {
-        checkRole(session.user.id);
-      }
-      setLoading(false);
-    });
+    void supabase.auth.getSession().then(({ data: { session: nextSession } }) => syncSession(nextSession));
 
-    return () => subscription.unsubscribe();
+    return () => {
+      isMounted = false;
+      subscription.unsubscribe();
+    };
   }, []);
 
   const signIn = async (email: string, password: string) => {

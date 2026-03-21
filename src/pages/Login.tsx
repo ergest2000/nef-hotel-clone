@@ -23,6 +23,21 @@ const Login = () => {
   const { toast } = useToast();
   const { t } = useAuthTexts();
 
+  const resolveRedirectPath = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return "/";
+
+    const privilegedRoles = ["admin", "manager", "editor"] as const;
+    const roleChecks = await Promise.all(
+      privilegedRoles.map(async (role) => {
+        const { data } = await supabase.rpc("has_role", { _user_id: user.id, _role: role });
+        return Boolean(data);
+      })
+    );
+
+    return roleChecks.some(Boolean) ? "/admin" : "/";
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -32,8 +47,9 @@ const Login = () => {
       toast({ title: "Gabim", description: error.message, variant: "destructive" });
     } else {
       await logAuthEvent(email, "login");
+      const redirectPath = await resolveRedirectPath();
       toast({ title: "Sukses", description: t("login_success", "U identifikuat me sukses!") });
-      setTimeout(() => navigate("/admin"), 500);
+      setTimeout(() => navigate(redirectPath), 500);
     }
   };
 
