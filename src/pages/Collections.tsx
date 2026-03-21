@@ -278,7 +278,7 @@ const Collections = () => {
   const [sizeFilters, setSizeFilters] = useState<string[]>([]);
   const [compositionFilters, setCompositionFilters] = useState<string[]>([]);
   const [stockFilter, setStockFilter] = useState<string[]>([]);
-  const [selectedProduct, setSelectedProduct] = useState<any>(null);
+  
   const [currentPage, setCurrentPage] = useState(1);
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
 
