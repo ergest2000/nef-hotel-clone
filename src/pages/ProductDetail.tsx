@@ -377,15 +377,20 @@ const ProductDetail = () => {
 
             {/* Stock + Customizable indicators */}
             <div className="flex items-center gap-3 flex-wrap">
-              <Badge
-                variant={product.in_stock ? "default" : "destructive"}
-                className="text-xs px-3 py-1"
-              >
-                {product.in_stock ? t("I DISPONUESHËM", "AVAILABLE") : t("JO NË STOK", "OUT OF STOCK")}
-              </Badge>
+              {product.in_stock ? (
+                <div className="flex items-center gap-1.5 text-xs font-semibold tracking-wider text-green-700 bg-green-50 border border-green-200 rounded-sm px-3 py-1.5">
+                  <span className="w-2 h-2 rounded-full bg-green-500" />
+                  {t("NË STOK", "IN STOCK")}
+                </div>
+              ) : (
+                <div className="flex items-center gap-1.5 text-xs font-semibold tracking-wider text-red-700 bg-red-50 border border-red-200 rounded-sm px-3 py-1.5">
+                  <span className="w-2 h-2 rounded-full bg-red-500" />
+                  {t("NUK KA STOK", "OUT OF STOCK")}
+                </div>
+              )}
               {product.customizable && (
-                <div className="flex items-center gap-1.5 text-xs text-primary font-medium">
-                  <Palette className="h-4 w-4" />
+                <div className="flex items-center gap-1.5 text-xs font-semibold tracking-wider text-primary bg-primary/5 border border-primary/20 rounded-sm px-3 py-1.5">
+                  <Palette className="h-3.5 w-3.5" />
                   {t("I PERSONALIZUESHËM", "CUSTOMIZABLE")}
                 </div>
               )}
