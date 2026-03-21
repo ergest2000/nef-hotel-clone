@@ -279,7 +279,7 @@ const Collections = () => {
   // ─── Collections listing (no slug) ───
   if (!slug || !currentCollection) {
     return (
-      <div className="min-h-screen bg-background">
+      <div className="min-h-screen bg-background flex flex-col">
         <SiteHeader />
         <div className="max-w-7xl mx-auto px-4 py-12">
           <h1 className="text-3xl font-light tracking-wide text-foreground mb-8">
