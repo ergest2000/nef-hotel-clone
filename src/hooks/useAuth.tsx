@@ -32,15 +32,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [loading, setLoading] = useState(true);
 
   const checkRole = async (userId: string) => {
-    const { data } = await supabase
-      .from("user_roles")
-      .select("role")
-      .eq("user_id", userId)
-      .limit(1)
-      .maybeSingle();
-    const r = (data?.role as AppRole) || "user";
-    setRole(r);
-    setIsAdmin(r === "admin");
+    // Check roles in priority order using the security definer function
+    for (const r of ["admin", "manager", "editor"] as const) {
+      const { data } = await supabase.rpc("has_role", { _user_id: userId, _role: r });
+      if (data) {
+        setRole(r);
+        setIsAdmin(r === "admin");
+        return;
+      }
+    }
+    setRole("user");
+    setIsAdmin(false);
   };
 
   useEffect(() => {
