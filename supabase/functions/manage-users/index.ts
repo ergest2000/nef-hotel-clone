@@ -23,32 +23,41 @@ Deno.serve(async (req) => {
     const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const anonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
 
-    // Verify caller is admin
+    // Verify caller using getClaims
     const callerClient = createClient(supabaseUrl, anonKey, {
       global: { headers: { authorization: authHeader } },
     });
-    const { data: { user: caller } } = await callerClient.auth.getUser();
-    if (!caller) {
+    
+    const token = authHeader.replace("Bearer ", "");
+    const { data: claimsData, error: claimsError } = await callerClient.auth.getClaims(token);
+    if (claimsError || !claimsData?.claims) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
         status: 401,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    const { data: isAdmin } = await callerClient.rpc("has_role", {
-      _user_id: caller.id,
+    const callerId = claimsData.claims.sub as string;
+
+    // Check admin or manager role using service role client
+    const adminClient = createClient(supabaseUrl, serviceRoleKey, {
+      auth: { autoRefreshToken: false, persistSession: false },
+    });
+
+    const { data: hasAdminRole } = await adminClient.rpc("has_role", {
+      _user_id: callerId,
       _role: "admin",
     });
-    if (!isAdmin) {
+    const { data: hasManagerRole } = await adminClient.rpc("has_role", {
+      _user_id: callerId,
+      _role: "manager",
+    });
+    if (!hasAdminRole && !hasManagerRole) {
       return new Response(JSON.stringify({ error: "Forbidden" }), {
         status: 403,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
-
-    const adminClient = createClient(supabaseUrl, serviceRoleKey, {
-      auth: { autoRefreshToken: false, persistSession: false },
-    });
 
     const { action, userId, role } = await req.json();
 
