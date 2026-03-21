@@ -5,8 +5,10 @@ import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Trash2, Eye, ShieldBan, ShieldCheck, Download } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/useAuth";
 
 interface UserItem {
   id: string;
@@ -25,52 +27,62 @@ interface UserItem {
   roles: string[];
 }
 
+const ROLE_OPTIONS = [
+  { value: "user", label: "Client" },
+  { value: "editor", label: "Editor" },
+  { value: "manager", label: "Manager" },
+  { value: "admin", label: "Admin" },
+];
+
+const ROLE_COLORS: Record<string, string> = {
+  admin: "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200",
+  manager: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200",
+  editor: "bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200",
+  user: "bg-muted text-muted-foreground",
+};
+
 export const AdminUsers = () => {
   const { toast } = useToast();
+  const { role: myRole } = useAuth();
   const queryClient = useQueryClient();
   const [selected, setSelected] = useState<UserItem | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
 
+  const callApi = async (body: Record<string, unknown>) => {
+    const { data: { session } } = await supabase.auth.getSession();
+    const res = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/manage-users`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${session?.access_token}`,
+      },
+      body: JSON.stringify(body),
+    });
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.error || "Action failed");
+    }
+    return res.json();
+  };
+
   const { data: users = [], isLoading } = useQuery({
     queryKey: ["admin-users"],
     queryFn: async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      const res = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/manage-users`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${session?.access_token}`,
-        },
-        body: JSON.stringify({ action: "list" }),
-      });
-      if (!res.ok) throw new Error("Failed to load users");
-      const json = await res.json();
+      const json = await callApi({ action: "list" });
       return json.users as UserItem[];
     },
   });
 
   const actionMutation = useMutation({
-    mutationFn: async ({ action, userId }: { action: string; userId: string }) => {
-      const { data: { session } } = await supabase.auth.getSession();
-      const res = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/manage-users`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${session?.access_token}`,
-        },
-        body: JSON.stringify({ action, userId }),
-      });
-      if (!res.ok) {
-        const err = await res.json();
-        throw new Error(err.error || "Action failed");
-      }
-    },
-    onSuccess: (_, { action }) => {
+    mutationFn: async (body: Record<string, unknown>) => callApi(body),
+    onSuccess: (_, body) => {
       queryClient.invalidateQueries({ queryKey: ["admin-users"] });
+      const action = body.action as string;
       const msgs: Record<string, string> = {
         ban: "Përdoruesi u bllokua!",
         unban: "Përdoruesi u aktivizua!",
         delete: "Përdoruesi u fshi!",
+        set_role: "Roli u ndryshua!",
       };
       toast({ title: msgs[action] || "Sukses!" });
       setConfirmDelete(null);
@@ -80,14 +92,13 @@ export const AdminUsers = () => {
     },
   });
 
-  const isBanned = (user: UserItem) => {
-    if (!user.banned_until) return false;
-    return new Date(user.banned_until) > new Date();
-  };
+  const getUserRole = (u: UserItem) => u.roles[0] || "user";
+  const isBanned = (u: UserItem) => u.banned_until ? new Date(u.banned_until) > new Date() : false;
+  const canManageRoles = myRole === "admin";
 
   const exportCSV = () => {
     if (!users.length) return;
-    const headers = ["Email", "Full Name", "Business", "Country", "City", "Phone", "Status", "Registered", "Last Login"];
+    const headers = ["Email", "Full Name", "Business", "Country", "City", "Phone", "Role", "Status", "Registered", "Last Login"];
     const rows = users.map((u) => [
       u.email,
       u.profile?.full_name || "",
@@ -95,6 +106,7 @@ export const AdminUsers = () => {
       u.profile?.country || "",
       u.profile?.city || "",
       u.profile?.phone || "",
+      getUserRole(u),
       isBanned(u) ? "Blocked" : "Active",
       new Date(u.created_at).toLocaleDateString("sq-AL"),
       u.last_sign_in_at ? new Date(u.last_sign_in_at).toLocaleDateString("sq-AL") : "Never",
@@ -129,40 +141,52 @@ export const AdminUsers = () => {
               <TableHead>Emri</TableHead>
               <TableHead>Email</TableHead>
               <TableHead>Biznesi</TableHead>
-              <TableHead>Vendi</TableHead>
+              <TableHead>Roli</TableHead>
               <TableHead>Statusi</TableHead>
               <TableHead>Regjistrimi</TableHead>
-              <TableHead>Login i fundit</TableHead>
               <TableHead className="w-[120px]">Veprime</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {users.length === 0 ? (
-              <TableRow><TableCell colSpan={8} className="text-center text-muted-foreground py-8">Nuk ka përdorues.</TableCell></TableRow>
+              <TableRow><TableCell colSpan={7} className="text-center text-muted-foreground py-8">Nuk ka përdorues.</TableCell></TableRow>
             ) : (
               users.map((u) => {
                 const banned = isBanned(u);
+                const userRole = getUserRole(u);
                 return (
                   <TableRow key={u.id}>
                     <TableCell className="font-medium">{u.profile?.full_name || "—"}</TableCell>
                     <TableCell>{u.email}</TableCell>
                     <TableCell>{u.profile?.business_name || "—"}</TableCell>
-                    <TableCell className="text-xs">
-                      {u.profile?.country || "—"}{u.profile?.city ? `, ${u.profile.city}` : ""}
+                    <TableCell>
+                      {canManageRoles ? (
+                        <Select
+                          value={userRole}
+                          onValueChange={(val) => actionMutation.mutate({ action: "set_role", userId: u.id, role: val })}
+                        >
+                          <SelectTrigger className="h-7 w-[110px] text-xs">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {ROLE_OPTIONS.map((r) => (
+                              <SelectItem key={r.value} value={r.value} className="text-xs">{r.label}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      ) : (
+                        <Badge className={`text-[10px] ${ROLE_COLORS[userRole] || ROLE_COLORS.user}`}>
+                          {ROLE_OPTIONS.find((r) => r.value === userRole)?.label || "Client"}
+                        </Badge>
+                      )}
                     </TableCell>
                     <TableCell>
                       <Badge variant={banned ? "destructive" : "default"} className="text-[10px]">
                         {banned ? "Blocked" : "Active"}
                       </Badge>
-                      {u.roles.includes("admin") && (
-                        <Badge variant="outline" className="ml-1 text-[10px]">Admin</Badge>
-                      )}
                     </TableCell>
                     <TableCell className="text-muted-foreground text-xs">
                       {new Date(u.created_at).toLocaleDateString("sq-AL")}
-                    </TableCell>
-                    <TableCell className="text-muted-foreground text-xs">
-                      {u.last_sign_in_at ? new Date(u.last_sign_in_at).toLocaleString("sq-AL") : "—"}
                     </TableCell>
                     <TableCell>
                       <div className="flex gap-1">
@@ -178,9 +202,11 @@ export const AdminUsers = () => {
                             <ShieldBan className="h-3.5 w-3.5" />
                           </Button>
                         )}
-                        <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={() => setConfirmDelete(u.id)} title="Fshi">
-                          <Trash2 className="h-3.5 w-3.5" />
-                        </Button>
+                        {canManageRoles && (
+                          <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={() => setConfirmDelete(u.id)} title="Fshi">
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </Button>
+                        )}
                       </div>
                     </TableCell>
                   </TableRow>
@@ -202,11 +228,10 @@ export const AdminUsers = () => {
               <div><p className="text-xs text-muted-foreground uppercase tracking-wide">Biznesi</p><p className="text-sm">{selected.profile?.business_name || "—"}</p></div>
               <div><p className="text-xs text-muted-foreground uppercase tracking-wide">Telefoni</p><p className="text-sm">{selected.profile?.phone || "—"}</p></div>
               <div><p className="text-xs text-muted-foreground uppercase tracking-wide">Vendi</p><p className="text-sm">{selected.profile?.country || "—"}, {selected.profile?.city || "—"}</p></div>
+              <div><p className="text-xs text-muted-foreground uppercase tracking-wide">Roli</p><p className="text-sm font-medium">{ROLE_OPTIONS.find((r) => r.value === getUserRole(selected))?.label || "Client"}</p></div>
               <div><p className="text-xs text-muted-foreground uppercase tracking-wide">Statusi</p><p className="text-sm">{isBanned(selected) ? "🔴 Blocked" : "🟢 Active"}</p></div>
-              <div><p className="text-xs text-muted-foreground uppercase tracking-wide">Email Confirmed</p><p className="text-sm">{selected.email_confirmed_at ? new Date(selected.email_confirmed_at).toLocaleString("sq-AL") : "Jo"}</p></div>
               <div><p className="text-xs text-muted-foreground uppercase tracking-wide">Regjistruar më</p><p className="text-sm">{new Date(selected.created_at).toLocaleString("sq-AL")}</p></div>
               <div><p className="text-xs text-muted-foreground uppercase tracking-wide">Login i fundit</p><p className="text-sm">{selected.last_sign_in_at ? new Date(selected.last_sign_in_at).toLocaleString("sq-AL") : "Asnjëherë"}</p></div>
-              <div><p className="text-xs text-muted-foreground uppercase tracking-wide">Rolet</p><p className="text-sm">{selected.roles.length ? selected.roles.join(", ") : "user"}</p></div>
             </div>
           )}
         </DialogContent>
