@@ -272,6 +272,8 @@ export type Database = {
         Row: {
           color_hex: string
           color_name: string
+          color_name_al: string
+          color_name_en: string
           created_at: string
           id: string
           product_id: string
@@ -280,6 +282,8 @@ export type Database = {
         Insert: {
           color_hex?: string
           color_name?: string
+          color_name_al?: string
+          color_name_en?: string
           created_at?: string
           id?: string
           product_id: string
@@ -288,6 +292,8 @@ export type Database = {
         Update: {
           color_hex?: string
           color_name?: string
+          color_name_al?: string
+          color_name_en?: string
           created_at?: string
           id?: string
           product_id?: string
@@ -689,6 +695,35 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      wishlists: {
+        Row: {
+          created_at: string
+          id: string
+          product_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          product_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          product_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "wishlists_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {

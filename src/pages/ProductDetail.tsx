@@ -1,20 +1,56 @@
-import { useState, useMemo } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useState, useMemo, useCallback } from "react";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import {
   useCollections, useProducts, useProductImages,
   useAllProductColors, useAllProductSizes,
+  useWishlist, useToggleWishlist,
   type ProductColor, type ProductSize,
 } from "@/hooks/useCollections";
 import { useLanguage } from "@/hooks/useLanguage";
+import { useAuth } from "@/hooks/useAuth";
 import SiteHeader from "@/components/SiteHeader";
 import SiteFooter from "@/components/SiteFooter";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { Heart, ShoppingBag, Package, Palette, ChevronLeft, ChevronRight } from "lucide-react";
+import { Heart, ShoppingBag, Package, Palette, ChevronLeft, ChevronRight, Search, X } from "lucide-react";
+
+// ─── Image Lightbox ─────────────────────────────────────────────
+const ImageLightbox = ({ images, startIndex, onClose }: { images: string[]; startIndex: number; onClose: () => void }) => {
+  const [idx, setIdx] = useState(startIndex);
+  const goPrev = () => setIdx((i) => (i > 0 ? i - 1 : images.length - 1));
+  const goNext = () => setIdx((i) => (i < images.length - 1 ? i + 1 : 0));
+
+  return (
+    <Dialog open onOpenChange={onClose}>
+      <DialogContent className="max-w-[95vw] max-h-[95vh] p-0 bg-black/95 border-none flex items-center justify-center">
+        <button onClick={onClose} className="absolute top-4 right-4 z-50 w-10 h-10 rounded-full bg-background/20 flex items-center justify-center hover:bg-background/40 transition-colors">
+          <X className="h-5 w-5 text-white" />
+        </button>
+        <div className="relative w-full h-full flex items-center justify-center min-h-[60vh]">
+          <img src={images[idx]} alt="" className="max-w-full max-h-[85vh] object-contain" />
+          {images.length > 1 && (
+            <>
+              <button onClick={goPrev} className="absolute left-4 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-background/20 flex items-center justify-center hover:bg-background/40 transition-colors">
+                <ChevronLeft className="h-6 w-6 text-white" />
+              </button>
+              <button onClick={goNext} className="absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-background/20 flex items-center justify-center hover:bg-background/40 transition-colors">
+                <ChevronRight className="h-6 w-6 text-white" />
+              </button>
+            </>
+          )}
+        </div>
+        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 text-white/60 text-sm">
+          {idx + 1} / {images.length}
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+};
 
 // ─── Product Image Gallery ──────────────────────────────────────
-const ProductGallery = ({ mainImage, productId }: { mainImage?: string | null; productId: string }) => {
+const ProductGallery = ({ mainImage, productId, onOpenLightbox }: { mainImage?: string | null; productId: string; onOpenLightbox: (images: string[], index: number) => void }) => {
   const { data: extraImages } = useProductImages(productId);
   const allImages = useMemo(() => {
     const imgs: string[] = [];
@@ -40,27 +76,26 @@ const ProductGallery = ({ mainImage, productId }: { mainImage?: string | null; p
 
   return (
     <div className="space-y-4">
-      {/* Main image */}
       <div className="relative aspect-square bg-muted overflow-hidden group">
         <img src={allImages[selected]} alt="" className="w-full h-full object-cover" />
+        {/* Zoom icon */}
+        <button
+          onClick={() => onOpenLightbox(allImages, selected)}
+          className="absolute top-3 right-3 w-9 h-9 rounded-full bg-background/80 border border-border flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-background"
+        >
+          <Search className="h-4 w-4 text-foreground" />
+        </button>
         {allImages.length > 1 && (
           <>
-            <button
-              onClick={goPrev}
-              className="absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-background/80 border border-border flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
-            >
+            <button onClick={goPrev} className="absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-background/80 border border-border flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
               <ChevronLeft className="h-4 w-4 text-foreground" />
             </button>
-            <button
-              onClick={goNext}
-              className="absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-background/80 border border-border flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
-            >
+            <button onClick={goNext} className="absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-background/80 border border-border flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
               <ChevronRight className="h-4 w-4 text-foreground" />
             </button>
           </>
         )}
       </div>
-      {/* Thumbnails */}
       {allImages.length > 1 && (
         <div className="flex gap-2 overflow-x-auto pb-1 snap-x">
           {allImages.map((img, i) => (
@@ -102,19 +137,10 @@ const RelatedProducts = ({ collectionId, currentProductId, isAl, collectionSlug 
         </h2>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
           {related.map((p) => (
-            <Link
-              key={p.id}
-              to={`/koleksionet/${collectionSlug}/${p.id}`}
-              className="group"
-            >
+            <Link key={p.id} to={`/koleksionet/${collectionSlug}/${p.id}`} className="group">
               <div className="aspect-square bg-muted overflow-hidden mb-3">
                 {p.image_url ? (
-                  <img
-                    src={p.image_url}
-                    alt={isAl ? p.title_al : p.title_en}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                    loading="lazy"
-                  />
+                  <img src={p.image_url} alt={isAl ? p.title_al : p.title_en} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" />
                 ) : (
                   <div className="flex items-center justify-center h-full">
                     <Package className="h-10 w-10 text-muted-foreground/20" />
@@ -124,16 +150,6 @@ const RelatedProducts = ({ collectionId, currentProductId, isAl, collectionSlug 
               <p className="text-sm font-medium text-foreground group-hover:text-primary transition-colors line-clamp-2">
                 {isAl ? p.title_al : p.title_en}
               </p>
-              {p.composition_al && (
-                <p className="text-xs text-muted-foreground mt-0.5">
-                  {isAl ? p.composition_al : p.composition_en}
-                </p>
-              )}
-              {p.dimensions_al && (
-                <p className="text-xs text-muted-foreground">
-                  {t("Përmasa:", "Size:")} {isAl ? p.dimensions_al : p.dimensions_en}
-                </p>
-              )}
             </Link>
           ))}
         </div>
@@ -146,24 +162,38 @@ const RelatedProducts = ({ collectionId, currentProductId, isAl, collectionSlug 
 const ProductDetail = () => {
   const { slug, productId } = useParams();
   const { isAl } = useLanguage();
+  const { user } = useAuth();
+  const navigate = useNavigate();
   const { data: collections } = useCollections();
   const { data: allProducts } = useProducts();
   const { data: allColors } = useAllProductColors();
   const { data: allSizes } = useAllProductSizes();
-  const [wishlisted, setWishlisted] = useState(false);
+  const { data: wishlistItems } = useWishlist(user?.id);
+  const toggleWishlist = useToggleWishlist();
+
+  const [lightbox, setLightbox] = useState<{ images: string[]; index: number } | null>(null);
 
   const t = (al: string, en: string) => (isAl ? al : en);
 
   const product = allProducts?.find((p) => p.id === productId);
   const collection = collections?.find((c) => c.slug === slug);
-
-  // Find parent collection for breadcrumb
   const parentCollection = collection?.parent_id
     ? collections?.find((c) => c.id === collection.parent_id)
     : null;
 
   const productColors = allColors?.filter((c) => c.product_id === productId) ?? [];
   const productSizes = allSizes?.filter((s) => s.product_id === productId) ?? [];
+
+  const isWishlisted = wishlistItems?.some((w) => w.product_id === productId) ?? false;
+
+  const handleWishlistClick = useCallback(() => {
+    if (!user) {
+      navigate("/login");
+      return;
+    }
+    if (!productId) return;
+    toggleWishlist.mutate({ userId: user.id, productId, isWishlisted });
+  }, [user, productId, isWishlisted, navigate, toggleWishlist]);
 
   if (!product) {
     return (
@@ -222,7 +252,11 @@ const ProductDetail = () => {
       <div className="max-w-7xl mx-auto px-4 py-8 md:py-12">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12">
           {/* Left: Gallery */}
-          <ProductGallery mainImage={product.image_url} productId={product.id} />
+          <ProductGallery
+            mainImage={product.image_url}
+            productId={product.id}
+            onOpenLightbox={(images, index) => setLightbox({ images, index })}
+          />
 
           {/* Right: Info */}
           <div className="space-y-6">
@@ -243,20 +277,23 @@ const ProductDetail = () => {
               {isAl ? product.description_al : product.description_en}
             </p>
 
-            {/* Colors */}
+            {/* Colors as swatches */}
             {productColors.length > 0 && (
               <div>
                 <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
                   {t("Ngjyrat", "Colors")}
                 </p>
-                <div className="flex flex-wrap gap-2">
+                <div className="flex flex-wrap gap-3">
                   {productColors.map((c) => (
-                    <div key={c.id} className="flex items-center gap-1.5 px-3 py-1.5 bg-muted rounded text-xs">
+                    <div key={c.id} className="flex flex-col items-center gap-1">
                       <div
-                        className="w-4 h-4 rounded-full border border-border"
+                        className="w-8 h-8 rounded-full border-2 border-border shadow-sm"
                         style={{ backgroundColor: c.color_hex }}
+                        title={isAl ? (c.color_name_al || c.color_name) : (c.color_name_en || c.color_name)}
                       />
-                      {c.color_name}
+                      <span className="text-[10px] text-muted-foreground">
+                        {isAl ? (c.color_name_al || c.color_name) : (c.color_name_en || c.color_name)}
+                      </span>
                     </div>
                   ))}
                 </div>
@@ -279,53 +316,31 @@ const ProductDetail = () => {
               </div>
             )}
 
-            {/* Info Table */}
-            <div className="border border-border overflow-hidden rounded-sm">
-              <table className="w-full text-sm">
-                <tbody>
-                  {(product.box_quantity ?? 0) > 0 && (
-                    <tr className="border-b border-border">
-                      <td className="px-4 py-2.5 bg-muted/50 font-medium text-foreground w-1/2">
-                        {t("KUTI", "BOX")}
-                      </td>
-                      <td className="px-4 py-2.5 text-foreground">{product.box_quantity}</td>
-                    </tr>
-                  )}
-                  {(product.pieces_per_box ?? 0) > 0 && (
-                    <tr className="border-b border-border">
-                      <td className="px-4 py-2.5 bg-muted/50 font-medium text-foreground">
-                        {t("COPË PËR KUTI", "PIECES PER BOX")}
-                      </td>
-                      <td className="px-4 py-2.5 text-foreground">{product.pieces_per_box}</td>
-                    </tr>
-                  )}
-                  {(product.weight_gsm ?? 0) > 0 && (
-                    <tr className="border-b border-border">
-                      <td className="px-4 py-2.5 bg-muted/50 font-medium text-foreground">
-                        {t("PESHA", "WEIGHT")}
-                      </td>
-                      <td className="px-4 py-2.5 text-foreground">{product.weight_gsm} gsm</td>
-                    </tr>
-                  )}
-                  <tr className="border-b border-border">
-                    <td className="px-4 py-2.5 bg-muted/50 font-medium text-foreground">
-                      {t("PËRBËRJA", "COMPOSITION")}
-                    </td>
-                    <td className="px-4 py-2.5 text-foreground">
-                      {isAl ? product.composition_al : product.composition_en}
-                    </td>
-                  </tr>
-                  <tr>
-                    <td className="px-4 py-2.5 bg-muted/50 font-medium text-foreground">
-                      {t("DIMENSIONET", "DIMENSIONS")}
-                    </td>
-                    <td className="px-4 py-2.5 text-foreground">
-                      {isAl ? product.dimensions_al : product.dimensions_en}
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
+            {/* Info Table - Only KUTI and COPË PËR KUTI */}
+            {((product.box_quantity ?? 0) > 0 || (product.pieces_per_box ?? 0) > 0) && (
+              <div className="border border-border overflow-hidden rounded-sm">
+                <table className="w-full text-sm">
+                  <tbody>
+                    {(product.box_quantity ?? 0) > 0 && (
+                      <tr className="border-b border-border last:border-b-0">
+                        <td className="px-4 py-2.5 bg-muted/50 font-medium text-foreground w-1/2">
+                          {t("KUTI", "BOX")}
+                        </td>
+                        <td className="px-4 py-2.5 text-foreground">{product.box_quantity}</td>
+                      </tr>
+                    )}
+                    {(product.pieces_per_box ?? 0) > 0 && (
+                      <tr>
+                        <td className="px-4 py-2.5 bg-muted/50 font-medium text-foreground">
+                          {t("COPË PËR KUTI", "PIECES PER BOX")}
+                        </td>
+                        <td className="px-4 py-2.5 text-foreground">{product.pieces_per_box}</td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            )}
 
             {/* Stock + Customizable indicators */}
             <div className="flex items-center gap-3 flex-wrap">
@@ -352,10 +367,11 @@ const ProductDetail = () => {
               <Button
                 variant="outline"
                 className="w-full gap-2 rounded-sm h-12 text-sm tracking-wider"
-                onClick={() => setWishlisted(!wishlisted)}
+                onClick={handleWishlistClick}
+                disabled={toggleWishlist.isPending}
               >
-                <Heart className={`h-4 w-4 ${wishlisted ? "fill-primary text-primary" : ""}`} />
-                {wishlisted
+                <Heart className={`h-4 w-4 ${isWishlisted ? "fill-primary text-primary" : ""}`} />
+                {isWishlisted
                   ? t("HEQUR NGA TË PREFERUARAT", "REMOVE FROM WISHLIST")
                   : t("SHTO TEK TË PREFERUARAT", "ADD TO WISHLIST")}
               </Button>
@@ -391,7 +407,6 @@ const ProductDetail = () => {
                 </AccordionTrigger>
                 <AccordionContent>
                   <div className="text-sm text-muted-foreground space-y-2">
-                    {/* Auto-generated specs from product data */}
                     {(product.weight_gsm ?? 0) > 0 && (
                       <p><span className="font-medium text-foreground">{t("Pesha:", "Weight:")}</span> {product.weight_gsm} gsm</p>
                     )}
@@ -404,7 +419,7 @@ const ProductDetail = () => {
                     {productColors.length > 0 && (
                       <p>
                         <span className="font-medium text-foreground">{t("Ngjyrat:", "Colors:")}</span>{" "}
-                        {productColors.map((c) => c.color_name).join(", ")}
+                        {productColors.map((c) => isAl ? (c.color_name_al || c.color_name) : (c.color_name_en || c.color_name)).join(", ")}
                       </p>
                     )}
                     {productSizes.length > 0 && (
@@ -431,6 +446,15 @@ const ProductDetail = () => {
           currentProductId={product.id}
           isAl={isAl}
           collectionSlug={slug ?? ""}
+        />
+      )}
+
+      {/* Lightbox */}
+      {lightbox && (
+        <ImageLightbox
+          images={lightbox.images}
+          startIndex={lightbox.index}
+          onClose={() => setLightbox(null)}
         />
       )}
 

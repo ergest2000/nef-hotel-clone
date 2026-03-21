@@ -1,11 +1,13 @@
 import { useState, useMemo } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useParams, useNavigate } from "react-router-dom";
 import {
   useCollections, useProducts,
   useAllProductColors, useAllProductSizes,
+  useWishlist, useToggleWishlist,
   type ProductColor, type ProductSize,
 } from "@/hooks/useCollections";
 import { useLanguage } from "@/hooks/useLanguage";
+import { useAuth } from "@/hooks/useAuth";
 import SiteHeader from "@/components/SiteHeader";
 import SiteFooter from "@/components/SiteFooter";
 import { Badge } from "@/components/ui/badge";
@@ -20,12 +22,24 @@ const ITEMS_PER_PAGE = 9;
 
 
 // ─── Product Card ────────────────────────────────────────────────
-const ProductCard = ({ product, isAl, allColors, collectionSlug, t }: {
+const ProductCard = ({ product, isAl, allColors, collectionSlug, t, user, wishlistItems, toggleWishlist }: {
   product: any; isAl: boolean; allColors?: ProductColor[];
   collectionSlug: string; t: (al: string, en: string) => string;
+  user: any; wishlistItems: any[]; toggleWishlist: any;
 }) => {
+  const navigate = useNavigate();
   const productColors = allColors?.filter(c => c.product_id === product.id) ?? [];
-  const [wishlisted, setWishlisted] = useState(false);
+  const isWishlisted = wishlistItems?.some((w: any) => w.product_id === product.id) ?? false;
+
+  const handleWishlistClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!user) {
+      navigate("/login");
+      return;
+    }
+    toggleWishlist.mutate({ userId: user.id, productId: product.id, isWishlisted });
+  };
 
   return (
     <div className="group">
@@ -41,16 +55,9 @@ const ProductCard = ({ product, isAl, allColors, collectionSlug, t }: {
             <Package className="h-12 w-12 text-muted-foreground/20" />
           </div>
         )}
-        {/* Wishlist button */}
-        <button
-          className="absolute top-3 right-3 z-10"
-          onClick={(e) => { e.stopPropagation(); setWishlisted(!wishlisted); }}
-        >
-          <Heart
-            className={`h-5 w-5 transition-colors ${wishlisted ? "fill-primary text-primary" : "text-muted-foreground/60 hover:text-primary"}`}
-          />
+        <button className="absolute top-3 right-3 z-10" onClick={handleWishlistClick}>
+          <Heart className={`h-5 w-5 transition-colors ${isWishlisted ? "fill-primary text-primary" : "text-muted-foreground/60 hover:text-primary"}`} />
         </button>
-        {/* Stock overlay */}
         {!product.in_stock && (
           <div className="absolute inset-0 bg-background/50 flex items-center justify-center">
             <span className="text-sm font-medium text-foreground">{t("Jo në stok", "Out of stock")}</span>
@@ -78,7 +85,6 @@ const ProductCard = ({ product, isAl, allColors, collectionSlug, t }: {
           {t("Dimensioni:", "Dimension:")} {isAl ? product.dimensions_al : product.dimensions_en}
         </p>
       </Link>
-      {/* Color swatches */}
       {productColors.length > 0 && (
         <div className="flex items-center gap-1.5 mt-2">
           {productColors.map(c => (
@@ -86,7 +92,7 @@ const ProductCard = ({ product, isAl, allColors, collectionSlug, t }: {
               key={c.id}
               className="w-4 h-4 rounded-full border border-border cursor-pointer hover:ring-2 hover:ring-primary/30"
               style={{ backgroundColor: c.color_hex }}
-              title={c.color_name}
+              title={isAl ? (c.color_name_al || c.color_name) : (c.color_name_en || c.color_name)}
             />
           ))}
         </div>
@@ -133,11 +139,14 @@ const FilterSection = ({ title, options, selected, onToggle }: {
 // ─── Main Collections Page ───────────────────────────────────────
 const Collections = () => {
   const { isAl } = useLanguage();
+  const { user } = useAuth();
   const { slug } = useParams();
   const { data: collections } = useCollections();
   const { data: allProducts } = useProducts();
   const { data: allColors } = useAllProductColors();
   const { data: allSizes } = useAllProductSizes();
+  const { data: wishlistItems } = useWishlist(user?.id);
+  const toggleWishlist = useToggleWishlist();
 
   const [colorFilters, setColorFilters] = useState<string[]>([]);
   const [sizeFilters, setSizeFilters] = useState<string[]>([]);
@@ -414,6 +423,9 @@ const Collections = () => {
                       allColors={allColors}
                       collectionSlug={slug ?? ""}
                       t={t}
+                      user={user}
+                      wishlistItems={wishlistItems ?? []}
+                      toggleWishlist={toggleWishlist}
                     />
                   ))}
                 </div>
