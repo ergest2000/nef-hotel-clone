@@ -32,6 +32,8 @@ const App = () => (
               <Route path="/" element={<Index />} />
               <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
               <Route path="/reset-password" element={<ResetPassword />} />
+              <Route path="/koleksionet" element={<Collections />} />
+              <Route path="/koleksionet/:slug" element={<Collections />} />
               {/* Blog post with nested slug */}
               <Route path="/:slug/:id" element={<BlogPost />} />
               {/* Dynamic slug-based routing for all pages */}
