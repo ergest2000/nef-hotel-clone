@@ -14,7 +14,6 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { ChevronRight, ChevronLeft, Package, Heart, Filter, X } from "lucide-react";
-import { Link, useParams } from "react-router-dom";
 
 const ITEMS_PER_PAGE = 9;
 
