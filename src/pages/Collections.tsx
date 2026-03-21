@@ -64,9 +64,9 @@ const ProductImageGallery = ({ mainImage, productId }: { mainImage?: string | nu
 };
 
 // ─── Product Card ────────────────────────────────────────────────
-const ProductCard = ({ product, isAl, allColors, allSizes, onClick, t }: {
-  product: any; isAl: boolean; allColors?: ProductColor[]; allSizes?: ProductSize[];
-  onClick: () => void; t: (al: string, en: string) => string;
+const ProductCard = ({ product, isAl, allColors, collectionSlug, t }: {
+  product: any; isAl: boolean; allColors?: ProductColor[];
+  collectionSlug: string; t: (al: string, en: string) => string;
 }) => {
   const productColors = allColors?.filter(c => c.product_id === product.id) ?? [];
   const [wishlisted, setWishlisted] = useState(false);
