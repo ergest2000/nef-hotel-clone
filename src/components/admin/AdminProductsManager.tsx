@@ -362,21 +362,33 @@ export const AdminProductsManager = () => {
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="text-xs font-medium text-muted-foreground">Titulli (AL)</label>
+                    <div className="flex items-center justify-between">
+                      <label className="text-xs font-medium text-muted-foreground">Titulli (AL)</label>
+                      <TranslateButton direction="al_to_en" loading={translating === "p_title"} onClick={() => translateField("p_title", editItem.title_al ?? "", "al_to_en", (t) => setEditItem((p) => p ? { ...p, title_en: t } : p))} />
+                    </div>
                     <Input value={editItem.title_al ?? ""} onChange={(e) => setEditItem({ ...editItem, title_al: e.target.value })} />
                   </div>
                   <div>
-                    <label className="text-xs font-medium text-muted-foreground">Title (EN)</label>
+                    <div className="flex items-center justify-between">
+                      <label className="text-xs font-medium text-muted-foreground">Title (EN)</label>
+                      <TranslateButton direction="en_to_al" loading={translating === "p_title_r"} onClick={() => translateField("p_title_r", editItem.title_en ?? "", "en_to_al", (t) => setEditItem((p) => p ? { ...p, title_al: t } : p))} />
+                    </div>
                     <Input value={editItem.title_en ?? ""} onChange={(e) => setEditItem({ ...editItem, title_en: e.target.value })} />
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="text-xs font-medium text-muted-foreground">Përshkrimi (AL)</label>
+                    <div className="flex items-center justify-between">
+                      <label className="text-xs font-medium text-muted-foreground">Përshkrimi (AL)</label>
+                      <TranslateButton direction="al_to_en" loading={translating === "p_desc"} onClick={() => translateField("p_desc", editItem.description_al ?? "", "al_to_en", (t) => setEditItem((p) => p ? { ...p, description_en: t } : p))} />
+                    </div>
                     <Textarea value={editItem.description_al ?? ""} onChange={(e) => setEditItem({ ...editItem, description_al: e.target.value })} rows={3} />
                   </div>
                   <div>
-                    <label className="text-xs font-medium text-muted-foreground">Description (EN)</label>
+                    <div className="flex items-center justify-between">
+                      <label className="text-xs font-medium text-muted-foreground">Description (EN)</label>
+                      <TranslateButton direction="en_to_al" loading={translating === "p_desc_r"} onClick={() => translateField("p_desc_r", editItem.description_en ?? "", "en_to_al", (t) => setEditItem((p) => p ? { ...p, description_al: t } : p))} />
+                    </div>
                     <Textarea value={editItem.description_en ?? ""} onChange={(e) => setEditItem({ ...editItem, description_en: e.target.value })} rows={3} />
                   </div>
                 </div>
