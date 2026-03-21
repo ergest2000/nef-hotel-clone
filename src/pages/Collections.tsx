@@ -12,8 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { ChevronRight, ChevronLeft, Package, Heart, Filter, X } from "lucide-react";
+import { Package, Heart, Filter } from "lucide-react";
 
 const ITEMS_PER_PAGE = 9;
 
