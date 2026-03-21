@@ -178,7 +178,7 @@ export const AdminProductsManager = () => {
   const upsert = useUpsertProduct();
   const remove = useDeleteProduct();
   const { toast } = useToast();
-
+  const { translateField, translating } = useAutoTranslate();
   const [editItem, setEditItem] = useState<Partial<Product> | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
 
