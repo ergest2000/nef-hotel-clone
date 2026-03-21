@@ -121,7 +121,7 @@ const ProductCard = ({ product, isAl, allColors, collectionSlug, t }: {
         <p className="text-xs text-muted-foreground">
           {t("Dimensioni:", "Dimension:")} {isAl ? product.dimensions_al : product.dimensions_en}
         </p>
-      </div>
+      </Link>
       {/* Color swatches */}
       {productColors.length > 0 && (
         <div className="flex items-center gap-1.5 mt-2">
