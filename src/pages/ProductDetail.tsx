@@ -172,6 +172,8 @@ const ProductDetail = () => {
   const toggleWishlist = useToggleWishlist();
 
   const [lightbox, setLightbox] = useState<{ images: string[]; index: number } | null>(null);
+  const [selectedColorId, setSelectedColorId] = useState<string | null>(null);
+  const [selectedSizeId, setSelectedSizeId] = useState<string | null>(null);
 
   const t = (al: string, en: string) => (isAl ? al : en);
 
@@ -277,40 +279,71 @@ const ProductDetail = () => {
               {isAl ? product.description_al : product.description_en}
             </p>
 
-            {/* Colors as swatches */}
+            {/* Colors as selectable swatches */}
             {productColors.length > 0 && (
               <div>
                 <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
-                  {t("Ngjyrat", "Colors")}
+                  {t("Ngjyra", "Color")}
+                  {selectedColorId && (
+                    <span className="ml-2 font-normal normal-case text-foreground">
+                      — {(() => {
+                        const c = productColors.find((c) => c.id === selectedColorId);
+                        return c ? (isAl ? (c.color_name_al || c.color_name) : (c.color_name_en || c.color_name)) : "";
+                      })()}
+                    </span>
+                  )}
                 </p>
                 <div className="flex flex-wrap gap-3">
                   {productColors.map((c) => (
-                    <div key={c.id} className="flex flex-col items-center gap-1">
+                    <button
+                      key={c.id}
+                      onClick={() => setSelectedColorId(selectedColorId === c.id ? null : c.id)}
+                      className="flex flex-col items-center gap-1 group"
+                      title={isAl ? (c.color_name_al || c.color_name) : (c.color_name_en || c.color_name)}
+                    >
                       <div
-                        className="w-8 h-8 rounded-full border-2 border-border shadow-sm"
+                        className={`w-9 h-9 rounded-full border-2 shadow-sm transition-all ${
+                          selectedColorId === c.id
+                            ? "border-primary ring-2 ring-primary/30 scale-110"
+                            : "border-border group-hover:border-foreground/40"
+                        }`}
                         style={{ backgroundColor: c.color_hex }}
-                        title={isAl ? (c.color_name_al || c.color_name) : (c.color_name_en || c.color_name)}
                       />
-                      <span className="text-[10px] text-muted-foreground">
+                      <span className={`text-[10px] transition-colors ${
+                        selectedColorId === c.id ? "text-foreground font-medium" : "text-muted-foreground"
+                      }`}>
                         {isAl ? (c.color_name_al || c.color_name) : (c.color_name_en || c.color_name)}
                       </span>
-                    </div>
+                    </button>
                   ))}
                 </div>
               </div>
             )}
 
-            {/* Sizes */}
+            {/* Sizes as selectable chips */}
             {productSizes.length > 0 && (
               <div>
                 <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
-                  {t("Përmasat", "Sizes")}
+                  {t("Përmasa", "Size")}
+                  {selectedSizeId && (
+                    <span className="ml-2 font-normal normal-case text-foreground">
+                      — {productSizes.find((s) => s.id === selectedSizeId)?.size_label}
+                    </span>
+                  )}
                 </p>
                 <div className="flex flex-wrap gap-2">
                   {productSizes.map((s) => (
-                    <Badge key={s.id} variant="outline" className="text-xs px-3 py-1">
+                    <button
+                      key={s.id}
+                      onClick={() => setSelectedSizeId(selectedSizeId === s.id ? null : s.id)}
+                      className={`text-xs px-4 py-2 border rounded-sm transition-all ${
+                        selectedSizeId === s.id
+                          ? "border-primary bg-primary text-primary-foreground font-medium"
+                          : "border-border text-foreground hover:border-foreground/40"
+                      }`}
+                    >
                       {s.size_label}
-                    </Badge>
+                    </button>
                   ))}
                 </div>
               </div>
@@ -344,15 +377,20 @@ const ProductDetail = () => {
 
             {/* Stock + Customizable indicators */}
             <div className="flex items-center gap-3 flex-wrap">
-              <Badge
-                variant={product.in_stock ? "default" : "destructive"}
-                className="text-xs px-3 py-1"
-              >
-                {product.in_stock ? t("I DISPONUESHËM", "AVAILABLE") : t("JO NË STOK", "OUT OF STOCK")}
-              </Badge>
+              {product.in_stock ? (
+                <div className="flex items-center gap-1.5 text-xs font-semibold tracking-wider text-green-700 bg-green-50 border border-green-200 rounded-sm px-3 py-1.5">
+                  <span className="w-2 h-2 rounded-full bg-green-500" />
+                  {t("NË STOK", "IN STOCK")}
+                </div>
+              ) : (
+                <div className="flex items-center gap-1.5 text-xs font-semibold tracking-wider text-red-700 bg-red-50 border border-red-200 rounded-sm px-3 py-1.5">
+                  <span className="w-2 h-2 rounded-full bg-red-500" />
+                  {t("NUK KA STOK", "OUT OF STOCK")}
+                </div>
+              )}
               {product.customizable && (
-                <div className="flex items-center gap-1.5 text-xs text-primary font-medium">
-                  <Palette className="h-4 w-4" />
+                <div className="flex items-center gap-1.5 text-xs font-semibold tracking-wider text-primary bg-primary/5 border border-primary/20 rounded-sm px-3 py-1.5">
+                  <Palette className="h-3.5 w-3.5" />
                   {t("I PERSONALIZUESHËM", "CUSTOMIZABLE")}
                 </div>
               )}
