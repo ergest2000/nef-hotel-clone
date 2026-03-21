@@ -553,6 +553,7 @@ export const AdminProductsManager = () => {
                         </div>
                       </div>
                     </AccordionContent>
+                  </AccordionItem>
                 </Accordion>
               </TabsContent>
 
