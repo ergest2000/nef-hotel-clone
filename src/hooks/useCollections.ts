@@ -164,10 +164,43 @@ export interface ProductColor {
   id: string;
   product_id: string;
   color_name: string;
+  color_name_al: string;
+  color_name_en: string;
   color_hex: string;
   sort_order: number;
   created_at: string;
 }
+
+// Wishlists
+export const useWishlist = (userId?: string) =>
+  useQuery({
+    queryKey: ["wishlists", userId],
+    enabled: !!userId,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("wishlists" as any)
+        .select("*")
+        .eq("user_id", userId!);
+      if (error) throw error;
+      return data as unknown as { id: string; user_id: string; product_id: string; created_at: string }[];
+    },
+  });
+
+export const useToggleWishlist = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ userId, productId, isWishlisted }: { userId: string; productId: string; isWishlisted: boolean }) => {
+      if (isWishlisted) {
+        const { error } = await supabase.from("wishlists" as any).delete().eq("user_id", userId).eq("product_id", productId);
+        if (error) throw error;
+      } else {
+        const { error } = await supabase.from("wishlists" as any).insert({ user_id: userId, product_id: productId });
+        if (error) throw error;
+      }
+    },
+    onSuccess: (_, vars) => qc.invalidateQueries({ queryKey: ["wishlists", vars.userId] }),
+  });
+};
 
 export const useProductColors = (productId?: string) =>
   useQuery({
