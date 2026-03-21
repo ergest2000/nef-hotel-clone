@@ -257,6 +257,39 @@ export const AdminDesignSettings = () => {
       );
     }
 
+    if (setting.setting_type === "image") {
+      return (
+        <div className="space-y-1">
+          <Label className="text-xs text-muted-foreground">{setting.label}</Label>
+          <div className="flex items-center gap-3">
+            <Input
+              value={val}
+              onChange={(e) => setValue(setting.setting_key, e.target.value)}
+              className="text-xs h-9 flex-1"
+              placeholder="Image URL"
+            />
+            {val && (
+              <img src={val} alt="" className="w-10 h-10 object-contain border border-border rounded" />
+            )}
+          </div>
+          <input
+            type="file"
+            accept="image/*"
+            className="text-xs mt-1"
+            onChange={async (e) => {
+              const file = e.target.files?.[0];
+              if (!file) return;
+              const path = `footer/${Date.now()}-${file.name}`;
+              const { error } = await supabase.storage.from("cms-images").upload(path, file);
+              if (error) { toast({ title: "Gabim", description: error.message, variant: "destructive" }); return; }
+              const { data: urlData } = supabase.storage.from("cms-images").getPublicUrl(path);
+              setValue(setting.setting_key, urlData.publicUrl);
+            }}
+          />
+        </div>
+      );
+    }
+
     return (
       <div className="space-y-1">
         <Label className="text-xs text-muted-foreground">{setting.label}</Label>
