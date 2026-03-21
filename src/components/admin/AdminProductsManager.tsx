@@ -8,6 +8,7 @@ import {
   type ProductColor, type ProductSize,
 } from "@/hooks/useCollections";
 import { useToast } from "@/hooks/use-toast";
+import { useAutoTranslate } from "@/hooks/useAutoTranslate";
 import { uploadCmsImage } from "@/hooks/useCms";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -20,6 +21,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Plus, Trash2, Edit, Package, Image as ImageIcon, ExternalLink, X } from "lucide-react";
+import { TranslateButton } from "./TranslateButton";
 import type { Tables } from "@/integrations/supabase/types";
 
 type Product = Tables<"products">;
