@@ -1,6 +1,12 @@
 import { useState } from "react";
 import { useCollections } from "@/hooks/useCollections";
-import { useProducts, useUpsertProduct, useDeleteProduct } from "@/hooks/useCollections";
+import {
+  useProducts, useUpsertProduct, useDeleteProduct,
+  useProductImages, useAddProductImage, useDeleteProductImage,
+  useProductColors, useAddProductColor, useDeleteProductColor,
+  useProductSizes, useAddProductSize, useDeleteProductSize,
+  type ProductColor, type ProductSize,
+} from "@/hooks/useCollections";
 import { useToast } from "@/hooks/use-toast";
 import { uploadCmsImage } from "@/hooks/useCms";
 import { Button } from "@/components/ui/button";
@@ -13,7 +19,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { Plus, Trash2, Edit, Package, Image as ImageIcon, GripVertical } from "lucide-react";
+import { Plus, Trash2, Edit, Package, Image as ImageIcon, ExternalLink, X } from "lucide-react";
 import type { Tables } from "@/integrations/supabase/types";
 
 type Product = Tables<"products">;
@@ -28,6 +34,135 @@ const emptyProduct: Partial<Product> = {
   return_policy_al: "", return_policy_en: "",
   tech_specs_al: "", tech_specs_en: "",
   image_url: "", visible: true, sort_order: 0,
+};
+
+// Sub-component for managing product images
+const ProductImagesManager = ({ productId }: { productId: string }) => {
+  const { data: images, isLoading } = useProductImages(productId);
+  const addImage = useAddProductImage();
+  const removeImage = useDeleteProductImage();
+  const { toast } = useToast();
+
+  const handleUpload = async (file: File) => {
+    if ((images?.length ?? 0) >= 10) {
+      toast({ title: "Limit", description: "Maksimumi 10 foto", variant: "destructive" });
+      return;
+    }
+    const path = `products/${productId}/${Date.now()}-${file.name}`;
+    const url = await uploadCmsImage(file, path);
+    addImage.mutate({ product_id: productId, image_url: url, sort_order: images?.length ?? 0 });
+  };
+
+  return (
+    <div className="space-y-3">
+      <div className="flex items-center justify-between">
+        <label className="text-xs font-medium text-muted-foreground">
+          Foto shtesë ({images?.length ?? 0}/10)
+        </label>
+        <label className="cursor-pointer">
+          <div className="flex items-center gap-1 px-3 py-1.5 bg-muted rounded text-xs hover:bg-muted/80">
+            <ImageIcon className="h-3 w-3" /> Shto foto
+          </div>
+          <input type="file" accept="image/*" className="hidden" onChange={(e) => {
+            if (e.target.files?.[0]) handleUpload(e.target.files[0]);
+          }} />
+        </label>
+      </div>
+      {isLoading ? (
+        <div className="text-xs text-muted-foreground">Duke ngarkuar...</div>
+      ) : (
+        <div className="grid grid-cols-5 gap-2">
+          {images?.map((img) => (
+            <div key={img.id} className="relative group aspect-square rounded overflow-hidden bg-muted">
+              <img src={img.image_url} alt="" className="w-full h-full object-cover" />
+              <button
+                className="absolute top-1 right-1 w-5 h-5 bg-destructive/90 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                onClick={() => removeImage.mutate({ id: img.id, product_id: productId })}
+              >
+                <X className="h-3 w-3 text-destructive-foreground" />
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
+// Sub-component for managing product colors
+const ProductColorsManager = ({ productId }: { productId: string }) => {
+  const { data: colors } = useProductColors(productId);
+  const addColor = useAddProductColor();
+  const removeColor = useDeleteProductColor();
+  const [newName, setNewName] = useState("");
+  const [newHex, setNewHex] = useState("#FFFFFF");
+
+  const handleAdd = () => {
+    if (!newName.trim()) return;
+    addColor.mutate({ product_id: productId, color_name: newName, color_hex: newHex, sort_order: colors?.length ?? 0 });
+    setNewName("");
+    setNewHex("#FFFFFF");
+  };
+
+  return (
+    <div className="space-y-3">
+      <label className="text-xs font-medium text-muted-foreground">Ngjyrat e produktit</label>
+      <div className="flex flex-wrap gap-2">
+        {colors?.map((c) => (
+          <div key={c.id} className="flex items-center gap-1.5 bg-muted px-2 py-1 rounded text-xs">
+            <div className="w-4 h-4 rounded-full border border-border" style={{ backgroundColor: c.color_hex }} />
+            {c.color_name}
+            <button onClick={() => removeColor.mutate({ id: c.id, product_id: productId })}>
+              <X className="h-3 w-3 text-muted-foreground hover:text-destructive" />
+            </button>
+          </div>
+        ))}
+      </div>
+      <div className="flex items-center gap-2">
+        <Input type="color" value={newHex} onChange={(e) => setNewHex(e.target.value)} className="w-10 h-8 p-0.5" />
+        <Input value={newName} onChange={(e) => setNewName(e.target.value)} placeholder="Emri i ngjyrës" className="h-8 text-xs flex-1" />
+        <Button size="sm" variant="outline" className="h-8 text-xs" onClick={handleAdd}>
+          <Plus className="h-3 w-3 mr-1" /> Shto
+        </Button>
+      </div>
+    </div>
+  );
+};
+
+// Sub-component for managing product sizes
+const ProductSizesManager = ({ productId }: { productId: string }) => {
+  const { data: sizes } = useProductSizes(productId);
+  const addSize = useAddProductSize();
+  const removeSize = useDeleteProductSize();
+  const [newLabel, setNewLabel] = useState("");
+
+  const handleAdd = () => {
+    if (!newLabel.trim()) return;
+    addSize.mutate({ product_id: productId, size_label: newLabel, sort_order: sizes?.length ?? 0 });
+    setNewLabel("");
+  };
+
+  return (
+    <div className="space-y-3">
+      <label className="text-xs font-medium text-muted-foreground">Përmasat e produktit</label>
+      <div className="flex flex-wrap gap-2">
+        {sizes?.map((s) => (
+          <div key={s.id} className="flex items-center gap-1.5 bg-muted px-2 py-1 rounded text-xs">
+            {s.size_label}
+            <button onClick={() => removeSize.mutate({ id: s.id, product_id: productId })}>
+              <X className="h-3 w-3 text-muted-foreground hover:text-destructive" />
+            </button>
+          </div>
+        ))}
+      </div>
+      <div className="flex items-center gap-2">
+        <Input value={newLabel} onChange={(e) => setNewLabel(e.target.value)} placeholder="p.sh. 50x100, 80x150" className="h-8 text-xs flex-1" />
+        <Button size="sm" variant="outline" className="h-8 text-xs" onClick={handleAdd}>
+          <Plus className="h-3 w-3 mr-1" /> Shto
+        </Button>
+      </div>
+    </div>
+  );
 };
 
 export const AdminProductsManager = () => {
@@ -81,6 +216,11 @@ export const AdminProductsManager = () => {
   const openEdit = (item: Product) => {
     setEditItem({ ...item });
     setDialogOpen(true);
+  };
+
+  // Find collection slug for preview link
+  const getCollectionSlug = (collectionId: string) => {
+    return collections?.find(c => c.id === collectionId)?.slug;
   };
 
   const filteredProducts = selectedCollection
@@ -150,6 +290,15 @@ export const AdminProductsManager = () => {
                     {product.visible ? "Aktiv" : "Fshehur"}
                   </Badge>
                   <div className="flex gap-1">
+                    {getCollectionSlug(product.collection_id) && (
+                      <Button
+                        variant="ghost" size="icon" className="h-7 w-7"
+                        onClick={() => window.open(`/koleksionet/${getCollectionSlug(product.collection_id)}`, '_blank')}
+                        title="Shiko në faqe"
+                      >
+                        <ExternalLink className="h-3.5 w-3.5" />
+                      </Button>
+                    )}
                     <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openEdit(product)}>
                       <Edit className="h-3.5 w-3.5" />
                     </Button>
@@ -168,13 +317,24 @@ export const AdminProductsManager = () => {
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>{editItem?.id ? "Ndrysho Produktin" : "Produkt i Ri"}</DialogTitle>
+            <DialogTitle className="flex items-center justify-between">
+              <span>{editItem?.id ? "Ndrysho Produktin" : "Produkt i Ri"}</span>
+              {editItem?.id && getCollectionSlug(editItem.collection_id ?? "") && (
+                <Button
+                  variant="outline" size="sm"
+                  onClick={() => window.open(`/koleksionet/${getCollectionSlug(editItem.collection_id ?? "")}`, '_blank')}
+                >
+                  <ExternalLink className="h-3.5 w-3.5 mr-1" /> Shiko live
+                </Button>
+              )}
+            </DialogTitle>
           </DialogHeader>
           {editItem && (
             <Tabs defaultValue="general" className="w-full">
-              <TabsList className="w-full grid grid-cols-4">
-                <TabsTrigger value="general">Të përgjithshme</TabsTrigger>
+              <TabsList className="w-full grid grid-cols-5">
+                <TabsTrigger value="general">Përgjithshme</TabsTrigger>
                 <TabsTrigger value="details">Detaje</TabsTrigger>
+                <TabsTrigger value="variants">Variante</TabsTrigger>
                 <TabsTrigger value="info">Info / Specs</TabsTrigger>
                 <TabsTrigger value="media">Media</TabsTrigger>
               </TabsList>
@@ -220,7 +380,7 @@ export const AdminProductsManager = () => {
                     <Input value={editItem.code ?? ""} onChange={(e) => setEditItem({ ...editItem, code: e.target.value })} />
                   </div>
                   <div>
-                    <label className="text-xs font-medium text-muted-foreground">Ngjyra</label>
+                    <label className="text-xs font-medium text-muted-foreground">Ngjyra kryesore</label>
                     <Input value={editItem.color ?? ""} onChange={(e) => setEditItem({ ...editItem, color: e.target.value })} placeholder="E bardhë" />
                   </div>
                   <div>
@@ -284,6 +444,21 @@ export const AdminProductsManager = () => {
                 </div>
               </TabsContent>
 
+              {/* NEW: Variants tab for multi-color and multi-size */}
+              <TabsContent value="variants" className="space-y-6 mt-4">
+                {editItem.id ? (
+                  <>
+                    <ProductColorsManager productId={editItem.id} />
+                    <div className="border-t border-border pt-4" />
+                    <ProductSizesManager productId={editItem.id} />
+                  </>
+                ) : (
+                  <div className="text-center py-8 text-muted-foreground text-sm">
+                    Ruaj produktin fillimisht, pastaj shto ngjyra dhe përmasa.
+                  </div>
+                )}
+              </TabsContent>
+
               <TabsContent value="info" className="space-y-4 mt-4">
                 <Accordion type="multiple" className="w-full">
                   <AccordionItem value="product-info">
@@ -334,7 +509,7 @@ export const AdminProductsManager = () => {
                 </Accordion>
               </TabsContent>
 
-              <TabsContent value="media" className="space-y-4 mt-4">
+              <TabsContent value="media" className="space-y-6 mt-4">
                 <div>
                   <label className="text-xs font-medium text-muted-foreground">Imazhi kryesor</label>
                   <div className="flex items-center gap-3 mt-1">
@@ -351,6 +526,13 @@ export const AdminProductsManager = () => {
                     </label>
                   </div>
                 </div>
+
+                {/* Additional images - only after product is saved */}
+                {editItem.id ? (
+                  <ProductImagesManager productId={editItem.id} />
+                ) : (
+                  <p className="text-xs text-muted-foreground">Ruaj produktin fillimisht për të shtuar foto shtesë.</p>
+                )}
               </TabsContent>
 
               <div className="flex justify-end gap-2 mt-6 pt-4 border-t">

@@ -130,3 +130,164 @@ export const useProductImages = (productId?: string) =>
       return data as ProductImage[];
     },
   });
+
+export const useAddProductImage = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (item: { product_id: string; image_url: string; sort_order: number }) => {
+      const { data, error } = await supabase
+        .from("product_images")
+        .insert(item)
+        .select()
+        .single();
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: (_, vars) => qc.invalidateQueries({ queryKey: ["product_images", vars.product_id] }),
+  });
+};
+
+export const useDeleteProductImage = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, product_id }: { id: string; product_id: string }) => {
+      const { error } = await supabase.from("product_images").delete().eq("id", id);
+      if (error) throw error;
+      return product_id;
+    },
+    onSuccess: (product_id) => qc.invalidateQueries({ queryKey: ["product_images", product_id] }),
+  });
+};
+
+// Product Colors
+export interface ProductColor {
+  id: string;
+  product_id: string;
+  color_name: string;
+  color_hex: string;
+  sort_order: number;
+  created_at: string;
+}
+
+export const useProductColors = (productId?: string) =>
+  useQuery({
+    queryKey: ["product_colors", productId],
+    enabled: !!productId,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("product_colors" as any)
+        .select("*")
+        .eq("product_id", productId!)
+        .order("sort_order");
+      if (error) throw error;
+      return data as unknown as ProductColor[];
+    },
+  });
+
+export const useAddProductColor = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (item: { product_id: string; color_name: string; color_hex: string; sort_order: number }) => {
+      const { data, error } = await supabase
+        .from("product_colors" as any)
+        .insert(item)
+        .select()
+        .single();
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: (_, vars) => qc.invalidateQueries({ queryKey: ["product_colors", vars.product_id] }),
+  });
+};
+
+export const useDeleteProductColor = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, product_id }: { id: string; product_id: string }) => {
+      const { error } = await supabase.from("product_colors" as any).delete().eq("id", id);
+      if (error) throw error;
+      return product_id;
+    },
+    onSuccess: (product_id) => qc.invalidateQueries({ queryKey: ["product_colors", product_id] }),
+  });
+};
+
+// Product Sizes
+export interface ProductSize {
+  id: string;
+  product_id: string;
+  size_label: string;
+  sort_order: number;
+  created_at: string;
+}
+
+export const useProductSizes = (productId?: string) =>
+  useQuery({
+    queryKey: ["product_sizes", productId],
+    enabled: !!productId,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("product_sizes" as any)
+        .select("*")
+        .eq("product_id", productId!)
+        .order("sort_order");
+      if (error) throw error;
+      return data as unknown as ProductSize[];
+    },
+  });
+
+export const useAddProductSize = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (item: { product_id: string; size_label: string; sort_order: number }) => {
+      const { data, error } = await supabase
+        .from("product_sizes" as any)
+        .insert(item)
+        .select()
+        .single();
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: (_, vars) => qc.invalidateQueries({ queryKey: ["product_sizes", vars.product_id] }),
+  });
+};
+
+export const useDeleteProductSize = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, product_id }: { id: string; product_id: string }) => {
+      const { error } = await supabase.from("product_sizes" as any).delete().eq("id", id);
+      if (error) throw error;
+      return product_id;
+    },
+    onSuccess: (product_id) => qc.invalidateQueries({ queryKey: ["product_sizes", product_id] }),
+  });
+};
+
+// All product colors (for filters)
+export const useAllProductColors = () =>
+  useQuery({
+    queryKey: ["all_product_colors"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("product_colors" as any)
+        .select("*")
+        .order("sort_order");
+      if (error) throw error;
+      return data as unknown as ProductColor[];
+    },
+  });
+
+// All product sizes (for filters)
+export const useAllProductSizes = () =>
+  useQuery({
+    queryKey: ["all_product_sizes"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("product_sizes" as any)
+        .select("*")
+        .order("sort_order");
+      if (error) throw error;
+      return data as unknown as ProductSize[];
+    },
+  });

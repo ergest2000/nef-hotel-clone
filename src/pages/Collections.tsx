@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { useCollections, useProducts } from "@/hooks/useCollections";
+import { useCollections, useProducts, useProductImages, useAllProductColors, useAllProductSizes, type ProductColor, type ProductSize } from "@/hooks/useCollections";
 import { useLanguage } from "@/hooks/useLanguage";
 import SiteHeader from "@/components/SiteHeader";
 import SiteFooter from "@/components/SiteFooter";
@@ -11,28 +11,72 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { Filter, ChevronRight, Package, X } from "lucide-react";
 import { Link, useParams } from "react-router-dom";
 
+// Product image gallery sub-component
+const ProductImageGallery = ({ mainImage, productId }: { mainImage?: string | null; productId: string }) => {
+  const { data: extraImages } = useProductImages(productId);
+  const allImages = useMemo(() => {
+    const imgs: string[] = [];
+    if (mainImage) imgs.push(mainImage);
+    extraImages?.forEach((img) => {
+      if (img.image_url && !imgs.includes(img.image_url)) imgs.push(img.image_url);
+    });
+    return imgs;
+  }, [mainImage, extraImages]);
+
+  const [selected, setSelected] = useState(0);
+
+  if (!allImages.length) {
+    return (
+      <div className="aspect-square bg-muted rounded-lg flex items-center justify-center">
+        <Package className="h-20 w-20 text-muted-foreground/20" />
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-3">
+      <div className="aspect-square bg-muted rounded-lg overflow-hidden">
+        <img src={allImages[selected]} alt="" className="w-full h-full object-cover" />
+      </div>
+      {allImages.length > 1 && (
+        <div className="flex gap-2 overflow-x-auto pb-1">
+          {allImages.map((img, i) => (
+            <button
+              key={i}
+              onClick={() => setSelected(i)}
+              className={`flex-shrink-0 w-16 h-16 rounded overflow-hidden border-2 transition-colors ${
+                i === selected ? "border-primary" : "border-transparent hover:border-border"
+              }`}
+            >
+              <img src={img} alt="" className="w-full h-full object-cover" />
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
 const Collections = () => {
   const { lang, isAl } = useLanguage();
   const { slug } = useParams();
   const { data: collections } = useCollections();
   const { data: allProducts } = useProducts();
+  const { data: allColors } = useAllProductColors();
+  const { data: allSizes } = useAllProductSizes();
 
   const [colorFilter, setColorFilter] = useState<string>("");
+  const [sizeFilter, setSizeFilter] = useState<string>("");
   const [compositionFilter, setCompositionFilter] = useState<string>("");
-  const [dimensionFilter, setDimensionFilter] = useState<string>("");
   const [selectedProduct, setSelectedProduct] = useState<any>(null);
   const [showFilters, setShowFilters] = useState(false);
 
-  // Find current collection by slug
   const currentCollection = collections?.find((c) => c.slug === slug);
   const topCollections = collections?.filter((c) => !c.parent_id) ?? [];
-
-  // Get sub-collections for current
   const subCollections = currentCollection
     ? collections?.filter((c) => c.parent_id === currentCollection.id) ?? []
     : [];
 
-  // Products for this collection (and its sub-collections)
   const collectionIds = currentCollection
     ? [currentCollection.id, ...subCollections.map((s) => s.id)]
     : [];
@@ -42,35 +86,48 @@ const Collections = () => {
     return allProducts.filter((p) => collectionIds.includes(p.collection_id));
   }, [allProducts, collectionIds]);
 
-  // Unique filter options
+  // Build color options from product_colors for current products
+  const productIds = useMemo(() => products.map(p => p.id), [products]);
+
   const colorOptions = useMemo(() => {
-    const colors = products.map((p) => p.color).filter(Boolean);
-    return [...new Set(colors)];
-  }, [products]);
+    if (!allColors) return [];
+    const relevant = allColors.filter(c => productIds.includes(c.product_id));
+    const unique = new Map<string, ProductColor>();
+    relevant.forEach(c => { if (!unique.has(c.color_name)) unique.set(c.color_name, c); });
+    return Array.from(unique.values());
+  }, [allColors, productIds]);
+
+  const sizeOptions = useMemo(() => {
+    if (!allSizes) return [];
+    const relevant = allSizes.filter(s => productIds.includes(s.product_id));
+    const unique = new Set<string>();
+    return relevant.filter(s => { if (unique.has(s.size_label)) return false; unique.add(s.size_label); return true; });
+  }, [allSizes, productIds]);
 
   const compositionOptions = useMemo(() => {
     const comps = products.map((p) => isAl ? p.composition_al : p.composition_en).filter(Boolean);
     return [...new Set(comps)];
   }, [products, isAl]);
 
-  const dimensionOptions = useMemo(() => {
-    const dims = products.map((p) => isAl ? p.dimensions_al : p.dimensions_en).filter(Boolean);
-    return [...new Set(dims)];
-  }, [products, isAl]);
-
   // Apply filters
   const filtered = useMemo(() => {
     let list = products;
-    if (colorFilter) list = list.filter((p) => p.color === colorFilter);
+    if (colorFilter && allColors) {
+      const matchingProductIds = new Set(allColors.filter(c => c.color_name === colorFilter).map(c => c.product_id));
+      list = list.filter(p => matchingProductIds.has(p.id));
+    }
+    if (sizeFilter && allSizes) {
+      const matchingProductIds = new Set(allSizes.filter(s => s.size_label === sizeFilter).map(s => s.product_id));
+      list = list.filter(p => matchingProductIds.has(p.id));
+    }
     if (compositionFilter) list = list.filter((p) => (isAl ? p.composition_al : p.composition_en) === compositionFilter);
-    if (dimensionFilter) list = list.filter((p) => (isAl ? p.dimensions_al : p.dimensions_en) === dimensionFilter);
     return list;
-  }, [products, colorFilter, compositionFilter, dimensionFilter, isAl]);
+  }, [products, colorFilter, sizeFilter, compositionFilter, isAl, allColors, allSizes]);
 
   const t = (al: string, en: string) => isAl ? al : en;
-  const hasActiveFilters = colorFilter || compositionFilter || dimensionFilter;
+  const hasActiveFilters = colorFilter || sizeFilter || compositionFilter;
 
-  // If no slug, show all collections
+  // No slug - show all collections
   if (!slug || !currentCollection) {
     return (
       <div className="min-h-screen bg-background">
@@ -81,11 +138,7 @@ const Collections = () => {
           </h1>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {topCollections.map((col) => (
-              <Link
-                key={col.id}
-                to={`/koleksionet/${col.slug}`}
-                className="group"
-              >
+              <Link key={col.id} to={`/koleksionet/${col.slug}`} className="group">
                 <div className="aspect-[4/3] bg-muted rounded-lg overflow-hidden mb-3">
                   {col.image_url ? (
                     <img src={col.image_url} alt={isAl ? col.title_al : col.title_en} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
@@ -172,7 +225,26 @@ const Collections = () => {
                     <SelectContent>
                       <SelectItem value="all">{t("Të gjitha", "All")}</SelectItem>
                       {colorOptions.map((c) => (
-                        <SelectItem key={c} value={c!}>{c}</SelectItem>
+                        <SelectItem key={c.color_name} value={c.color_name}>
+                          <div className="flex items-center gap-2">
+                            <div className="w-3 h-3 rounded-full border border-border" style={{ backgroundColor: c.color_hex }} />
+                            {c.color_name}
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
+
+                {sizeOptions.length > 0 && (
+                  <Select value={sizeFilter} onValueChange={(v) => setSizeFilter(v === "all" ? "" : v)}>
+                    <SelectTrigger className="w-40 h-9 text-xs">
+                      <SelectValue placeholder={t("PËRMASA", "SIZE")} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">{t("Të gjitha", "All")}</SelectItem>
+                      {sizeOptions.map((s) => (
+                        <SelectItem key={s.size_label} value={s.size_label}>{s.size_label}</SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
@@ -192,25 +264,11 @@ const Collections = () => {
                   </Select>
                 )}
 
-                {dimensionOptions.length > 0 && (
-                  <Select value={dimensionFilter} onValueChange={(v) => setDimensionFilter(v === "all" ? "" : v)}>
-                    <SelectTrigger className="w-48 h-9 text-xs">
-                      <SelectValue placeholder={t("DIMENSIONI", "DIMENSIONS")} />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">{t("Të gjitha", "All")}</SelectItem>
-                      {dimensionOptions.map((d) => (
-                        <SelectItem key={d} value={d!}>{d}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                )}
-
                 {hasActiveFilters && (
                   <Button variant="ghost" size="sm" className="text-xs" onClick={() => {
                     setColorFilter("");
+                    setSizeFilter("");
                     setCompositionFilter("");
-                    setDimensionFilter("");
                   }}>
                     <X className="h-3 w-3 mr-1" /> {t("Pastro", "Clear")}
                   </Button>
@@ -223,49 +281,15 @@ const Collections = () => {
         {/* Products Grid */}
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
           {filtered.map((product) => (
-            <div
+            <ProductCard
               key={product.id}
-              className="group cursor-pointer"
+              product={product}
+              isAl={isAl}
+              allColors={allColors}
+              allSizes={allSizes}
               onClick={() => setSelectedProduct(product)}
-            >
-              <div className="relative aspect-square bg-muted rounded-lg overflow-hidden mb-2">
-                {product.image_url ? (
-                  <img
-                    src={product.image_url}
-                    alt={isAl ? product.title_al : product.title_en}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                  />
-                ) : (
-                  <div className="flex items-center justify-center h-full">
-                    <Package className="h-10 w-10 text-muted-foreground/20" />
-                  </div>
-                )}
-                {product.customizable && (
-                  <div className="absolute top-2 left-2">
-                    <Badge className="text-[10px] bg-primary/90">{t("Personalizuar", "Customizable")}</Badge>
-                  </div>
-                )}
-                {!product.in_stock && (
-                  <div className="absolute inset-0 bg-background/50 flex items-center justify-center">
-                    <Badge variant="destructive">{t("Jo në stok", "Out of stock")}</Badge>
-                  </div>
-                )}
-              </div>
-              <h4 className="text-sm font-medium text-foreground group-hover:text-primary transition-colors truncate">
-                {isAl ? product.title_al : product.title_en}
-              </h4>
-              <div className="flex items-center gap-2 mt-1">
-                {product.color_hex && product.color_hex !== "#FFFFFF" && (
-                  <div className="w-3 h-3 rounded-full border border-border" style={{ backgroundColor: product.color_hex }} />
-                )}
-                <span className="text-xs text-muted-foreground">
-                  {isAl ? product.composition_al : product.composition_en}
-                </span>
-              </div>
-              <p className="text-xs text-muted-foreground mt-0.5">
-                {isAl ? product.dimensions_al : product.dimensions_en}
-              </p>
-            </div>
+              t={t}
+            />
           ))}
         </div>
 
@@ -281,127 +305,196 @@ const Collections = () => {
       <Dialog open={!!selectedProduct} onOpenChange={() => setSelectedProduct(null)}>
         <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
           {selectedProduct && (
-            <>
-              <DialogHeader>
-                <DialogTitle className="text-xl font-light">
-                  {isAl ? selectedProduct.title_al : selectedProduct.title_en}
-                </DialogTitle>
-              </DialogHeader>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
-                {/* Image */}
-                <div className="aspect-square bg-muted rounded-lg overflow-hidden">
-                  {selectedProduct.image_url ? (
-                    <img src={selectedProduct.image_url} alt="" className="w-full h-full object-cover" />
-                  ) : (
-                    <div className="flex items-center justify-center h-full">
-                      <Package className="h-20 w-20 text-muted-foreground/20" />
-                    </div>
-                  )}
-                </div>
-
-                {/* Details */}
-                <div className="space-y-4">
-                  <div>
-                    <p className="text-sm text-muted-foreground">{t("Kodi", "Code")} {selectedProduct.code}</p>
-                    <p className="text-foreground mt-2">
-                      {isAl ? selectedProduct.description_al : selectedProduct.description_en}
-                    </p>
-                  </div>
-
-                  {/* Specs table */}
-                  <div className="border rounded-lg overflow-hidden">
-                    <table className="w-full text-sm">
-                      <tbody>
-                        {selectedProduct.weight_gsm > 0 && (
-                          <tr className="border-b">
-                            <td className="px-3 py-2 bg-muted/50 font-medium w-1/2">{t("Pesha", "Weight")}</td>
-                            <td className="px-3 py-2">{selectedProduct.weight_gsm} gsm</td>
-                          </tr>
-                        )}
-                        <tr className="border-b">
-                          <td className="px-3 py-2 bg-muted/50 font-medium">{t("Përbërja", "Composition")}</td>
-                          <td className="px-3 py-2">{isAl ? selectedProduct.composition_al : selectedProduct.composition_en}</td>
-                        </tr>
-                        <tr className="border-b">
-                          <td className="px-3 py-2 bg-muted/50 font-medium">{t("Dimensionet", "Dimensions")}</td>
-                          <td className="px-3 py-2">{isAl ? selectedProduct.dimensions_al : selectedProduct.dimensions_en}</td>
-                        </tr>
-                        {selectedProduct.box_quantity > 0 && (
-                          <tr className="border-b">
-                            <td className="px-3 py-2 bg-muted/50 font-medium">{t("Kuti", "Box")}</td>
-                            <td className="px-3 py-2">{selectedProduct.box_quantity}</td>
-                          </tr>
-                        )}
-                        {selectedProduct.pieces_per_box > 0 && (
-                          <tr>
-                            <td className="px-3 py-2 bg-muted/50 font-medium">{t("Copë / Kuti", "Pieces / Box")}</td>
-                            <td className="px-3 py-2">{selectedProduct.pieces_per_box}</td>
-                          </tr>
-                        )}
-                      </tbody>
-                    </table>
-                  </div>
-
-                  {/* Stock + Customizable */}
-                  <div className="flex gap-3">
-                    <Badge variant={selectedProduct.in_stock ? "default" : "destructive"}>
-                      {selectedProduct.in_stock ? t("Në stok", "In stock") : t("Jo në stok", "Out of stock")}
-                    </Badge>
-                    {selectedProduct.customizable && (
-                      <Badge variant="outline">{t("I personalizueshëm", "Customizable")}</Badge>
-                    )}
-                  </div>
-
-                  {/* Color swatch */}
-                  {selectedProduct.color && (
-                    <div className="flex items-center gap-2">
-                      <div className="w-6 h-6 rounded-full border border-border" style={{ backgroundColor: selectedProduct.color_hex }} />
-                      <span className="text-sm">{selectedProduct.color}</span>
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* Accordion info sections */}
-              <Accordion type="multiple" className="mt-6">
-                {(isAl ? selectedProduct.product_info_al : selectedProduct.product_info_en) && (
-                  <AccordionItem value="info">
-                    <AccordionTrigger>{t("Informacion mbi Produktin", "Product Information")}</AccordionTrigger>
-                    <AccordionContent>
-                      <p className="text-sm text-muted-foreground whitespace-pre-wrap">
-                        {isAl ? selectedProduct.product_info_al : selectedProduct.product_info_en}
-                      </p>
-                    </AccordionContent>
-                  </AccordionItem>
-                )}
-                {(isAl ? selectedProduct.return_policy_al : selectedProduct.return_policy_en) && (
-                  <AccordionItem value="returns">
-                    <AccordionTrigger>{t("Politika e Kthimit", "Returns Policy")}</AccordionTrigger>
-                    <AccordionContent>
-                      <p className="text-sm text-muted-foreground whitespace-pre-wrap">
-                        {isAl ? selectedProduct.return_policy_al : selectedProduct.return_policy_en}
-                      </p>
-                    </AccordionContent>
-                  </AccordionItem>
-                )}
-                {(isAl ? selectedProduct.tech_specs_al : selectedProduct.tech_specs_en) && (
-                  <AccordionItem value="specs">
-                    <AccordionTrigger>{t("Specifikimet Teknike", "Technical Specifications")}</AccordionTrigger>
-                    <AccordionContent>
-                      <p className="text-sm text-muted-foreground whitespace-pre-wrap">
-                        {isAl ? selectedProduct.tech_specs_al : selectedProduct.tech_specs_en}
-                      </p>
-                    </AccordionContent>
-                  </AccordionItem>
-                )}
-              </Accordion>
-            </>
+            <ProductDetailView product={selectedProduct} isAl={isAl} t={t} allColors={allColors} allSizes={allSizes} />
           )}
         </DialogContent>
       </Dialog>
 
       <SiteFooter />
     </div>
+  );
+};
+
+// Product card component
+const ProductCard = ({ product, isAl, allColors, allSizes, onClick, t }: {
+  product: any; isAl: boolean; allColors?: ProductColor[]; allSizes?: ProductSize[];
+  onClick: () => void; t: (al: string, en: string) => string;
+}) => {
+  const productColors = allColors?.filter(c => c.product_id === product.id) ?? [];
+
+  return (
+    <div className="group cursor-pointer" onClick={onClick}>
+      <div className="relative aspect-square bg-muted rounded-lg overflow-hidden mb-2">
+        {product.image_url ? (
+          <img src={product.image_url} alt={isAl ? product.title_al : product.title_en}
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+        ) : (
+          <div className="flex items-center justify-center h-full">
+            <Package className="h-10 w-10 text-muted-foreground/20" />
+          </div>
+        )}
+        {product.customizable && (
+          <div className="absolute top-2 left-2">
+            <Badge className="text-[10px] bg-primary/90">{t("Personalizuar", "Customizable")}</Badge>
+          </div>
+        )}
+        {!product.in_stock && (
+          <div className="absolute inset-0 bg-background/50 flex items-center justify-center">
+            <Badge variant="destructive">{t("Jo në stok", "Out of stock")}</Badge>
+          </div>
+        )}
+      </div>
+      <h4 className="text-sm font-medium text-foreground group-hover:text-primary transition-colors truncate">
+        {isAl ? product.title_al : product.title_en}
+      </h4>
+      {productColors.length > 0 && (
+        <div className="flex items-center gap-1 mt-1">
+          {productColors.slice(0, 5).map(c => (
+            <div key={c.id} className="w-3 h-3 rounded-full border border-border" style={{ backgroundColor: c.color_hex }} title={c.color_name} />
+          ))}
+          {productColors.length > 5 && <span className="text-[10px] text-muted-foreground">+{productColors.length - 5}</span>}
+        </div>
+      )}
+      <span className="text-xs text-muted-foreground">
+        {isAl ? product.composition_al : product.composition_en}
+      </span>
+    </div>
+  );
+};
+
+// Product detail view
+const ProductDetailView = ({ product, isAl, t, allColors, allSizes }: {
+  product: any; isAl: boolean; t: (al: string, en: string) => string;
+  allColors?: ProductColor[]; allSizes?: ProductSize[];
+}) => {
+  const productColors = allColors?.filter(c => c.product_id === product.id) ?? [];
+  const productSizes = allSizes?.filter(s => s.product_id === product.id) ?? [];
+
+  return (
+    <>
+      <DialogHeader>
+        <DialogTitle className="text-xl font-light">
+          {isAl ? product.title_al : product.title_en}
+        </DialogTitle>
+      </DialogHeader>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
+        <ProductImageGallery mainImage={product.image_url} productId={product.id} />
+
+        <div className="space-y-4">
+          <div>
+            <p className="text-sm text-muted-foreground">{t("Kodi", "Code")} {product.code}</p>
+            <p className="text-foreground mt-2">
+              {isAl ? product.description_al : product.description_en}
+            </p>
+          </div>
+
+          {/* Color swatches */}
+          {productColors.length > 0 && (
+            <div>
+              <p className="text-xs font-medium text-muted-foreground mb-2">{t("Ngjyrat", "Colors")}</p>
+              <div className="flex flex-wrap gap-2">
+                {productColors.map(c => (
+                  <div key={c.id} className="flex items-center gap-1.5 px-2 py-1 bg-muted rounded text-xs">
+                    <div className="w-4 h-4 rounded-full border border-border" style={{ backgroundColor: c.color_hex }} />
+                    {c.color_name}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Sizes */}
+          {productSizes.length > 0 && (
+            <div>
+              <p className="text-xs font-medium text-muted-foreground mb-2">{t("Përmasat", "Sizes")}</p>
+              <div className="flex flex-wrap gap-2">
+                {productSizes.map(s => (
+                  <Badge key={s.id} variant="outline" className="text-xs">{s.size_label}</Badge>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Specs table */}
+          <div className="border rounded-lg overflow-hidden">
+            <table className="w-full text-sm">
+              <tbody>
+                {(product.weight_gsm ?? 0) > 0 && (
+                  <tr className="border-b">
+                    <td className="px-3 py-2 bg-muted/50 font-medium w-1/2">{t("Pesha", "Weight")}</td>
+                    <td className="px-3 py-2">{product.weight_gsm} gsm</td>
+                  </tr>
+                )}
+                <tr className="border-b">
+                  <td className="px-3 py-2 bg-muted/50 font-medium">{t("Përbërja", "Composition")}</td>
+                  <td className="px-3 py-2">{isAl ? product.composition_al : product.composition_en}</td>
+                </tr>
+                <tr className="border-b">
+                  <td className="px-3 py-2 bg-muted/50 font-medium">{t("Dimensionet", "Dimensions")}</td>
+                  <td className="px-3 py-2">{isAl ? product.dimensions_al : product.dimensions_en}</td>
+                </tr>
+                {(product.box_quantity ?? 0) > 0 && (
+                  <tr className="border-b">
+                    <td className="px-3 py-2 bg-muted/50 font-medium">{t("Kuti", "Box")}</td>
+                    <td className="px-3 py-2">{product.box_quantity}</td>
+                  </tr>
+                )}
+                {(product.pieces_per_box ?? 0) > 0 && (
+                  <tr>
+                    <td className="px-3 py-2 bg-muted/50 font-medium">{t("Copë / Kuti", "Pieces / Box")}</td>
+                    <td className="px-3 py-2">{product.pieces_per_box}</td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Stock + Customizable */}
+          <div className="flex gap-3">
+            <Badge variant={product.in_stock ? "default" : "destructive"}>
+              {product.in_stock ? t("Në stok", "In stock") : t("Jo në stok", "Out of stock")}
+            </Badge>
+            {product.customizable && (
+              <Badge variant="outline">{t("I personalizueshëm", "Customizable")}</Badge>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Accordion info sections */}
+      <Accordion type="multiple" className="mt-6">
+        {(isAl ? product.product_info_al : product.product_info_en) && (
+          <AccordionItem value="info">
+            <AccordionTrigger>{t("Informacion mbi Produktin", "Product Information")}</AccordionTrigger>
+            <AccordionContent>
+              <p className="text-sm text-muted-foreground whitespace-pre-wrap">
+                {isAl ? product.product_info_al : product.product_info_en}
+              </p>
+            </AccordionContent>
+          </AccordionItem>
+        )}
+        {(isAl ? product.return_policy_al : product.return_policy_en) && (
+          <AccordionItem value="returns">
+            <AccordionTrigger>{t("Politika e Kthimit", "Returns Policy")}</AccordionTrigger>
+            <AccordionContent>
+              <p className="text-sm text-muted-foreground whitespace-pre-wrap">
+                {isAl ? product.return_policy_al : product.return_policy_en}
+              </p>
+            </AccordionContent>
+          </AccordionItem>
+        )}
+        {(isAl ? product.tech_specs_al : product.tech_specs_en) && (
+          <AccordionItem value="specs">
+            <AccordionTrigger>{t("Specifikimet Teknike", "Technical Specifications")}</AccordionTrigger>
+            <AccordionContent>
+              <p className="text-sm text-muted-foreground whitespace-pre-wrap">
+                {isAl ? product.tech_specs_al : product.tech_specs_en}
+              </p>
+            </AccordionContent>
+          </AccordionItem>
+        )}
+      </Accordion>
+    </>
   );
 };
 
