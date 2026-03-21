@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useCollections, useUpsertCollection, useDeleteCollection, useUpdateCollectionOrder } from "@/hooks/useCollections";
 import { useToast } from "@/hooks/use-toast";
+import { useAutoTranslate } from "@/hooks/useAutoTranslate";
 import { uploadCmsImage } from "@/hooks/useCms";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,6 +12,7 @@ import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Plus, Trash2, GripVertical, Edit, Eye, EyeOff, FolderOpen, Image as ImageIcon } from "lucide-react";
+import { TranslateButton } from "./TranslateButton";
 import type { Tables } from "@/integrations/supabase/types";
 
 type Collection = Tables<"collections">;
