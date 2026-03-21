@@ -51,6 +51,8 @@ const pageTitles: Record<string, string> = {
   "auth-logs": "Auth Logs",
   "auth-texts": "Auth Form Texts",
   slugs: "URL Slugs",
+  collections: "Koleksionet",
+  products: "Produktet",
   design: "Design Settings",
   settings: "Settings",
 };
