@@ -49,6 +49,8 @@ const menuItems = [
   { key: "certifications-logos", label: "Certifications Logos", icon: Award, group: "content" },
   { key: "registrations", label: "Registrations", icon: Users, group: "content" },
   { key: "registration-form", label: "Registration Form", icon: FileText, group: "content" },
+  { key: "collections", label: "Koleksionet", icon: FolderOpen, group: "content" },
+  { key: "products", label: "Produktet", icon: Package, group: "content" },
   { key: "media", label: "Media", icon: Image, group: "content" },
   { key: "users", label: "Users", icon: UserCog, group: "users" },
   { key: "auth-logs", label: "Auth Logs", icon: ScrollText, group: "users" },
