@@ -172,6 +172,8 @@ const ProductDetail = () => {
   const toggleWishlist = useToggleWishlist();
 
   const [lightbox, setLightbox] = useState<{ images: string[]; index: number } | null>(null);
+  const [selectedColorId, setSelectedColorId] = useState<string | null>(null);
+  const [selectedSizeId, setSelectedSizeId] = useState<string | null>(null);
 
   const t = (al: string, en: string) => (isAl ? al : en);
 
