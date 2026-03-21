@@ -547,8 +547,7 @@ const Collections = () => {
                       product={product}
                       isAl={isAl}
                       allColors={allColors}
-                      allSizes={allSizes}
-                      onClick={() => setSelectedProduct(product)}
+                      collectionSlug={slug ?? ""}
                       t={t}
                     />
                   ))}
