@@ -23,7 +23,7 @@ export const AdminCollectionsManager = () => {
   const remove = useDeleteCollection();
   const updateOrder = useUpdateCollectionOrder();
   const { toast } = useToast();
-
+  const { translateField, translating } = useAutoTranslate();
   const [editItem, setEditItem] = useState<Partial<Collection> | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
 
