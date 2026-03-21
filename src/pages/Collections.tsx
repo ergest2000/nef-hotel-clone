@@ -384,7 +384,7 @@ const Collections = () => {
       )}
 
       {/* Main content: sidebar + products */}
-      <div className="max-w-7xl mx-auto px-4 py-8">
+      <div className="max-w-7xl mx-auto px-4 py-8 flex-1">
         {/* Mobile filter button */}
         <div className="lg:hidden mb-4">
           <Button
