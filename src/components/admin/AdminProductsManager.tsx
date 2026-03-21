@@ -553,15 +553,6 @@ export const AdminProductsManager = () => {
                         </div>
                       </div>
                     </AccordionContent>
-                  </AccordionItem>
-                        </div>
-                        <div>
-                          <label className="text-xs font-medium text-muted-foreground">EN</label>
-                          <Textarea value={editItem.tech_specs_en ?? ""} onChange={(e) => setEditItem({ ...editItem, tech_specs_en: e.target.value })} rows={4} />
-                        </div>
-                      </div>
-                    </AccordionContent>
-                  </AccordionItem>
                 </Accordion>
               </TabsContent>
 
