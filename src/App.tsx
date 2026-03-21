@@ -35,6 +35,7 @@ const App = () => (
               <Route path="/reset-password" element={<ResetPassword />} />
               <Route path="/koleksionet" element={<Collections />} />
               <Route path="/koleksionet/:slug" element={<Collections />} />
+              <Route path="/koleksionet/:slug/:productId" element={<ProductDetail />} />
               {/* Blog post with nested slug */}
               <Route path="/:slug/:id" element={<BlogPost />} />
               {/* Dynamic slug-based routing for all pages */}
