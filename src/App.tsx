@@ -9,6 +9,7 @@ import { DesignProvider } from "@/hooks/useDesignSettings";
 import Index from "./pages/Index";
 import BlogPost from "./pages/BlogPost";
 import Collections from "./pages/Collections";
+import ProductDetail from "./pages/ProductDetail";
 import AdminDashboard from "./pages/AdminDashboard";
 import AdminRoute from "./components/AdminRoute";
 import ScrollToTop from "./components/ScrollToTop";
