@@ -428,21 +428,33 @@ export const AdminProductsManager = () => {
               <TabsContent value="details" className="space-y-4 mt-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="text-xs font-medium text-muted-foreground">Përbërja (AL)</label>
+                    <div className="flex items-center justify-between">
+                      <label className="text-xs font-medium text-muted-foreground">Përbërja (AL)</label>
+                      <TranslateButton direction="al_to_en" loading={translating === "p_comp"} onClick={() => translateField("p_comp", editItem.composition_al ?? "", "al_to_en", (t) => setEditItem((p) => p ? { ...p, composition_en: t } : p))} />
+                    </div>
                     <Input value={editItem.composition_al ?? ""} onChange={(e) => setEditItem({ ...editItem, composition_al: e.target.value })} placeholder="100% Pambuk" />
                   </div>
                   <div>
-                    <label className="text-xs font-medium text-muted-foreground">Composition (EN)</label>
+                    <div className="flex items-center justify-between">
+                      <label className="text-xs font-medium text-muted-foreground">Composition (EN)</label>
+                      <TranslateButton direction="en_to_al" loading={translating === "p_comp_r"} onClick={() => translateField("p_comp_r", editItem.composition_en ?? "", "en_to_al", (t) => setEditItem((p) => p ? { ...p, composition_al: t } : p))} />
+                    </div>
                     <Input value={editItem.composition_en ?? ""} onChange={(e) => setEditItem({ ...editItem, composition_en: e.target.value })} placeholder="100% Cotton" />
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="text-xs font-medium text-muted-foreground">Dimensionet (AL)</label>
+                    <div className="flex items-center justify-between">
+                      <label className="text-xs font-medium text-muted-foreground">Dimensionet (AL)</label>
+                      <TranslateButton direction="al_to_en" loading={translating === "p_dim"} onClick={() => translateField("p_dim", editItem.dimensions_al ?? "", "al_to_en", (t) => setEditItem((p) => p ? { ...p, dimensions_en: t } : p))} />
+                    </div>
                     <Input value={editItem.dimensions_al ?? ""} onChange={(e) => setEditItem({ ...editItem, dimensions_al: e.target.value })} placeholder="80x150" />
                   </div>
                   <div>
-                    <label className="text-xs font-medium text-muted-foreground">Dimensions (EN)</label>
+                    <div className="flex items-center justify-between">
+                      <label className="text-xs font-medium text-muted-foreground">Dimensions (EN)</label>
+                      <TranslateButton direction="en_to_al" loading={translating === "p_dim_r"} onClick={() => translateField("p_dim_r", editItem.dimensions_en ?? "", "en_to_al", (t) => setEditItem((p) => p ? { ...p, dimensions_al: t } : p))} />
+                    </div>
                     <Input value={editItem.dimensions_en ?? ""} onChange={(e) => setEditItem({ ...editItem, dimensions_en: e.target.value })} placeholder="80x150" />
                   </div>
                 </div>
