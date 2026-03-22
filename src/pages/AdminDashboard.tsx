@@ -248,6 +248,12 @@ const AdminDashboard = () => {
         return <AdminCollectionsManager />;
       case "products":
         return <AdminProductsManager />;
+      case "suggested-products":
+        return <AdminSuggestedProducts />;
+      case "homepage-categories":
+        return <AdminHomepageCategories />;
+      case "static-pages":
+        return <AdminStaticPages />;
       case "design":
         return <AdminDesignSettings />;
       case "media":
