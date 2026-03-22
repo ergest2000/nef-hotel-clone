@@ -56,6 +56,9 @@ const pageTitles: Record<string, string> = {
   slugs: "URL Slugs",
   collections: "Koleksionet",
   products: "Produktet",
+  "suggested-products": "Sugjerime Homepage",
+  "homepage-categories": "Kategoritë Homepage",
+  "static-pages": "Faqet Statike",
   design: "Design Settings",
   settings: "Settings",
 };
