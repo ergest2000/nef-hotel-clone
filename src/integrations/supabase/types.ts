@@ -175,6 +175,71 @@ export type Database = {
         }
         Relationships: []
       }
+      homepage_categories: {
+        Row: {
+          created_at: string
+          id: string
+          image_url: string | null
+          link_url: string
+          sort_order: number
+          title_al: string
+          title_en: string
+          updated_at: string
+          visible: boolean
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          image_url?: string | null
+          link_url?: string
+          sort_order?: number
+          title_al?: string
+          title_en?: string
+          updated_at?: string
+          visible?: boolean
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          image_url?: string | null
+          link_url?: string
+          sort_order?: number
+          title_al?: string
+          title_en?: string
+          updated_at?: string
+          visible?: boolean
+        }
+        Relationships: []
+      }
+      homepage_suggested_products: {
+        Row: {
+          created_at: string
+          id: string
+          product_id: string
+          sort_order: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          product_id: string
+          sort_order?: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          product_id?: string
+          sort_order?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "homepage_suggested_products_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: true
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       managed_logos: {
         Row: {
           category: string
@@ -675,6 +740,39 @@ export type Database = {
           sort_order?: number
           updated_at?: string
           visible?: boolean
+        }
+        Relationships: []
+      }
+      static_pages: {
+        Row: {
+          content_al: string
+          content_en: string
+          created_at: string
+          id: string
+          page_key: string
+          title_al: string
+          title_en: string
+          updated_at: string
+        }
+        Insert: {
+          content_al?: string
+          content_en?: string
+          created_at?: string
+          id?: string
+          page_key: string
+          title_al?: string
+          title_en?: string
+          updated_at?: string
+        }
+        Update: {
+          content_al?: string
+          content_en?: string
+          created_at?: string
+          id?: string
+          page_key?: string
+          title_al?: string
+          title_en?: string
+          updated_at?: string
         }
         Relationships: []
       }
