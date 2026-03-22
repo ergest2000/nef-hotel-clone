@@ -19,6 +19,9 @@ import {
   Type,
   FolderOpen,
   Package,
+  Star,
+  Grid3X3,
+  BookOpen,
 } from "lucide-react";
 import {
   Sidebar,
