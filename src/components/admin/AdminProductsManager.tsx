@@ -28,7 +28,7 @@ type Product = Tables<"products">;
 
 const emptyProduct: Partial<Product> = {
   title_al: "", title_en: "", description_al: "", description_en: "",
-  code: "", color: "", color_hex: "#FFFFFF",
+  code: "",
   composition_al: "", composition_en: "", dimensions_al: "", dimensions_en: "",
   weight_gsm: 0, box_quantity: 1, pieces_per_box: 1,
   in_stock: true, customizable: false,
