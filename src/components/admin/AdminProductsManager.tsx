@@ -286,9 +286,6 @@ export const AdminProductsManager = () => {
                 <h4 className="font-medium text-sm truncate">{product.title_al || product.code || "Pa titull"}</h4>
                 <p className="text-xs text-muted-foreground mt-0.5">{product.code}</p>
                 <div className="flex items-center gap-2 mt-2">
-                  {product.color_hex && (
-                    <div className="w-4 h-4 rounded-full border border-border" style={{ backgroundColor: product.color_hex }} />
-                  )}
                   <span className="text-xs text-muted-foreground">{product.dimensions_al}</span>
                 </div>
                 <div className="flex items-center justify-between mt-3">
