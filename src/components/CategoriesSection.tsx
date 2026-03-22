@@ -1,4 +1,6 @@
 import { getContentValue } from "@/hooks/useCms";
+import { useHomepageCategories } from "@/hooks/useHomepageCategories";
+import { useLanguage } from "@/hooks/useLanguage";
 import catBedroom from "@/assets/cat-bedroom.jpg";
 import catBathroom from "@/assets/cat-bathroom.jpg";
 import catMattresses from "@/assets/cat-mattresses.jpg";
@@ -25,29 +27,33 @@ const defaultCategories = [
 const CategoriesSection = ({ content }: { content?: SiteContent[] }) => {
   const title = getContentValue(content, "categories", "title", "CATEGORIES");
   const subtitle = getContentValue(content, "categories", "subtitle", "Our hotel collection includes 8 product categories with solutions that cover every need.");
+  const { lang } = useLanguage();
+  const { data: dynamicCategories } = useHomepageCategories(true);
 
-  const categories = defaultCategories.map((def) => {
-    const name = getContentValue(content, "categories", `${def.key}_name`, def.name);
-    const imageVal = getContentValue(content, "categories", `${def.key}_image`, "");
-    const image = imageVal && !imageVal.startsWith("/src/") ? imageVal : def.image;
-    return { name, image };
-  });
+  const categories = dynamicCategories?.length
+    ? dynamicCategories.map((c) => ({
+        name: lang === "en" ? (c.title_en || c.title_al) : (c.title_al || c.title_en),
+        image: c.image_url || catBedroom,
+        link: c.link_url || "#",
+        id: c.id,
+      }))
+    : defaultCategories.map((def) => ({
+        name: def.name,
+        image: def.image,
+        link: "#",
+        id: def.key,
+      }));
 
   return (
     <section className="py-16 md:py-24">
       <div className="container">
         <div className="text-center mb-12">
-          <h2 className="text-xl md:text-2xl tracking-wide-brand text-foreground font-light">
-            {title}
-          </h2>
-          <p className="mt-4 text-sm text-muted-foreground max-w-xl mx-auto">
-            {subtitle}
-          </p>
+          <h2 className="text-xl md:text-2xl tracking-wide-brand text-foreground font-light">{title}</h2>
+          <p className="mt-4 text-sm text-muted-foreground max-w-xl mx-auto">{subtitle}</p>
         </div>
-
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
           {categories.map((cat) => (
-            <a key={cat.name} href="#" className="group flex flex-col">
+            <a key={cat.id} href={cat.link} className="group flex flex-col">
               <div className="relative aspect-square overflow-hidden">
                 <img src={cat.image} alt={cat.name} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" loading="lazy" />
                 <div className="absolute inset-0 bg-foreground/10 group-hover:bg-foreground/25 transition-colors" />
