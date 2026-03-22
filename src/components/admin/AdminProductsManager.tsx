@@ -392,22 +392,9 @@ export const AdminProductsManager = () => {
                     <Textarea value={editItem.description_en ?? ""} onChange={(e) => setEditItem({ ...editItem, description_en: e.target.value })} rows={3} />
                   </div>
                 </div>
-                <div className="grid grid-cols-3 gap-4">
-                  <div>
-                    <label className="text-xs font-medium text-muted-foreground">Kodi</label>
-                    <Input value={editItem.code ?? ""} onChange={(e) => setEditItem({ ...editItem, code: e.target.value })} />
-                  </div>
-                  <div>
-                    <label className="text-xs font-medium text-muted-foreground">Ngjyra kryesore</label>
-                    <Input value={editItem.color ?? ""} onChange={(e) => setEditItem({ ...editItem, color: e.target.value })} placeholder="E bardhë" />
-                  </div>
-                  <div>
-                    <label className="text-xs font-medium text-muted-foreground">Ngjyra (Hex)</label>
-                    <div className="flex gap-2">
-                      <Input type="color" value={editItem.color_hex ?? "#FFFFFF"} onChange={(e) => setEditItem({ ...editItem, color_hex: e.target.value })} className="w-12 p-1 h-10" />
-                      <Input value={editItem.color_hex ?? ""} onChange={(e) => setEditItem({ ...editItem, color_hex: e.target.value })} />
-                    </div>
-                  </div>
+                <div>
+                  <label className="text-xs font-medium text-muted-foreground">Kodi</label>
+                  <Input value={editItem.code ?? ""} onChange={(e) => setEditItem({ ...editItem, code: e.target.value })} />
                 </div>
                 <div className="flex items-center gap-6">
                   <div className="flex items-center gap-2">
