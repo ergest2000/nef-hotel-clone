@@ -19,6 +19,9 @@ import {
   Type,
   FolderOpen,
   Package,
+  Star,
+  Grid3X3,
+  BookOpen,
 } from "lucide-react";
 import {
   Sidebar,
@@ -55,6 +58,9 @@ const menuItems: { key: string; label: string; icon: any; group: string; roles?:
   { key: "registration-form", label: "Registration Form", icon: FileText, group: "content", roles: ["admin", "manager"] },
   { key: "collections", label: "Koleksionet", icon: FolderOpen, group: "content" },
   { key: "products", label: "Produktet", icon: Package, group: "content" },
+  { key: "suggested-products", label: "Sugjerime Homepage", icon: Star, group: "content" },
+  { key: "homepage-categories", label: "Kategoritë Homepage", icon: Grid3X3, group: "content" },
+  { key: "static-pages", label: "Faqet Statike", icon: BookOpen, group: "content" },
   { key: "media", label: "Media", icon: Image, group: "content" },
   { key: "users", label: "Users", icon: UserCog, group: "users", roles: ["admin", "manager"] },
   { key: "auth-logs", label: "Auth Logs", icon: ScrollText, group: "users", roles: ["admin"] },

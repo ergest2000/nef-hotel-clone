@@ -27,6 +27,9 @@ import { AdminAuthLogs } from "@/components/admin/AdminAuthLogs";
 import { AdminAuthTexts } from "@/components/admin/AdminAuthTexts";
 import { AdminCollectionsManager } from "@/components/admin/AdminCollectionsManager";
 import { AdminProductsManager } from "@/components/admin/AdminProductsManager";
+import { AdminSuggestedProducts } from "@/components/admin/AdminSuggestedProducts";
+import { AdminHomepageCategories } from "@/components/admin/AdminHomepageCategories";
+import { AdminStaticPages } from "@/components/admin/AdminStaticPages";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import type { Tables } from "@/integrations/supabase/types";
 
@@ -53,6 +56,9 @@ const pageTitles: Record<string, string> = {
   slugs: "URL Slugs",
   collections: "Koleksionet",
   products: "Produktet",
+  "suggested-products": "Sugjerime Homepage",
+  "homepage-categories": "Kategoritë Homepage",
+  "static-pages": "Faqet Statike",
   design: "Design Settings",
   settings: "Settings",
 };
@@ -242,6 +248,12 @@ const AdminDashboard = () => {
         return <AdminCollectionsManager />;
       case "products":
         return <AdminProductsManager />;
+      case "suggested-products":
+        return <AdminSuggestedProducts />;
+      case "homepage-categories":
+        return <AdminHomepageCategories />;
+      case "static-pages":
+        return <AdminStaticPages />;
       case "design":
         return <AdminDesignSettings />;
       case "media":

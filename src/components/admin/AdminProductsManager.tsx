@@ -28,7 +28,7 @@ type Product = Tables<"products">;
 
 const emptyProduct: Partial<Product> = {
   title_al: "", title_en: "", description_al: "", description_en: "",
-  code: "", color: "", color_hex: "#FFFFFF",
+  code: "",
   composition_al: "", composition_en: "", dimensions_al: "", dimensions_en: "",
   weight_gsm: 0, box_quantity: 1, pieces_per_box: 1,
   in_stock: true, customizable: false,
@@ -286,9 +286,6 @@ export const AdminProductsManager = () => {
                 <h4 className="font-medium text-sm truncate">{product.title_al || product.code || "Pa titull"}</h4>
                 <p className="text-xs text-muted-foreground mt-0.5">{product.code}</p>
                 <div className="flex items-center gap-2 mt-2">
-                  {product.color_hex && (
-                    <div className="w-4 h-4 rounded-full border border-border" style={{ backgroundColor: product.color_hex }} />
-                  )}
                   <span className="text-xs text-muted-foreground">{product.dimensions_al}</span>
                 </div>
                 <div className="flex items-center justify-between mt-3">
@@ -392,22 +389,9 @@ export const AdminProductsManager = () => {
                     <Textarea value={editItem.description_en ?? ""} onChange={(e) => setEditItem({ ...editItem, description_en: e.target.value })} rows={3} />
                   </div>
                 </div>
-                <div className="grid grid-cols-3 gap-4">
-                  <div>
-                    <label className="text-xs font-medium text-muted-foreground">Kodi</label>
-                    <Input value={editItem.code ?? ""} onChange={(e) => setEditItem({ ...editItem, code: e.target.value })} />
-                  </div>
-                  <div>
-                    <label className="text-xs font-medium text-muted-foreground">Ngjyra kryesore</label>
-                    <Input value={editItem.color ?? ""} onChange={(e) => setEditItem({ ...editItem, color: e.target.value })} placeholder="E bardhë" />
-                  </div>
-                  <div>
-                    <label className="text-xs font-medium text-muted-foreground">Ngjyra (Hex)</label>
-                    <div className="flex gap-2">
-                      <Input type="color" value={editItem.color_hex ?? "#FFFFFF"} onChange={(e) => setEditItem({ ...editItem, color_hex: e.target.value })} className="w-12 p-1 h-10" />
-                      <Input value={editItem.color_hex ?? ""} onChange={(e) => setEditItem({ ...editItem, color_hex: e.target.value })} />
-                    </div>
-                  </div>
+                <div>
+                  <label className="text-xs font-medium text-muted-foreground">Kodi</label>
+                  <Input value={editItem.code ?? ""} onChange={(e) => setEditItem({ ...editItem, code: e.target.value })} />
                 </div>
                 <div className="flex items-center gap-6">
                   <div className="flex items-center gap-2">
