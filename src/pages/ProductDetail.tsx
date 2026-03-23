@@ -463,7 +463,7 @@ const ProductDetail = () => {
                   {t("POLITIKA E KTHIMIT", "RETURNS POLICY")}
                 </AccordionTrigger>
                 <AccordionContent>
-                  <GlobalReturnPolicy isAl={isAl} t={t} />
+                  <GlobalReturnPolicy isAl={isAl} />
                 </AccordionContent>
               </AccordionItem>
               <AccordionItem value="specs">
