@@ -9,6 +9,8 @@ const MembershipSection = ({ content }: { content?: SiteContent[] }) => {
   const description = getContentValue(content, "membership", "description", "Sign up and join the EGJEU family to have access to plenty of exclusive offers for products that suit all of your hotel needs!");
   const bgVal = getContentValue(content, "membership", "bg_image", "");
   const bgImage = bgVal && !bgVal.startsWith("/src/") ? bgVal : membershipBg;
+  const signUpText = getContentValue(content, "membership", "signup_text", "Sign Up");
+  const signInText = getContentValue(content, "membership", "signin_text", "Sign In");
 
   return (
     <section className="relative py-20 md:py-32 overflow-hidden">
@@ -18,8 +20,8 @@ const MembershipSection = ({ content }: { content?: SiteContent[] }) => {
         <h2 className="text-xl md:text-2xl tracking-wide-brand text-primary-foreground font-light mb-6">{title}</h2>
         <p className="text-sm md:text-base text-primary-foreground/80 leading-relaxed mb-10">{description}</p>
         <div className="flex justify-center gap-4">
-          <a href="/register" className="rounded px-8 py-3 bg-primary-foreground text-primary text-xs tracking-wide-brand uppercase hover:bg-primary-foreground/90 transition-colors">Sign Up</a>
-          <a href="/login" className="rounded px-8 py-3 border border-primary-foreground text-primary-foreground text-xs tracking-wide-brand uppercase hover:bg-primary-foreground hover:text-primary transition-colors">Sign In</a>
+          <a href="/register" className="rounded px-8 py-3 bg-primary-foreground text-primary text-xs tracking-wide-brand uppercase hover:bg-primary-foreground/90 transition-colors">{signUpText}</a>
+          <a href="/login" className="rounded px-8 py-3 border border-primary-foreground text-primary-foreground text-xs tracking-wide-brand uppercase hover:bg-primary-foreground hover:text-primary transition-colors">{signInText}</a>
         </div>
       </div>
     </section>

@@ -30,6 +30,7 @@ import { AdminProductsManager } from "@/components/admin/AdminProductsManager";
 import { AdminSuggestedProducts } from "@/components/admin/AdminSuggestedProducts";
 import { AdminHomepageCategories } from "@/components/admin/AdminHomepageCategories";
 import { AdminStaticPages } from "@/components/admin/AdminStaticPages";
+import { AdminGalleryManager } from "@/components/admin/AdminGalleryManager";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import type { Tables } from "@/integrations/supabase/types";
 
@@ -59,6 +60,7 @@ const pageTitles: Record<string, string> = {
   "suggested-products": "Sugjerime Homepage",
   "homepage-categories": "Kategoritë Homepage",
   "static-pages": "Faqet Statike",
+  gallery: "Galeria",
   design: "Design Settings",
   settings: "Settings",
 };
@@ -69,7 +71,11 @@ const AdminDashboard = () => {
   const { signOut, user } = useAuth();
   const { toast } = useToast();
   const [lang, setLang] = useState<"al" | "en">("al");
-  const [activePage, setActivePage] = useState("dashboard");
+  const [activePage, setActivePageRaw] = useState(() => sessionStorage.getItem("admin_active_page") || "dashboard");
+  const setActivePage = (page: string) => {
+    sessionStorage.setItem("admin_active_page", page);
+    setActivePageRaw(page);
+  };
 
   const { data: content, isLoading: loadingContent } = useAllContent();
   const { data: sections, isLoading: loadingSections } = useAllSections();
@@ -254,6 +260,8 @@ const AdminDashboard = () => {
         return <AdminHomepageCategories />;
       case "static-pages":
         return <AdminStaticPages />;
+      case "gallery":
+        return <AdminGalleryManager />;
       case "design":
         return <AdminDesignSettings />;
       case "media":
