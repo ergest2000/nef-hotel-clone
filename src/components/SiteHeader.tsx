@@ -6,6 +6,7 @@ import logo from "@/assets/egjeu-logo.png";
 import { useNavMenusByLocation } from "@/hooks/useNavMenus";
 import { useLanguage } from "@/hooks/useLanguage";
 import { useProductSearch } from "@/hooks/useProductSearch";
+import { useCart } from "@/hooks/useCart";
 
 const productLinks = [
   { label: "Dhomë Gjumi", href: "#" },

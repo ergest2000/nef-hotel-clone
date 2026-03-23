@@ -37,9 +37,18 @@ export const useSuggestedProductsFull = () =>
         .in("id", ids)
         .eq("visible", true);
       if (pErr) throw pErr;
+      // Fetch collections for slugs
+      const collectionIds = [...new Set((products ?? []).map((p) => p.collection_id))];
+      const { data: collections } = await supabase
+        .from("collections")
+        .select("id, slug")
+        .in("id", collectionIds);
+      const slugMap = new Map((collections ?? []).map((c) => [c.id, c.slug]));
       // Sort by suggestion order
       const orderMap = new Map((suggestions as any[]).map((s: any) => [s.product_id, s.sort_order]));
-      return (products ?? []).sort((a, b) => (orderMap.get(a.id) ?? 0) - (orderMap.get(b.id) ?? 0));
+      return (products ?? [])
+        .sort((a, b) => (orderMap.get(a.id) ?? 0) - (orderMap.get(b.id) ?? 0))
+        .map((p) => ({ ...p, collectionSlug: slugMap.get(p.collection_id) || "all" }));
     },
   });
 
