@@ -25,6 +25,7 @@ const Contact = () => {
   const mapLat = settings["contact_map_lat"] || "41.3275";
   const mapLng = settings["contact_map_lng"] || "19.8187";
   const mapZoom = settings["contact_map_zoom"] || "15";
+  const infoBgColor = settings["contact_info_bg_color"];
 
   const isSectionVisible = (key: string) => {
     if (!sections) return true;
