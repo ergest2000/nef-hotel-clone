@@ -143,9 +143,9 @@ const Cart = () => {
                       <button onClick={() => removeItem(item.productId)} className="text-muted-foreground"><X className="h-4 w-4" /></button>
                     </div>
                     <p className="text-xs text-muted-foreground mt-1">{item.color} • {item.size || "—"}</p>
-                    <p className="text-xs text-muted-foreground">{tr("Copëza", "Pieces")}: {item.pieces}</p>
+                    <p className="text-xs text-muted-foreground">{tr("cart_pieces_label", "Copëza", "Pieces")}: {item.pieces}</p>
                     <div className="flex items-center gap-2 mt-2">
-                      <span className="text-xs text-muted-foreground">{tr("Kuti", "Box")}:</span>
+                      <span className="text-xs text-muted-foreground">{tr("cart_box_label", "Kuti", "Box")}:</span>
                       <button onClick={() => updateItem(item.productId, { boxes: Math.max(1, item.boxes - 1) })} className="text-muted-foreground"><Minus className="h-3 w-3" /></button>
                       <span className="text-sm font-medium">{item.boxes}</span>
                       <button onClick={() => updateItem(item.productId, { boxes: item.boxes + 1 })} className="text-muted-foreground"><Plus className="h-3 w-3" /></button>
