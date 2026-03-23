@@ -166,7 +166,10 @@ const Cart = () => {
                 </Button>
               </Link>
               <Link to="/checkout">
-                <Button className="w-full sm:w-auto h-14 px-12 text-xs tracking-wider uppercase rounded-none bg-foreground/80 hover:bg-foreground text-background">
+                <Button
+                  className="w-full sm:w-auto h-14 px-12 text-xs tracking-wider uppercase rounded-none text-background"
+                  style={quoteButtonColor ? { backgroundColor: `hsl(${quoteButtonColor})` } : { backgroundColor: 'hsl(var(--foreground) / 0.8)' }}
+                >
                   {cartQuote}
                 </Button>
               </Link>

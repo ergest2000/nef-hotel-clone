@@ -126,8 +126,11 @@ const BlogPostForm = ({
     <div className="space-y-4 bg-background border border-border rounded-md p-4">
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-1">
-          <label className="text-[10px] tracking-brand text-muted-foreground uppercase">Slug</label>
+          <label className="text-[10px] tracking-brand text-muted-foreground uppercase">Slug (URL)</label>
           <Input value={form.slug} onChange={(e) => update("slug", e.target.value)} className="text-xs h-9" placeholder="url-slug" />
+          {post?.slug && form.slug !== post.slug && (
+            <p className="text-[9px] text-amber-600">⚠ Ndryshimi i slug do ndryshojë URL-në e postimit</p>
+          )}
         </div>
         <div className="space-y-1">
           <label className="text-[10px] tracking-brand text-muted-foreground uppercase">Autori</label>
