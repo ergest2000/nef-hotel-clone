@@ -453,10 +453,7 @@ const ProductDetail = () => {
                   {t("POLITIKA E KTHIMIT", "RETURNS POLICY")}
                 </AccordionTrigger>
                 <AccordionContent>
-                  <p className="text-sm text-muted-foreground whitespace-pre-wrap leading-relaxed">
-                    {(isAl ? product.return_policy_al : product.return_policy_en) ||
-                      t("Politika e kthimit do shtohet së shpejti.", "Returns policy will be added soon.")}
-                  </p>
+                  <GlobalReturnPolicy isAl={isAl} t={t} />
                 </AccordionContent>
               </AccordionItem>
               <AccordionItem value="specs">
