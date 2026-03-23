@@ -23,15 +23,17 @@ const SuggestionsSection = ({ content }: { content?: SiteContent[] }) => {
 
   // Use dynamic products if available, fallback to defaults
   const products = dynamicProducts?.length
-    ? dynamicProducts.map((p) => ({
+    ? dynamicProducts.map((p: any) => ({
         name: lang === "en" ? (p.title_en || p.title_al) : (p.title_al || p.title_en),
         image: p.image_url || catBedroom,
         id: p.id,
+        collectionSlug: p.collectionSlug || "all",
       }))
     : defaultProducts.map((def) => ({
         name: def.name,
         image: def.image,
         id: def.key,
+        collectionSlug: "all",
       }));
 
   return (
