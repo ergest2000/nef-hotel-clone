@@ -153,7 +153,7 @@ const SiteHeader = () => {
             </div>
             <div className="flex items-center gap-7 shrink-0 ml-auto">
               <button className="flex items-center gap-1.5 text-muted-foreground hover:text-foreground transition-colors"><Heart size={15} /> <span>0</span></button>
-              <button className="flex items-center gap-1.5 text-muted-foreground hover:text-foreground transition-colors"><ShoppingCart size={15} /> <span>0</span></button>
+              <Link to="/shporta" className="flex items-center gap-1.5 text-muted-foreground hover:text-foreground transition-colors"><ShoppingCart size={15} /> <span>{totalItems}</span></Link>
               <SlugLink to="/register" className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors px-3"><UserPlus size={15} /> <span className="whitespace-nowrap">{isAl ? "REGJISTROHU / HYR" : "REGISTER / LOGIN"}</span></SlugLink>
             </div>
           </div>
