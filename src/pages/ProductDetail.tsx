@@ -19,7 +19,7 @@ import { Heart, ShoppingBag, Package, Palette, ChevronLeft, ChevronRight, Search
 import { useDesignSettings } from "@/hooks/useDesignSettings";
 
 // Global Return Policy component
-const GlobalReturnPolicy = ({ isAl, t }: { isAl: boolean; t: (al: string, en: string) => string }) => {
+const GlobalReturnPolicy = ({ isAl }: { isAl: boolean }) => {
   const { settings } = useDesignSettings();
   const policy = isAl
     ? (settings["global_return_policy_al"] || "Politika e kthimit do shtohet së shpejti.")
