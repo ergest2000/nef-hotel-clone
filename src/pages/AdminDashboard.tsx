@@ -30,6 +30,7 @@ import { AdminProductsManager } from "@/components/admin/AdminProductsManager";
 import { AdminSuggestedProducts } from "@/components/admin/AdminSuggestedProducts";
 import { AdminHomepageCategories } from "@/components/admin/AdminHomepageCategories";
 import { AdminStaticPages } from "@/components/admin/AdminStaticPages";
+import { AdminGalleryManager } from "@/components/admin/AdminGalleryManager";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import type { Tables } from "@/integrations/supabase/types";
 

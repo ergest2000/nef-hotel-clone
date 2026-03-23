@@ -1,7 +1,8 @@
-import { useEffect, useRef } from "react";
+import { useRef } from "react";
 import useEmblaCarousel from "embla-carousel-react";
 import Autoplay from "embla-carousel-autoplay";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { useGalleryImages } from "@/hooks/useGalleryImages";
 
 import galleryTowels1 from "@/assets/gallery-towels-1.jpg";
 import galleryBedlinen1 from "@/assets/gallery-bedlinen-1.jpg";
@@ -14,7 +15,7 @@ import galleryEmbroidery2 from "@/assets/gallery-embroidery-2.jpg";
 import gallerySpa2 from "@/assets/gallery-spa-2.jpg";
 import galleryDining1 from "@/assets/gallery-dining-1.jpg";
 
-const galleryItems = [
+const defaultGallery = [
   { src: galleryTowels1, alt: "Luxury hotel towels" },
   { src: galleryBedlinen1, alt: "Premium hotel bed linen" },
   { src: galleryEmbroidery1, alt: "Embroidered hotel pillowcase" },
@@ -28,6 +29,12 @@ const galleryItems = [
 ];
 
 const ProductGalleryCarousel = () => {
+  const { data: dynamicImages } = useGalleryImages("tailor-made");
+
+  const galleryItems = dynamicImages?.length
+    ? dynamicImages.map((img) => ({ src: img.image_url, alt: img.alt_text }))
+    : defaultGallery;
+
   const autoplayPlugin = useRef(
     Autoplay({ delay: 3000, stopOnInteraction: false, stopOnMouseEnter: true })
   );
@@ -48,7 +55,6 @@ const ProductGalleryCarousel = () => {
         </h2>
 
         <div className="relative group">
-          {/* Arrows */}
           <button
             onClick={scrollPrev}
             className="absolute left-2 top-1/2 -translate-y-1/2 z-10 w-10 h-10 bg-background/80 border border-border rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-background"
@@ -64,7 +70,6 @@ const ProductGalleryCarousel = () => {
             <ChevronRight size={20} className="text-foreground" />
           </button>
 
-          {/* Carousel */}
           <div ref={emblaRef} className="overflow-hidden">
             <div className="flex">
               {galleryItems.map((item, i) => (
