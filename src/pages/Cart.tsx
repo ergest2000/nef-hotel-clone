@@ -38,7 +38,7 @@ const Cart = () => {
       <div className="bg-muted/50 border-b border-border">
         <div className="max-w-7xl mx-auto px-4 py-3">
           <div className="flex items-center gap-2 text-xs text-muted-foreground uppercase tracking-wider">
-            <Link to="/" className="hover:text-foreground">{tr("KRYESORE", "HOME")}</Link>
+            <Link to="/" className="hover:text-foreground">{tr("cart_home", "KRYESORE", "HOME")}</Link>
             <span>-</span>
             <span className="text-foreground">{cartTitle}</span>
           </div>
