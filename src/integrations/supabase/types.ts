@@ -175,6 +175,39 @@ export type Database = {
         }
         Relationships: []
       }
+      gallery_images: {
+        Row: {
+          alt_text: string
+          created_at: string
+          gallery_key: string
+          id: string
+          image_url: string
+          sort_order: number
+          updated_at: string
+          visible: boolean
+        }
+        Insert: {
+          alt_text?: string
+          created_at?: string
+          gallery_key?: string
+          id?: string
+          image_url?: string
+          sort_order?: number
+          updated_at?: string
+          visible?: boolean
+        }
+        Update: {
+          alt_text?: string
+          created_at?: string
+          gallery_key?: string
+          id?: string
+          image_url?: string
+          sort_order?: number
+          updated_at?: string
+          visible?: boolean
+        }
+        Relationships: []
+      }
       homepage_categories: {
         Row: {
           created_at: string
