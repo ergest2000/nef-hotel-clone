@@ -60,6 +60,7 @@ const pageTitles: Record<string, string> = {
   "suggested-products": "Sugjerime Homepage",
   "homepage-categories": "Kategoritë Homepage",
   "static-pages": "Faqet Statike",
+  gallery: "Galeria",
   design: "Design Settings",
   settings: "Settings",
 };
