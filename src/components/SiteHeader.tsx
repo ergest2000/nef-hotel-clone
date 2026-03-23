@@ -82,7 +82,7 @@ const SiteHeader = () => {
   const mobileSearchRef = useRef<HTMLDivElement>(null);
   const { lang, setLang } = useLanguage();
   const { data: headerMenus } = useNavMenusByLocation("header");
-
+  const { totalItems } = useCart();
   const mainLinks = headerMenus?.map(m => ({ label: m.label, href: m.href })) ?? [
     { label: "About Us", href: "/company" },
     { label: "Our Clients", href: "/clients" },
