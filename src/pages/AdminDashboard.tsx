@@ -69,7 +69,11 @@ const AdminDashboard = () => {
   const { signOut, user } = useAuth();
   const { toast } = useToast();
   const [lang, setLang] = useState<"al" | "en">("al");
-  const [activePage, setActivePage] = useState("dashboard");
+  const [activePage, setActivePageRaw] = useState(() => sessionStorage.getItem("admin_active_page") || "dashboard");
+  const setActivePage = (page: string) => {
+    sessionStorage.setItem("admin_active_page", page);
+    setActivePageRaw(page);
+  };
 
   const { data: content, isLoading: loadingContent } = useAllContent();
   const { data: sections, isLoading: loadingSections } = useAllSections();
