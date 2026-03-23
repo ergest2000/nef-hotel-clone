@@ -388,7 +388,7 @@ export const AdminDesignSettings = () => {
 
       {/* Setting Groups */}
       <div className="space-y-8">
-        {["buttons", "typography", "colors", "footer", "content", "cart", "contact"].map((groupKey) => {
+        {["buttons", "typography", "colors", "footer", "content", "cart", "contact", "checkout"].map((groupKey) => {
           const items = groupedSettings[groupKey] ?? [];
           const Icon = groupIcons[groupKey] || Palette;
           return (
