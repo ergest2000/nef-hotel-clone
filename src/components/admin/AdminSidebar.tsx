@@ -61,6 +61,7 @@ const menuItems: { key: string; label: string; icon: any; group: string; roles?:
   { key: "suggested-products", label: "Sugjerime Homepage", icon: Star, group: "content" },
   { key: "homepage-categories", label: "Kategoritë Homepage", icon: Grid3X3, group: "content" },
   { key: "static-pages", label: "Faqet Statike", icon: BookOpen, group: "content" },
+  { key: "gallery", label: "Galeria", icon: ImageIcon, group: "content" },
   { key: "media", label: "Media", icon: Image, group: "content" },
   { key: "users", label: "Users", icon: UserCog, group: "users", roles: ["admin", "manager"] },
   { key: "auth-logs", label: "Auth Logs", icon: ScrollText, group: "users", roles: ["admin"] },

@@ -260,6 +260,8 @@ const AdminDashboard = () => {
         return <AdminHomepageCategories />;
       case "static-pages":
         return <AdminStaticPages />;
+      case "gallery":
+        return <AdminGalleryManager />;
       case "design":
         return <AdminDesignSettings />;
       case "media":
