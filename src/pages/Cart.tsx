@@ -22,7 +22,13 @@ const Cart = () => {
   const cartEmpty = t("cart_empty", "Shporta juaj është bosh", "Your cart is empty");
   const cartContinue = t("cart_continue", "VAZHDIMËSI", "CONTINUE SHOPPING");
   const cartQuote = t("cart_quote", "KËRKO NJË OFERTË", "REQUEST A QUOTE");
-  const tr = (al: string, en: string) => (isAl ? al : en);
+  const tr = (key: string, al: string, en: string) => {
+    const alKey = `${key}_al`;
+    const enKey = `${key}_en`;
+    return isAl ? (settings[alKey] || al) : (settings[enKey] || en);
+  };
+
+  const quoteButtonColor = settings["cart_quote_color"] || "";
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
