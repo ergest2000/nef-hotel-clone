@@ -3,13 +3,26 @@ import SiteHeader from "@/components/SiteHeader";
 import SiteFooter from "@/components/SiteFooter";
 import { useCart } from "@/hooks/useCart";
 import { useLanguage } from "@/hooks/useLanguage";
+import { useDesign } from "@/hooks/useDesignSettings";
 import { X, Minus, Plus, ShoppingBag } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const Cart = () => {
   const { items, removeItem, updateItem, clearCart } = useCart();
   const { isAl } = useLanguage();
-  const t = (al: string, en: string) => (isAl ? al : en);
+  const { settings } = useDesign();
+
+  const t = (key: string, fallbackAl: string, fallbackEn: string) => {
+    const alKey = `${key}_al`;
+    const enKey = `${key}_en`;
+    return isAl ? (settings[alKey] || fallbackAl) : (settings[enKey] || fallbackEn);
+  };
+
+  const cartTitle = t("cart_title", "SHPORTË IME", "MY CART");
+  const cartEmpty = t("cart_empty", "Shporta juaj është bosh", "Your cart is empty");
+  const cartContinue = t("cart_continue", "VAZHDIMËSI", "CONTINUE SHOPPING");
+  const cartQuote = t("cart_quote", "KËRKO NJË OFERTË", "REQUEST A QUOTE");
+  const tr = (al: string, en: string) => (isAl ? al : en);
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
@@ -19,24 +32,24 @@ const Cart = () => {
       <div className="bg-muted/50 border-b border-border">
         <div className="max-w-7xl mx-auto px-4 py-3">
           <div className="flex items-center gap-2 text-xs text-muted-foreground uppercase tracking-wider">
-            <Link to="/" className="hover:text-foreground">{t("KRYESORE", "HOME")}</Link>
+            <Link to="/" className="hover:text-foreground">{tr("KRYESORE", "HOME")}</Link>
             <span>-</span>
-            <span className="text-foreground">{t("SHPORTË IME", "MY CART")}</span>
+            <span className="text-foreground">{cartTitle}</span>
           </div>
         </div>
       </div>
 
       <div className="max-w-7xl mx-auto px-4 py-8 md:py-12 flex-1 w-full">
         <h1 className="text-2xl md:text-3xl font-bold tracking-wide-brand text-foreground mb-8">
-          {t("SHPORTË IME", "MY CART")}
+          {cartTitle}
         </h1>
 
         {items.length === 0 ? (
           <div className="text-center py-20">
             <ShoppingBag className="h-16 w-16 mx-auto text-muted-foreground/20 mb-4" />
-            <p className="text-muted-foreground mb-4">{t("Shporta juaj është bosh", "Your cart is empty")}</p>
+            <p className="text-muted-foreground mb-4">{cartEmpty}</p>
             <Link to="/koleksionet" className="text-primary hover:underline text-sm">
-              {t("Shiko produktet", "Browse products")}
+              {tr("Shiko produktet", "Browse products")}
             </Link>
           </div>
         ) : (
@@ -47,12 +60,12 @@ const Cart = () => {
                 <thead>
                   <tr className="border-b border-border">
                     <th className="text-left pb-4 text-xs font-bold tracking-wider text-muted-foreground uppercase w-8"></th>
-                    <th className="text-left pb-4 text-xs font-bold tracking-wider text-muted-foreground uppercase">{t("PRODUKT", "PRODUCT")}</th>
-                    <th className="text-left pb-4 text-xs font-bold tracking-wider text-muted-foreground uppercase">{t("PËRSHKRIMI", "DESCRIPTION")}</th>
-                    <th className="text-center pb-4 text-xs font-bold tracking-wider text-muted-foreground uppercase">{t("NGJYRA", "COLOR")}</th>
-                    <th className="text-center pb-4 text-xs font-bold tracking-wider text-muted-foreground uppercase">{t("MADHËSIA", "SIZE")}</th>
-                    <th className="text-center pb-4 text-xs font-bold tracking-wider text-muted-foreground uppercase">{t("COPËZA", "PIECES")}</th>
-                    <th className="text-center pb-4 text-xs font-bold tracking-wider text-muted-foreground uppercase">{t("KUTI", "BOX")}</th>
+                    <th className="text-left pb-4 text-xs font-bold tracking-wider text-muted-foreground uppercase">{tr("PRODUKT", "PRODUCT")}</th>
+                    <th className="text-left pb-4 text-xs font-bold tracking-wider text-muted-foreground uppercase">{tr("PËRSHKRIMI", "DESCRIPTION")}</th>
+                    <th className="text-center pb-4 text-xs font-bold tracking-wider text-muted-foreground uppercase">{tr("NGJYRA", "COLOR")}</th>
+                    <th className="text-center pb-4 text-xs font-bold tracking-wider text-muted-foreground uppercase">{tr("MADHËSIA", "SIZE")}</th>
+                    <th className="text-center pb-4 text-xs font-bold tracking-wider text-muted-foreground uppercase">{tr("COPËZA", "PIECES")}</th>
+                    <th className="text-center pb-4 text-xs font-bold tracking-wider text-muted-foreground uppercase">{tr("KUTI", "BOX")}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -124,9 +137,9 @@ const Cart = () => {
                       <button onClick={() => removeItem(item.productId)} className="text-muted-foreground"><X className="h-4 w-4" /></button>
                     </div>
                     <p className="text-xs text-muted-foreground mt-1">{item.color} • {item.size || "—"}</p>
-                    <p className="text-xs text-muted-foreground">{t("Copëza", "Pieces")}: {item.pieces}</p>
+                    <p className="text-xs text-muted-foreground">{tr("Copëza", "Pieces")}: {item.pieces}</p>
                     <div className="flex items-center gap-2 mt-2">
-                      <span className="text-xs text-muted-foreground">{t("Kuti", "Box")}:</span>
+                      <span className="text-xs text-muted-foreground">{tr("Kuti", "Box")}:</span>
                       <button onClick={() => updateItem(item.productId, { boxes: Math.max(1, item.boxes - 1) })} className="text-muted-foreground"><Minus className="h-3 w-3" /></button>
                       <span className="text-sm font-medium">{item.boxes}</span>
                       <button onClick={() => updateItem(item.productId, { boxes: item.boxes + 1 })} className="text-muted-foreground"><Plus className="h-3 w-3" /></button>
@@ -143,12 +156,12 @@ const Cart = () => {
             <div className="flex flex-col sm:flex-row justify-between gap-4 mt-6">
               <Link to="/koleksionet">
                 <Button variant="outline" className="w-full sm:w-auto h-14 px-12 text-xs tracking-wider uppercase rounded-none border-foreground text-foreground hover:bg-foreground hover:text-background">
-                  {t("VAZHDIMËSI", "CONTINUE SHOPPING")}
+                  {cartContinue}
                 </Button>
               </Link>
               <Link to="/checkout">
                 <Button className="w-full sm:w-auto h-14 px-12 text-xs tracking-wider uppercase rounded-none bg-foreground/80 hover:bg-foreground text-background">
-                  {t("KËRKO NJË OFERTË", "REQUEST A QUOTE")}
+                  {cartQuote}
                 </Button>
               </Link>
             </div>

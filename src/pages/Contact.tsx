@@ -10,6 +10,7 @@ import { MapPin, Phone, Mail, Clock } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { usePageContent, usePageSections, getContentValue } from "@/hooks/useCms";
 import { useLanguage } from "@/hooks/useLanguage";
+import { useDesign } from "@/hooks/useDesignSettings";
 import { supabase } from "@/integrations/supabase/client";
 
 const Contact = () => {
@@ -17,8 +18,13 @@ const Contact = () => {
   const { lang } = useLanguage();
   const { data: content } = usePageContent("contact", lang);
   const { data: sections } = usePageSections("contact");
+  const { settings } = useDesign();
   const [form, setForm] = useState({ firstName: "", lastName: "", phone: "", email: "", message: "" });
   const [newsletterEmail, setNewsletterEmail] = useState("");
+
+  const mapLat = settings["contact_map_lat"] || "41.3275";
+  const mapLng = settings["contact_map_lng"] || "19.8187";
+  const mapZoom = settings["contact_map_zoom"] || "15";
 
   const isSectionVisible = (key: string) => {
     if (!sections) return true;
@@ -30,7 +36,6 @@ const Contact = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Save to registrations table
     try {
       await supabase.from("registrations").insert({
         data: {
@@ -77,14 +82,29 @@ const Contact = () => {
       <SiteHeader />
 
       {isSectionVisible("hero") && (
-        <section className="bg-primary py-16 md:py-24">
+        <section className="bg-background py-16 md:py-24">
           <div className="container text-center">
-            <h1 className="text-2xl md:text-4xl tracking-wide-brand text-primary-foreground font-light mb-4">
+            <h1 className="text-2xl md:text-4xl tracking-wide-brand text-foreground font-light mb-4">
               {getContentValue(content, "hero", "title", "NA KONTAKTONI")}
             </h1>
-            <p className="max-w-2xl mx-auto text-sm md:text-base text-primary-foreground/80 leading-relaxed">
+            <p className="max-w-2xl mx-auto text-sm md:text-base text-muted-foreground leading-relaxed">
               {getContentValue(content, "hero", "subtitle", "Nëse keni pyetje rreth produkteve ose shërbimeve tona, ekipi ynë është gjithmonë i gatshëm t'ju ndihmojë.")}
             </p>
+          </div>
+
+          {/* Google Maps */}
+          <div className="container mt-8">
+            <div className="w-full h-[300px] md:h-[400px] border border-border overflow-hidden">
+              <iframe
+                title="Google Maps"
+                width="100%"
+                height="100%"
+                style={{ border: 0 }}
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+                src={`https://www.google.com/maps?q=${mapLat},${mapLng}&z=${mapZoom}&output=embed`}
+              />
+            </div>
           </div>
         </section>
       )}
@@ -139,7 +159,7 @@ const Contact = () => {
       )}
 
       {isSectionVisible("membership-cta") && (
-        <MembershipSection />
+        <MembershipSection content={content ?? undefined} />
       )}
 
       <section className="py-16 md:py-20 bg-newsletter-bg">
