@@ -16,11 +16,11 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Heart, ShoppingBag, Package, Palette, ChevronLeft, ChevronRight, Search, X } from "lucide-react";
-import { useDesignSettings } from "@/hooks/useDesignSettings";
+import { useDesign } from "@/hooks/useDesignSettings";
 
 // Global Return Policy component
 const GlobalReturnPolicy = ({ isAl }: { isAl: boolean }) => {
-  const { settings } = useDesignSettings();
+  const { settings } = useDesign();
   const policy = isAl
     ? (settings["global_return_policy_al"] || "Politika e kthimit do shtohet së shpejti.")
     : (settings["global_return_policy_en"] || "Returns policy will be added soon.");
