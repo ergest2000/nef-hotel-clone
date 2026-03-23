@@ -117,6 +117,9 @@ export const AdminDesignSettings = () => {
     typography: Type,
     colors: Palette,
     footer: Palette,
+    content: Type,
+    cart: MousePointer,
+    contact: Palette,
   };
 
   const groupLabels: Record<string, string> = {
@@ -124,6 +127,9 @@ export const AdminDesignSettings = () => {
     typography: "Typography",
     colors: "Global Colors",
     footer: "Footer (Colors, Logo, Texts, Newsletter, Social)",
+    content: "Përmbajtja Globale (Politika e Kthimit)",
+    cart: "Shporta (Tekste & Butona)",
+    contact: "Kontakti (Google Maps)",
   };
 
   const renderField = (setting: DesignSetting) => {
