@@ -512,6 +512,7 @@ export const AdminProductsManager = () => {
               </TabsContent>
 
               <TabsContent value="media" className="space-y-6 mt-4">
+                <div>
                   <label className="text-xs font-medium text-muted-foreground">Imazhi kryesor</label>
                   <div className="flex items-center gap-3 mt-1">
                     {editItem.image_url && (
