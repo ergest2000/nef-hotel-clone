@@ -197,10 +197,12 @@ const SiteHeader = () => {
             <div className="flex items-center gap-4">
               <button className="text-muted-foreground hover:text-foreground"><Heart size={18} /></button>
               <SlugLink to="/register" className="text-muted-foreground hover:text-foreground"><UserPlus size={18} /></SlugLink>
-              <button className="relative text-muted-foreground hover:text-foreground">
+              <Link to="/shporta" className="relative text-muted-foreground hover:text-foreground">
                 <ShoppingCart size={18} />
-                <span className="absolute -top-1.5 -right-1.5 bg-destructive text-destructive-foreground text-[9px] w-4 h-4 rounded-full flex items-center justify-center font-bold">0</span>
-              </button>
+                {totalItems > 0 && (
+                  <span className="absolute -top-1.5 -right-1.5 bg-destructive text-destructive-foreground text-[9px] w-4 h-4 rounded-full flex items-center justify-center font-bold">{totalItems}</span>
+                )}
+              </Link>
             </div>
           </div>
         </div>
