@@ -120,6 +120,7 @@ export const AdminDesignSettings = () => {
     content: Type,
     cart: MousePointer,
     contact: Palette,
+    checkout: MousePointer,
   };
 
   const groupLabels: Record<string, string> = {
