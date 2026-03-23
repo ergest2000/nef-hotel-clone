@@ -120,6 +120,7 @@ export const AdminDesignSettings = () => {
     content: Type,
     cart: MousePointer,
     contact: Palette,
+    checkout: MousePointer,
   };
 
   const groupLabels: Record<string, string> = {
@@ -129,7 +130,8 @@ export const AdminDesignSettings = () => {
     footer: "Footer (Colors, Logo, Texts, Newsletter, Social)",
     content: "Përmbajtja Globale (Politika e Kthimit)",
     cart: "Shporta (Tekste & Butona)",
-    contact: "Kontakti (Google Maps)",
+    contact: "Kontakti (Google Maps & Background)",
+    checkout: "Checkout (Tekste & Butona)",
   };
 
   const renderField = (setting: DesignSetting) => {
@@ -386,7 +388,7 @@ export const AdminDesignSettings = () => {
 
       {/* Setting Groups */}
       <div className="space-y-8">
-        {["buttons", "typography", "colors", "footer", "content", "cart", "contact"].map((groupKey) => {
+        {["buttons", "typography", "colors", "footer", "content", "cart", "contact", "checkout"].map((groupKey) => {
           const items = groupedSettings[groupKey] ?? [];
           const Icon = groupIcons[groupKey] || Palette;
           return (

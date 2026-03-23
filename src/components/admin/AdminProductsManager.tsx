@@ -432,6 +432,85 @@ export const AdminProductsManager = () => {
                 </Accordion>
               </TabsContent>
 
+              <TabsContent value="details" className="space-y-4 mt-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-xs font-medium text-muted-foreground">KUTI (Box Quantity)</label>
+                    <Input type="number" min={0} value={editItem.box_quantity ?? 1} onChange={(e) => setEditItem({ ...editItem, box_quantity: parseInt(e.target.value) || 0 })} />
+                  </div>
+                  <div>
+                    <label className="text-xs font-medium text-muted-foreground">COPË PËR KUTI (Pieces per Box)</label>
+                    <Input type="number" min={0} value={editItem.pieces_per_box ?? 1} onChange={(e) => setEditItem({ ...editItem, pieces_per_box: parseInt(e.target.value) || 0 })} />
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-xs font-medium text-muted-foreground">Pesha (GSM)</label>
+                    <Input type="number" min={0} value={editItem.weight_gsm ?? 0} onChange={(e) => setEditItem({ ...editItem, weight_gsm: parseInt(e.target.value) || 0 })} />
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <div className="flex items-center justify-between">
+                      <label className="text-xs font-medium text-muted-foreground">Përbërja (AL)</label>
+                      <TranslateButton direction="al_to_en" loading={translating === "p_comp"} onClick={() => translateField("p_comp", editItem.composition_al ?? "", "al_to_en", (t) => setEditItem((p) => p ? { ...p, composition_en: t } : p))} />
+                    </div>
+                    <Input value={editItem.composition_al ?? ""} onChange={(e) => setEditItem({ ...editItem, composition_al: e.target.value })} />
+                  </div>
+                  <div>
+                    <div className="flex items-center justify-between">
+                      <label className="text-xs font-medium text-muted-foreground">Composition (EN)</label>
+                      <TranslateButton direction="en_to_al" loading={translating === "p_comp_r"} onClick={() => translateField("p_comp_r", editItem.composition_en ?? "", "en_to_al", (t) => setEditItem((p) => p ? { ...p, composition_al: t } : p))} />
+                    </div>
+                    <Input value={editItem.composition_en ?? ""} onChange={(e) => setEditItem({ ...editItem, composition_en: e.target.value })} />
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <div className="flex items-center justify-between">
+                      <label className="text-xs font-medium text-muted-foreground">Dimensionet (AL)</label>
+                      <TranslateButton direction="al_to_en" loading={translating === "p_dim"} onClick={() => translateField("p_dim", editItem.dimensions_al ?? "", "al_to_en", (t) => setEditItem((p) => p ? { ...p, dimensions_en: t } : p))} />
+                    </div>
+                    <Input value={editItem.dimensions_al ?? ""} onChange={(e) => setEditItem({ ...editItem, dimensions_al: e.target.value })} />
+                  </div>
+                  <div>
+                    <div className="flex items-center justify-between">
+                      <label className="text-xs font-medium text-muted-foreground">Dimensions (EN)</label>
+                      <TranslateButton direction="en_to_al" loading={translating === "p_dim_r"} onClick={() => translateField("p_dim_r", editItem.dimensions_en ?? "", "en_to_al", (t) => setEditItem((p) => p ? { ...p, dimensions_al: t } : p))} />
+                    </div>
+                    <Input value={editItem.dimensions_en ?? ""} onChange={(e) => setEditItem({ ...editItem, dimensions_en: e.target.value })} />
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <div className="flex items-center justify-between">
+                      <label className="text-xs font-medium text-muted-foreground">Tech Specs (AL)</label>
+                      <TranslateButton direction="al_to_en" loading={translating === "p_specs"} onClick={() => translateField("p_specs", editItem.tech_specs_al ?? "", "al_to_en", (t) => setEditItem((p) => p ? { ...p, tech_specs_en: t } : p))} />
+                    </div>
+                    <Textarea value={editItem.tech_specs_al ?? ""} onChange={(e) => setEditItem({ ...editItem, tech_specs_al: e.target.value })} rows={3} />
+                  </div>
+                  <div>
+                    <div className="flex items-center justify-between">
+                      <label className="text-xs font-medium text-muted-foreground">Tech Specs (EN)</label>
+                      <TranslateButton direction="en_to_al" loading={translating === "p_specs_r"} onClick={() => translateField("p_specs_r", editItem.tech_specs_en ?? "", "en_to_al", (t) => setEditItem((p) => p ? { ...p, tech_specs_al: t } : p))} />
+                    </div>
+                    <Textarea value={editItem.tech_specs_en ?? ""} onChange={(e) => setEditItem({ ...editItem, tech_specs_en: e.target.value })} rows={3} />
+                  </div>
+                </div>
+              </TabsContent>
+
+              <TabsContent value="variants" className="space-y-6 mt-4">
+                {editItem.id ? (
+                  <>
+                    <ProductColorsManager productId={editItem.id} />
+                    <div className="border-t border-border pt-4" />
+                    <ProductSizesManager productId={editItem.id} />
+                  </>
+                ) : (
+                  <p className="text-sm text-muted-foreground">Ruaj produktin fillimisht për të menaxhuar variantet.</p>
+                )}
+              </TabsContent>
+
               <TabsContent value="media" className="space-y-6 mt-4">
                 <div>
                   <label className="text-xs font-medium text-muted-foreground">Imazhi kryesor</label>
