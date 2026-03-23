@@ -63,11 +63,6 @@ const ProductCard = ({ product, isAl, allColors, collectionSlug, t, user, wishli
             <span className="text-sm font-medium text-foreground">{t("Jo në stok", "Out of stock")}</span>
           </div>
         )}
-        {product.customizable && (
-          <div className="absolute bottom-2 left-2">
-            <Badge className="text-[10px] bg-primary/90">{t("Personalizuar", "Customizable")}</Badge>
-          </div>
-        )}
       </Link>
       <Link to={`/koleksionet/${collectionSlug}/${product.id}`} className="block">
         <h4 className="text-sm font-semibold text-foreground leading-tight">

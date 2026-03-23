@@ -16,6 +16,16 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Heart, ShoppingBag, Package, Palette, ChevronLeft, ChevronRight, Search, X } from "lucide-react";
+import { useDesign } from "@/hooks/useDesignSettings";
+
+// Global Return Policy component
+const GlobalReturnPolicy = ({ isAl }: { isAl: boolean }) => {
+  const { settings } = useDesign();
+  const policy = isAl
+    ? (settings["global_return_policy_al"] || "Politika e kthimit do shtohet së shpejti.")
+    : (settings["global_return_policy_en"] || "Returns policy will be added soon.");
+  return <p className="text-sm text-muted-foreground whitespace-pre-wrap leading-relaxed">{policy}</p>;
+};
 
 // ─── Image Lightbox ─────────────────────────────────────────────
 const ImageLightbox = ({ images, startIndex, onClose }: { images: string[]; startIndex: number; onClose: () => void }) => {
@@ -453,10 +463,7 @@ const ProductDetail = () => {
                   {t("POLITIKA E KTHIMIT", "RETURNS POLICY")}
                 </AccordionTrigger>
                 <AccordionContent>
-                  <p className="text-sm text-muted-foreground whitespace-pre-wrap leading-relaxed">
-                    {(isAl ? product.return_policy_al : product.return_policy_en) ||
-                      t("Politika e kthimit do shtohet së shpejti.", "Returns policy will be added soon.")}
-                  </p>
+                  <GlobalReturnPolicy isAl={isAl} />
                 </AccordionContent>
               </AccordionItem>
               <AccordionItem value="specs">
