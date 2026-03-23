@@ -496,48 +496,6 @@ export const AdminProductsManager = () => {
                       </div>
                     </AccordionContent>
                   </AccordionItem>
-                  <AccordionItem value="return-policy">
-                    <AccordionTrigger className="text-sm">Politika e Kthimit</AccordionTrigger>
-                    <AccordionContent>
-                      <div className="grid grid-cols-2 gap-4">
-                        <div>
-                          <div className="flex items-center justify-between">
-                            <label className="text-xs font-medium text-muted-foreground">AL</label>
-                            <TranslateButton direction="al_to_en" loading={translating === "p_ret"} onClick={() => translateField("p_ret", editItem.return_policy_al ?? "", "al_to_en", (t) => setEditItem((p) => p ? { ...p, return_policy_en: t } : p))} />
-                          </div>
-                          <Textarea value={editItem.return_policy_al ?? ""} onChange={(e) => setEditItem({ ...editItem, return_policy_al: e.target.value })} rows={4} />
-                        </div>
-                        <div>
-                          <div className="flex items-center justify-between">
-                            <label className="text-xs font-medium text-muted-foreground">EN</label>
-                            <TranslateButton direction="en_to_al" loading={translating === "p_ret_r"} onClick={() => translateField("p_ret_r", editItem.return_policy_en ?? "", "en_to_al", (t) => setEditItem((p) => p ? { ...p, return_policy_al: t } : p))} />
-                          </div>
-                          <Textarea value={editItem.return_policy_en ?? ""} onChange={(e) => setEditItem({ ...editItem, return_policy_en: e.target.value })} rows={4} />
-                        </div>
-                      </div>
-                    </AccordionContent>
-                  </AccordionItem>
-                  <AccordionItem value="tech-specs">
-                    <AccordionTrigger className="text-sm">Specifikimet Teknike</AccordionTrigger>
-                    <AccordionContent>
-                      <div className="grid grid-cols-2 gap-4">
-                        <div>
-                          <div className="flex items-center justify-between">
-                            <label className="text-xs font-medium text-muted-foreground">AL</label>
-                            <TranslateButton direction="al_to_en" loading={translating === "p_tech"} onClick={() => translateField("p_tech", editItem.tech_specs_al ?? "", "al_to_en", (t) => setEditItem((p) => p ? { ...p, tech_specs_en: t } : p))} />
-                          </div>
-                          <Textarea value={editItem.tech_specs_al ?? ""} onChange={(e) => setEditItem({ ...editItem, tech_specs_al: e.target.value })} rows={4} />
-                        </div>
-                        <div>
-                          <div className="flex items-center justify-between">
-                            <label className="text-xs font-medium text-muted-foreground">EN</label>
-                            <TranslateButton direction="en_to_al" loading={translating === "p_tech_r"} onClick={() => translateField("p_tech_r", editItem.tech_specs_en ?? "", "en_to_al", (t) => setEditItem((p) => p ? { ...p, tech_specs_al: t } : p))} />
-                          </div>
-                          <Textarea value={editItem.tech_specs_en ?? ""} onChange={(e) => setEditItem({ ...editItem, tech_specs_en: e.target.value })} rows={4} />
-                        </div>
-                      </div>
-                    </AccordionContent>
-                  </AccordionItem>
                 </Accordion>
               </TabsContent>
 
