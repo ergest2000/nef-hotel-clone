@@ -23,15 +23,17 @@ const SuggestionsSection = ({ content }: { content?: SiteContent[] }) => {
 
   // Use dynamic products if available, fallback to defaults
   const products = dynamicProducts?.length
-    ? dynamicProducts.map((p) => ({
+    ? dynamicProducts.map((p: any) => ({
         name: lang === "en" ? (p.title_en || p.title_al) : (p.title_al || p.title_en),
         image: p.image_url || catBedroom,
         id: p.id,
+        collectionSlug: p.collectionSlug || "all",
       }))
     : defaultProducts.map((def) => ({
         name: def.name,
         image: def.image,
         id: def.key,
+        collectionSlug: "all",
       }));
 
   return (
@@ -40,7 +42,7 @@ const SuggestionsSection = ({ content }: { content?: SiteContent[] }) => {
         <h2 className="text-xl md:text-2xl tracking-wide-brand text-foreground font-light text-center mb-12">{title}</h2>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
           {products.map((product) => (
-            <a key={product.id} href={`/product/${product.id}`} className="group">
+            <a key={product.id} href={`/koleksionet/${product.collectionSlug}/${product.id}`} className="group">
               <div className="aspect-square overflow-hidden mb-4">
                 <img src={product.image} alt={product.name} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" loading="lazy" />
               </div>

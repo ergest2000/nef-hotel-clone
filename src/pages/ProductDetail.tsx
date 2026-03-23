@@ -1,5 +1,6 @@
 import { useState, useMemo, useCallback } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
+import { useCart } from "@/hooks/useCart";
 import {
   useCollections, useProducts, useProductImages,
   useAllProductColors, useAllProductSizes,
@@ -170,7 +171,7 @@ const ProductDetail = () => {
   const { data: allSizes } = useAllProductSizes();
   const { data: wishlistItems } = useWishlist(user?.id);
   const toggleWishlist = useToggleWishlist();
-
+  const { addItem } = useCart();
   const [lightbox, setLightbox] = useState<{ images: string[]; index: number } | null>(null);
   const [selectedColorId, setSelectedColorId] = useState<string | null>(null);
   const [selectedSizeId, setSelectedSizeId] = useState<string | null>(null);
@@ -398,7 +399,26 @@ const ProductDetail = () => {
 
             {/* Action Buttons */}
             <div className="flex flex-col gap-3 pt-2">
-              <Button className="w-full gap-2 rounded-sm h-12 text-sm tracking-wider" disabled={!product.in_stock}>
+              <Button
+                className="w-full gap-2 rounded-sm h-12 text-sm tracking-wider"
+                disabled={!product.in_stock}
+                onClick={() => {
+                  const selectedColor = productColors.find((c) => c.id === selectedColorId);
+                  const selectedSize = productSizes.find((s) => s.id === selectedSizeId);
+                  addItem({
+                    productId: product.id,
+                    title: isAl ? product.title_al : product.title_en,
+                    image: product.image_url || "",
+                    description: isAl ? product.description_al : product.description_en,
+                    color: selectedColor ? (isAl ? (selectedColor.color_name_al || selectedColor.color_name) : (selectedColor.color_name_en || selectedColor.color_name)) : "",
+                    colorHex: selectedColor?.color_hex || "",
+                    size: selectedSize?.size_label || "",
+                    pieces: product.pieces_per_box ?? 1,
+                    boxes: 1,
+                  });
+                  navigate("/shporta");
+                }}
+              >
                 <ShoppingBag className="h-4 w-4" />
                 {t("SHTO NË SHPORTË", "ADD TO CART")}
               </Button>
