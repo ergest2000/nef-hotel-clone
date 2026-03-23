@@ -1,5 +1,6 @@
 import { useState, useMemo, useCallback } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
+import { useCart } from "@/hooks/useCart";
 import {
   useCollections, useProducts, useProductImages,
   useAllProductColors, useAllProductSizes,
