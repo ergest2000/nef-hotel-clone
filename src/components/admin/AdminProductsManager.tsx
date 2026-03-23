@@ -472,7 +472,7 @@ export const AdminProductsManager = () => {
                 )}
               </TabsContent>
 
-              <TabsContent value="info" className="space-y-4 mt-4">
+              <TabsContent value="general" className="space-y-4 mt-4">
                 <Accordion type="multiple" className="w-full">
                   <AccordionItem value="product-info">
                     <AccordionTrigger className="text-sm">Informacion mbi Produktin</AccordionTrigger>

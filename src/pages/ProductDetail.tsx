@@ -16,6 +16,16 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Heart, ShoppingBag, Package, Palette, ChevronLeft, ChevronRight, Search, X } from "lucide-react";
+import { useDesignSettings } from "@/hooks/useDesignSettings";
+
+// Global Return Policy component
+const GlobalReturnPolicy = ({ isAl, t }: { isAl: boolean; t: (al: string, en: string) => string }) => {
+  const { settings } = useDesignSettings();
+  const policy = isAl
+    ? (settings["global_return_policy_al"] || "Politika e kthimit do shtohet së shpejti.")
+    : (settings["global_return_policy_en"] || "Returns policy will be added soon.");
+  return <p className="text-sm text-muted-foreground whitespace-pre-wrap leading-relaxed">{policy}</p>;
+};
 
 // ─── Image Lightbox ─────────────────────────────────────────────
 const ImageLightbox = ({ images, startIndex, onClose }: { images: string[]; startIndex: number; onClose: () => void }) => {
