@@ -130,7 +130,8 @@ export const AdminDesignSettings = () => {
     footer: "Footer (Colors, Logo, Texts, Newsletter, Social)",
     content: "Përmbajtja Globale (Politika e Kthimit)",
     cart: "Shporta (Tekste & Butona)",
-    contact: "Kontakti (Google Maps)",
+    contact: "Kontakti (Google Maps & Background)",
+    checkout: "Checkout (Tekste & Butona)",
   };
 
   const renderField = (setting: DesignSetting) => {
