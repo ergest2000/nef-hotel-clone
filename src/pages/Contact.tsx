@@ -161,22 +161,6 @@ const Contact = () => {
         </section>
       )}
 
-      {/* Google Maps - after contact info */}
-      <section className="py-0">
-        <div className="container">
-          <div className="w-full h-[300px] md:h-[400px] border border-border overflow-hidden">
-            <iframe
-              title="Google Maps"
-              width="100%"
-              height="100%"
-              style={{ border: 0 }}
-              loading="lazy"
-              referrerPolicy="no-referrer-when-downgrade"
-              src={`https://www.google.com/maps?q=${mapLat},${mapLng}&z=${mapZoom}&output=embed`}
-            />
-          </div>
-        </div>
-      </section>
 
       {isSectionVisible("membership-cta") && (
         <MembershipSection content={content ?? undefined} />
