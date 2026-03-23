@@ -334,11 +334,10 @@ export const AdminProductsManager = () => {
           </DialogHeader>
           {editItem && (
             <Tabs defaultValue="general" className="w-full">
-              <TabsList className="w-full grid grid-cols-5">
+              <TabsList className="w-full grid grid-cols-4">
                 <TabsTrigger value="general">Përgjithshme</TabsTrigger>
                 <TabsTrigger value="details">Detaje</TabsTrigger>
                 <TabsTrigger value="variants">Variante</TabsTrigger>
-                <TabsTrigger value="info">Info / Specs</TabsTrigger>
                 <TabsTrigger value="media">Media</TabsTrigger>
               </TabsList>
 
