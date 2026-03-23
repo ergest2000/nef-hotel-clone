@@ -82,29 +82,14 @@ const Contact = () => {
       <SiteHeader />
 
       {isSectionVisible("hero") && (
-        <section className="bg-background py-16 md:py-24">
+        <section className="py-16 md:py-24 bg-warm-gray">
           <div className="container text-center">
-            <h1 className="text-2xl md:text-4xl tracking-wide-brand text-foreground font-light mb-4">
+            <h1 className="text-3xl md:text-5xl font-light tracking-brand text-foreground mb-4">
               {getContentValue(content, "hero", "title", "NA KONTAKTONI")}
             </h1>
-            <p className="max-w-2xl mx-auto text-sm md:text-base text-muted-foreground leading-relaxed">
+            <p className="text-sm md:text-base text-muted-foreground max-w-2xl mx-auto tracking-wide">
               {getContentValue(content, "hero", "subtitle", "Nëse keni pyetje rreth produkteve ose shërbimeve tona, ekipi ynë është gjithmonë i gatshëm t'ju ndihmojë.")}
             </p>
-          </div>
-
-          {/* Google Maps */}
-          <div className="container mt-8">
-            <div className="w-full h-[300px] md:h-[400px] border border-border overflow-hidden">
-              <iframe
-                title="Google Maps"
-                width="100%"
-                height="100%"
-                style={{ border: 0 }}
-                loading="lazy"
-                referrerPolicy="no-referrer-when-downgrade"
-                src={`https://www.google.com/maps?q=${mapLat},${mapLng}&z=${mapZoom}&output=embed`}
-              />
-            </div>
           </div>
         </section>
       )}
@@ -157,6 +142,23 @@ const Contact = () => {
           </div>
         </section>
       )}
+
+      {/* Google Maps - after contact info */}
+      <section className="py-0">
+        <div className="container">
+          <div className="w-full h-[300px] md:h-[400px] border border-border overflow-hidden">
+            <iframe
+              title="Google Maps"
+              width="100%"
+              height="100%"
+              style={{ border: 0 }}
+              loading="lazy"
+              referrerPolicy="no-referrer-when-downgrade"
+              src={`https://www.google.com/maps?q=${mapLat},${mapLng}&z=${mapZoom}&output=embed`}
+            />
+          </div>
+        </div>
+      </section>
 
       {isSectionVisible("membership-cta") && (
         <MembershipSection content={content ?? undefined} />

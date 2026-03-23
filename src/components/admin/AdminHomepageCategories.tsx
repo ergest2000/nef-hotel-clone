@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Card, CardContent } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus, Trash2, Edit, Image as ImageIcon } from "lucide-react";
 import { TranslateButton } from "./TranslateButton";
 
@@ -99,8 +100,18 @@ export const AdminHomepageCategories = () => {
                 </div>
               </div>
               <div>
-                <label className="text-xs font-medium text-muted-foreground">Link URL</label>
-                <Input value={editItem.link_url ?? "#"} onChange={(e) => setEditItem({ ...editItem, link_url: e.target.value })} placeholder="/koleksionet/bedroom" />
+                <label className="text-xs font-medium text-muted-foreground">Tipi i linkut</label>
+                <Select value={editItem.link_url?.startsWith("/koleksionet/") ? "collection" : "custom"} onValueChange={(v) => {
+                  if (v === "custom") setEditItem({ ...editItem, link_url: "#" });
+                  else setEditItem({ ...editItem, link_url: "/koleksionet/" });
+                }}>
+                  <SelectTrigger className="h-9 text-xs"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="collection">Link në kategori</SelectItem>
+                    <SelectItem value="custom">Link custom (manual URL)</SelectItem>
+                  </SelectContent>
+                </Select>
+                <Input value={editItem.link_url ?? "#"} onChange={(e) => setEditItem({ ...editItem, link_url: e.target.value })} placeholder="/koleksionet/bedroom ose https://..." className="mt-2" />
               </div>
               <div>
                 <label className="text-xs font-medium text-muted-foreground">Imazhi</label>

@@ -25,8 +25,8 @@ const defaultCategories = [
 ];
 
 const CategoriesSection = ({ content }: { content?: SiteContent[] }) => {
-  const title = getContentValue(content, "categories", "title", "CATEGORIES");
-  const subtitle = getContentValue(content, "categories", "subtitle", "Our hotel collection includes 8 product categories with solutions that cover every need.");
+  const title = getContentValue(content, "categories", "title", "KATEGORITË");
+  const subtitle = getContentValue(content, "categories", "subtitle", "Koleksioni ynë i hoteleve përfshin kategori produktesh me zgjidhje që mbulojnë çdo nevojë.");
   const { lang } = useLanguage();
   const { data: dynamicCategories } = useHomepageCategories(true);
 

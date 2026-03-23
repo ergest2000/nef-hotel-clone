@@ -22,7 +22,13 @@ const Cart = () => {
   const cartEmpty = t("cart_empty", "Shporta juaj është bosh", "Your cart is empty");
   const cartContinue = t("cart_continue", "VAZHDIMËSI", "CONTINUE SHOPPING");
   const cartQuote = t("cart_quote", "KËRKO NJË OFERTË", "REQUEST A QUOTE");
-  const tr = (al: string, en: string) => (isAl ? al : en);
+  const tr = (key: string, al: string, en: string) => {
+    const alKey = `${key}_al`;
+    const enKey = `${key}_en`;
+    return isAl ? (settings[alKey] || al) : (settings[enKey] || en);
+  };
+
+  const quoteButtonColor = settings["cart_quote_color"] || "";
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
@@ -32,7 +38,7 @@ const Cart = () => {
       <div className="bg-muted/50 border-b border-border">
         <div className="max-w-7xl mx-auto px-4 py-3">
           <div className="flex items-center gap-2 text-xs text-muted-foreground uppercase tracking-wider">
-            <Link to="/" className="hover:text-foreground">{tr("KRYESORE", "HOME")}</Link>
+            <Link to="/" className="hover:text-foreground">{tr("cart_home", "KRYESORE", "HOME")}</Link>
             <span>-</span>
             <span className="text-foreground">{cartTitle}</span>
           </div>
@@ -49,7 +55,7 @@ const Cart = () => {
             <ShoppingBag className="h-16 w-16 mx-auto text-muted-foreground/20 mb-4" />
             <p className="text-muted-foreground mb-4">{cartEmpty}</p>
             <Link to="/koleksionet" className="text-primary hover:underline text-sm">
-              {tr("Shiko produktet", "Browse products")}
+              {tr("cart_browse", "Shiko produktet", "Browse products")}
             </Link>
           </div>
         ) : (
@@ -60,12 +66,12 @@ const Cart = () => {
                 <thead>
                   <tr className="border-b border-border">
                     <th className="text-left pb-4 text-xs font-bold tracking-wider text-muted-foreground uppercase w-8"></th>
-                    <th className="text-left pb-4 text-xs font-bold tracking-wider text-muted-foreground uppercase">{tr("PRODUKT", "PRODUCT")}</th>
-                    <th className="text-left pb-4 text-xs font-bold tracking-wider text-muted-foreground uppercase">{tr("PËRSHKRIMI", "DESCRIPTION")}</th>
-                    <th className="text-center pb-4 text-xs font-bold tracking-wider text-muted-foreground uppercase">{tr("NGJYRA", "COLOR")}</th>
-                    <th className="text-center pb-4 text-xs font-bold tracking-wider text-muted-foreground uppercase">{tr("MADHËSIA", "SIZE")}</th>
-                    <th className="text-center pb-4 text-xs font-bold tracking-wider text-muted-foreground uppercase">{tr("COPËZA", "PIECES")}</th>
-                    <th className="text-center pb-4 text-xs font-bold tracking-wider text-muted-foreground uppercase">{tr("KUTI", "BOX")}</th>
+                    <th className="text-left pb-4 text-xs font-bold tracking-wider text-muted-foreground uppercase">{tr("cart_product", "PRODUKT", "PRODUCT")}</th>
+                    <th className="text-left pb-4 text-xs font-bold tracking-wider text-muted-foreground uppercase">{tr("cart_description", "PËRSHKRIMI", "DESCRIPTION")}</th>
+                    <th className="text-center pb-4 text-xs font-bold tracking-wider text-muted-foreground uppercase">{tr("cart_color", "NGJYRA", "COLOR")}</th>
+                    <th className="text-center pb-4 text-xs font-bold tracking-wider text-muted-foreground uppercase">{tr("cart_size", "MADHËSIA", "SIZE")}</th>
+                    <th className="text-center pb-4 text-xs font-bold tracking-wider text-muted-foreground uppercase">{tr("cart_pieces", "COPËZA", "PIECES")}</th>
+                    <th className="text-center pb-4 text-xs font-bold tracking-wider text-muted-foreground uppercase">{tr("cart_box", "KUTI", "BOX")}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -137,9 +143,9 @@ const Cart = () => {
                       <button onClick={() => removeItem(item.productId)} className="text-muted-foreground"><X className="h-4 w-4" /></button>
                     </div>
                     <p className="text-xs text-muted-foreground mt-1">{item.color} • {item.size || "—"}</p>
-                    <p className="text-xs text-muted-foreground">{tr("Copëza", "Pieces")}: {item.pieces}</p>
+                    <p className="text-xs text-muted-foreground">{tr("cart_pieces_label", "Copëza", "Pieces")}: {item.pieces}</p>
                     <div className="flex items-center gap-2 mt-2">
-                      <span className="text-xs text-muted-foreground">{tr("Kuti", "Box")}:</span>
+                      <span className="text-xs text-muted-foreground">{tr("cart_box_label", "Kuti", "Box")}:</span>
                       <button onClick={() => updateItem(item.productId, { boxes: Math.max(1, item.boxes - 1) })} className="text-muted-foreground"><Minus className="h-3 w-3" /></button>
                       <span className="text-sm font-medium">{item.boxes}</span>
                       <button onClick={() => updateItem(item.productId, { boxes: item.boxes + 1 })} className="text-muted-foreground"><Plus className="h-3 w-3" /></button>
@@ -160,7 +166,10 @@ const Cart = () => {
                 </Button>
               </Link>
               <Link to="/checkout">
-                <Button className="w-full sm:w-auto h-14 px-12 text-xs tracking-wider uppercase rounded-none bg-foreground/80 hover:bg-foreground text-background">
+                <Button
+                  className="w-full sm:w-auto h-14 px-12 text-xs tracking-wider uppercase rounded-none text-background"
+                  style={quoteButtonColor ? { backgroundColor: `hsl(${quoteButtonColor})` } : { backgroundColor: 'hsl(var(--foreground) / 0.8)' }}
+                >
                   {cartQuote}
                 </Button>
               </Link>
