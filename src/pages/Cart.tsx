@@ -66,12 +66,12 @@ const Cart = () => {
                 <thead>
                   <tr className="border-b border-border">
                     <th className="text-left pb-4 text-xs font-bold tracking-wider text-muted-foreground uppercase w-8"></th>
-                    <th className="text-left pb-4 text-xs font-bold tracking-wider text-muted-foreground uppercase">{tr("PRODUKT", "PRODUCT")}</th>
-                    <th className="text-left pb-4 text-xs font-bold tracking-wider text-muted-foreground uppercase">{tr("PËRSHKRIMI", "DESCRIPTION")}</th>
-                    <th className="text-center pb-4 text-xs font-bold tracking-wider text-muted-foreground uppercase">{tr("NGJYRA", "COLOR")}</th>
-                    <th className="text-center pb-4 text-xs font-bold tracking-wider text-muted-foreground uppercase">{tr("MADHËSIA", "SIZE")}</th>
-                    <th className="text-center pb-4 text-xs font-bold tracking-wider text-muted-foreground uppercase">{tr("COPËZA", "PIECES")}</th>
-                    <th className="text-center pb-4 text-xs font-bold tracking-wider text-muted-foreground uppercase">{tr("KUTI", "BOX")}</th>
+                    <th className="text-left pb-4 text-xs font-bold tracking-wider text-muted-foreground uppercase">{tr("cart_product", "PRODUKT", "PRODUCT")}</th>
+                    <th className="text-left pb-4 text-xs font-bold tracking-wider text-muted-foreground uppercase">{tr("cart_description", "PËRSHKRIMI", "DESCRIPTION")}</th>
+                    <th className="text-center pb-4 text-xs font-bold tracking-wider text-muted-foreground uppercase">{tr("cart_color", "NGJYRA", "COLOR")}</th>
+                    <th className="text-center pb-4 text-xs font-bold tracking-wider text-muted-foreground uppercase">{tr("cart_size", "MADHËSIA", "SIZE")}</th>
+                    <th className="text-center pb-4 text-xs font-bold tracking-wider text-muted-foreground uppercase">{tr("cart_pieces", "COPËZA", "PIECES")}</th>
+                    <th className="text-center pb-4 text-xs font-bold tracking-wider text-muted-foreground uppercase">{tr("cart_box", "KUTI", "BOX")}</th>
                   </tr>
                 </thead>
                 <tbody>
