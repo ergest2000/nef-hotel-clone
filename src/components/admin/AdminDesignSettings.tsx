@@ -296,6 +296,20 @@ export const AdminDesignSettings = () => {
       );
     }
 
+    if (setting.setting_type === "textarea") {
+      return (
+        <div className="space-y-1">
+          <Label className="text-xs text-muted-foreground">{setting.label}</Label>
+          <textarea
+            value={val}
+            onChange={(e) => setValue(setting.setting_key, e.target.value)}
+            className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+            rows={4}
+          />
+        </div>
+      );
+    }
+
     return (
       <div className="space-y-1">
         <Label className="text-xs text-muted-foreground">{setting.label}</Label>
