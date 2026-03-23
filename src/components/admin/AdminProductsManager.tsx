@@ -406,73 +406,7 @@ export const AdminProductsManager = () => {
                     <span className="text-sm">I dukshëm</span>
                   </div>
                 </div>
-              </TabsContent>
-
-              <TabsContent value="details" className="space-y-4 mt-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <div className="flex items-center justify-between">
-                      <label className="text-xs font-medium text-muted-foreground">Përbërja (AL)</label>
-                      <TranslateButton direction="al_to_en" loading={translating === "p_comp"} onClick={() => translateField("p_comp", editItem.composition_al ?? "", "al_to_en", (t) => setEditItem((p) => p ? { ...p, composition_en: t } : p))} />
-                    </div>
-                    <Input value={editItem.composition_al ?? ""} onChange={(e) => setEditItem({ ...editItem, composition_al: e.target.value })} placeholder="100% Pambuk" />
-                  </div>
-                  <div>
-                    <div className="flex items-center justify-between">
-                      <label className="text-xs font-medium text-muted-foreground">Composition (EN)</label>
-                      <TranslateButton direction="en_to_al" loading={translating === "p_comp_r"} onClick={() => translateField("p_comp_r", editItem.composition_en ?? "", "en_to_al", (t) => setEditItem((p) => p ? { ...p, composition_al: t } : p))} />
-                    </div>
-                    <Input value={editItem.composition_en ?? ""} onChange={(e) => setEditItem({ ...editItem, composition_en: e.target.value })} placeholder="100% Cotton" />
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <div className="flex items-center justify-between">
-                      <label className="text-xs font-medium text-muted-foreground">Dimensionet (AL)</label>
-                      <TranslateButton direction="al_to_en" loading={translating === "p_dim"} onClick={() => translateField("p_dim", editItem.dimensions_al ?? "", "al_to_en", (t) => setEditItem((p) => p ? { ...p, dimensions_en: t } : p))} />
-                    </div>
-                    <Input value={editItem.dimensions_al ?? ""} onChange={(e) => setEditItem({ ...editItem, dimensions_al: e.target.value })} placeholder="80x150" />
-                  </div>
-                  <div>
-                    <div className="flex items-center justify-between">
-                      <label className="text-xs font-medium text-muted-foreground">Dimensions (EN)</label>
-                      <TranslateButton direction="en_to_al" loading={translating === "p_dim_r"} onClick={() => translateField("p_dim_r", editItem.dimensions_en ?? "", "en_to_al", (t) => setEditItem((p) => p ? { ...p, dimensions_al: t } : p))} />
-                    </div>
-                    <Input value={editItem.dimensions_en ?? ""} onChange={(e) => setEditItem({ ...editItem, dimensions_en: e.target.value })} placeholder="80x150" />
-                  </div>
-                </div>
-                <div className="grid grid-cols-3 gap-4">
-                  <div>
-                    <label className="text-xs font-medium text-muted-foreground">Pesha (GSM)</label>
-                    <Input type="number" value={editItem.weight_gsm ?? 0} onChange={(e) => setEditItem({ ...editItem, weight_gsm: parseInt(e.target.value) || 0 })} />
-                  </div>
-                  <div>
-                    <label className="text-xs font-medium text-muted-foreground">Kuti</label>
-                    <Input type="number" value={editItem.box_quantity ?? 1} onChange={(e) => setEditItem({ ...editItem, box_quantity: parseInt(e.target.value) || 1 })} />
-                  </div>
-                  <div>
-                    <label className="text-xs font-medium text-muted-foreground">Copë / Kuti</label>
-                    <Input type="number" value={editItem.pieces_per_box ?? 1} onChange={(e) => setEditItem({ ...editItem, pieces_per_box: parseInt(e.target.value) || 1 })} />
-                  </div>
-                </div>
-              </TabsContent>
-
-              {/* NEW: Variants tab for multi-color and multi-size */}
-              <TabsContent value="variants" className="space-y-6 mt-4">
-                {editItem.id ? (
-                  <>
-                    <ProductColorsManager productId={editItem.id} />
-                    <div className="border-t border-border pt-4" />
-                    <ProductSizesManager productId={editItem.id} />
-                  </>
-                ) : (
-                  <div className="text-center py-8 text-muted-foreground text-sm">
-                    Ruaj produktin fillimisht, pastaj shto ngjyra dhe përmasa.
-                  </div>
-                )}
-              </TabsContent>
-
-              <TabsContent value="general" className="space-y-4 mt-4">
+                {/* Product Info Accordion */}
                 <Accordion type="multiple" className="w-full">
                   <AccordionItem value="product-info">
                     <AccordionTrigger className="text-sm">Informacion mbi Produktin</AccordionTrigger>
