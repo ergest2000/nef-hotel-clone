@@ -55,7 +55,7 @@ const Cart = () => {
             <ShoppingBag className="h-16 w-16 mx-auto text-muted-foreground/20 mb-4" />
             <p className="text-muted-foreground mb-4">{cartEmpty}</p>
             <Link to="/koleksionet" className="text-primary hover:underline text-sm">
-              {tr("Shiko produktet", "Browse products")}
+              {tr("cart_browse", "Shiko produktet", "Browse products")}
             </Link>
           </div>
         ) : (
