@@ -101,8 +101,7 @@
 
   h1, h2, h3, h4, h5, h6 {
     font-family: var(--ds-font-family, 'Century Gothic', 'Avantgarde', 'CenturyGothic', 'AppleGothic', sans-serif);
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
+    letter-spacing: 0.08em;
   }
 
   h1 { font-size: var(--ds-font-size-h1, 36px); }
