@@ -1,5 +1,53 @@
 @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&display=swap');
 
+@font-face {
+  font-family: 'Century Gothic';
+  src: url('@/assets/fonts/CenturyGothicPaneuropeanLight.woff') format('woff');
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Century Gothic';
+  src: url('@/assets/fonts/CenturyGothicPaneuropeanLightItalic.woff') format('woff');
+  font-weight: 300;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Century Gothic';
+  src: url('@/assets/fonts/CenturyGothicPaneuropeanRegular.woff') format('woff');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Century Gothic';
+  src: url('@/assets/fonts/CenturyGothicPaneuropeanItalic.woff') format('woff');
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Century Gothic';
+  src: url('@/assets/fonts/CenturyGothicPaneuropeanSemiBold.woff') format('woff');
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Century Gothic';
+  src: url('@/assets/fonts/CenturyGothicPaneuropeanBold.woff') format('woff');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -101,7 +149,8 @@
 
   h1, h2, h3, h4, h5, h6 {
     font-family: var(--ds-font-family, 'Century Gothic', 'Avantgarde', 'CenturyGothic', 'AppleGothic', sans-serif);
-    letter-spacing: 0.08em;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
   }
 
   h1 { font-size: var(--ds-font-size-h1, 36px); }
