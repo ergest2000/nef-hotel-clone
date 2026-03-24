@@ -15,7 +15,7 @@ import { supabase } from "@/integrations/supabase/client";
 
 const Contact = () => {
   const { toast } = useToast();
-  const { lang } = useLanguage();
+  const { lang, isAl } = useLanguage();
   const { data: content } = usePageContent("contact", lang);
   const { data: sections } = usePageSections("contact");
   const { settings } = useDesign();
