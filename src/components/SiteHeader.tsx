@@ -1,4 +1,4 @@
-import { Search, Heart, ShoppingCart, UserPlus, Menu, X, ChevronDown, ChevronUp, Package } from "lucide-react";
+import { Search, Heart, ShoppingCart, UserPlus, Menu, X, ChevronDown, ChevronUp, Package, User, LogOut, Lock, Settings } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import SlugLink from "@/components/SlugLink";
@@ -9,6 +9,7 @@ import { useProductSearch } from "@/hooks/useProductSearch";
 import { useCart } from "@/hooks/useCart";
 import { useAuth } from "@/hooks/useAuth";
 import { useWishlist } from "@/hooks/useCollections";
+import { useProfile } from "@/hooks/useProfile";
 
 const productLinks = [
   { label: "Dhomë Gjumi", href: "#" },
@@ -72,6 +73,53 @@ const SearchDropdown = ({ query, isAl, onSelect }: {
   );
 };
 
+// ─── Profile Dropdown ────────────────────────────────────────────
+const ProfileDropdown = ({ onClose }: { onClose: () => void }) => {
+  const { user, signOut, isAdmin } = useAuth();
+  const { data: profile } = useProfile(user?.id);
+  const { isAl } = useLanguage();
+  const navigate = useNavigate();
+
+  const displayName = profile?.full_name || user?.email?.split("@")[0] || "";
+
+  const menuItems = [
+    { label: isAl ? "Llogaria ime" : "My Account", icon: User, action: () => navigate("/my-account") },
+    { label: isAl ? "Të preferuarat" : "Wishlist", icon: Heart, action: () => navigate("/wishlist") },
+    { label: isAl ? "Ndrysho fjalëkalimin" : "Change Password", icon: Lock, action: () => { navigate("/my-account"); /* will open password tab */ } },
+    ...(isAdmin ? [{ label: "Admin Panel", icon: Settings, action: () => navigate("/admin") }] : []),
+  ];
+
+  return (
+    <div className="absolute top-full right-0 mt-2 w-64 bg-background border border-border rounded-lg shadow-xl z-50 overflow-hidden">
+      <div className="px-4 py-3 border-b border-border bg-muted/30">
+        <p className="text-sm font-medium text-foreground truncate">{displayName}</p>
+        <p className="text-xs text-muted-foreground truncate">{user?.email}</p>
+      </div>
+      <div className="py-1">
+        {menuItems.map(({ label, icon: Icon, action }) => (
+          <button
+            key={label}
+            onClick={() => { action(); onClose(); }}
+            className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-foreground hover:bg-muted/50 transition-colors text-left"
+          >
+            <Icon size={16} className="text-muted-foreground" />
+            {label}
+          </button>
+        ))}
+      </div>
+      <div className="border-t border-border py-1">
+        <button
+          onClick={async () => { await signOut(); onClose(); navigate("/"); }}
+          className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-destructive hover:bg-muted/50 transition-colors text-left"
+        >
+          <LogOut size={16} />
+          {isAl ? "Dilni" : "Log out"}
+        </button>
+      </div>
+    </div>
+  );
+};
+
 const SiteHeader = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [desktopMenuOpen, setDesktopMenuOpen] = useState(false);
@@ -80,12 +128,15 @@ const SiteHeader = () => {
   const [searchFocused, setSearchFocused] = useState(false);
   const [mobileSearchQuery, setMobileSearchQuery] = useState("");
   const [mobileSearchFocused, setMobileSearchFocused] = useState(false);
+  const [profileOpen, setProfileOpen] = useState(false);
   const searchRef = useRef<HTMLDivElement>(null);
   const mobileSearchRef = useRef<HTMLDivElement>(null);
+  const profileRef = useRef<HTMLDivElement>(null);
   const { lang, setLang } = useLanguage();
   const { data: headerMenus } = useNavMenusByLocation("header");
   const { totalItems } = useCart();
   const { user } = useAuth();
+  const { data: profile } = useProfile(user?.id);
   const { data: wishlistItems } = useWishlist(user?.id);
   const wishlistCount = wishlistItems?.length ?? 0;
   const mainLinks = headerMenus?.map(m => ({ label: m.label, href: m.href })) ?? [
@@ -99,8 +150,9 @@ const SiteHeader = () => {
   ];
 
   const isAl = lang === "al";
+  const userInitial = (profile?.full_name?.[0] || user?.email?.[0] || "U").toUpperCase();
 
-  // Close dropdown on outside click
+  // Close dropdowns on outside click
   useEffect(() => {
     const handler = (e: MouseEvent) => {
       if (searchRef.current && !searchRef.current.contains(e.target as Node)) {
@@ -108,6 +160,9 @@ const SiteHeader = () => {
       }
       if (mobileSearchRef.current && !mobileSearchRef.current.contains(e.target as Node)) {
         setMobileSearchFocused(false);
+      }
+      if (profileRef.current && !profileRef.current.contains(e.target as Node)) {
+        setProfileOpen(false);
       }
     };
     document.addEventListener("mousedown", handler);
@@ -161,8 +216,28 @@ const SiteHeader = () => {
                 <Heart size={15} className={wishlistCount > 0 ? "fill-primary text-primary" : ""} />
                 <span>{wishlistCount}</span>
               </Link>
-              <Link to="/shporta" className="flex items-center gap-1.5 text-muted-foreground hover:text-foreground transition-colors"><ShoppingCart size={15} /> <span>{totalItems}</span></Link>
-              <SlugLink to="/register" className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors px-3"><UserPlus size={15} /> <span className="whitespace-nowrap">{isAl ? "REGJISTROHU / HYR" : "REGISTER / LOGIN"}</span></SlugLink>
+              <Link to="/shporta" className="flex items-center gap-1.5 text-muted-foreground hover:text-foreground transition-colors">
+                <ShoppingCart size={15} /> <span>{totalItems}</span>
+              </Link>
+              {user ? (
+                <div className="relative" ref={profileRef}>
+                  <button
+                    onClick={() => setProfileOpen(!profileOpen)}
+                    className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors px-3"
+                  >
+                    <span className="w-7 h-7 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-semibold">
+                      {userInitial}
+                    </span>
+                    <span className="whitespace-nowrap text-sm">{profile?.full_name || user.email?.split("@")[0]}</span>
+                  </button>
+                  {profileOpen && <ProfileDropdown onClose={() => setProfileOpen(false)} />}
+                </div>
+              ) : (
+                <SlugLink to="/register" className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors px-3">
+                  <UserPlus size={15} />
+                  <span className="whitespace-nowrap">{isAl ? "REGJISTROHU / HYR" : "REGISTER / LOGIN"}</span>
+                </SlugLink>
+              )}
             </div>
           </div>
         </div>
@@ -209,7 +284,15 @@ const SiteHeader = () => {
                   <span className="absolute -top-1.5 -right-1.5 bg-destructive text-destructive-foreground text-[9px] w-4 h-4 rounded-full flex items-center justify-center font-bold">{wishlistCount}</span>
                 )}
               </Link>
-              <SlugLink to="/register" className="text-muted-foreground hover:text-foreground"><UserPlus size={18} /></SlugLink>
+              {user ? (
+                <Link to="/my-account" className="text-muted-foreground hover:text-foreground">
+                  <span className="w-7 h-7 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-semibold">
+                    {userInitial}
+                  </span>
+                </Link>
+              ) : (
+                <SlugLink to="/register" className="text-muted-foreground hover:text-foreground"><UserPlus size={18} /></SlugLink>
+              )}
               <Link to="/shporta" className="relative text-muted-foreground hover:text-foreground">
                 <ShoppingCart size={18} />
                 {totalItems > 0 && (
