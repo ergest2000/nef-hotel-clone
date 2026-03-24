@@ -15,12 +15,11 @@ import { supabase } from "@/integrations/supabase/client";
 
 const Contact = () => {
   const { toast } = useToast();
-  const { lang } = useLanguage();
+  const { lang, isAl } = useLanguage();
   const { data: content } = usePageContent("contact", lang);
   const { data: sections } = usePageSections("contact");
   const { settings } = useDesign();
   const [form, setForm] = useState({ firstName: "", lastName: "", phone: "", email: "", message: "" });
-  const [newsletterEmail, setNewsletterEmail] = useState("");
 
   const mapLat = settings["contact_map_lat"] || "41.3275";
   const mapLng = settings["contact_map_lng"] || "19.8187";
@@ -55,27 +54,12 @@ const Contact = () => {
     setForm({ firstName: "", lastName: "", phone: "", email: "", message: "" });
   };
 
-  const handleNewsletterSubmit = async () => {
-    if (!newsletterEmail) return;
-    try {
-      await supabase.from("registrations").insert({
-        data: {
-          type: "newsletter",
-          email: newsletterEmail,
-        },
-      });
-      toast({ title: "U regjistruat me sukses!", description: "Do të merrni të rejat tona." });
-      setNewsletterEmail("");
-    } catch {
-      toast({ title: "Gabim", description: "Provoni përsëri.", variant: "destructive" });
-    }
-  };
 
   const contactInfo = [
-    { icon: MapPin, label: "Adresa", value: getContentValue(content, "info", "address", 'Rruga "Asim Vokshi", në krah të OTP Bank') },
-    { icon: Phone, label: "Telefoni", value: getContentValue(content, "info", "phone", "+355 68 900 0034") },
-    { icon: Mail, label: "Email", value: getContentValue(content, "info", "email", "shitje@egjeu.al") },
-    { icon: Clock, label: "Oraret e hapjes", value: getContentValue(content, "info", "hours", "Hënë – Shtunë: 08:30 – 20:30\nE diel: Mbyllur") },
+    { icon: MapPin, label: getContentValue(content, "info", "address_label", isAl ? "Adresa" : "Address"), value: getContentValue(content, "info", "address", 'Rruga "Asim Vokshi", në krah të OTP Bank') },
+    { icon: Phone, label: getContentValue(content, "info", "phone_label", isAl ? "Telefoni" : "Phone"), value: getContentValue(content, "info", "phone", "+355 68 900 0034") },
+    { icon: Mail, label: getContentValue(content, "info", "email_label", "Email"), value: getContentValue(content, "info", "email", "shitje@egjeu.al") },
+    { icon: Clock, label: getContentValue(content, "info", "hours_label", isAl ? "Oraret e hapjes" : "Opening Hours"), value: getContentValue(content, "info", "hours", "Hënë – Shtunë: 08:30 – 20:30\nE diel: Mbyllur") },
   ];
 
   return (
@@ -165,24 +149,6 @@ const Contact = () => {
       {isSectionVisible("membership-cta") && (
         <MembershipSection content={content ?? undefined} />
       )}
-
-      <section className="py-16 md:py-20 bg-newsletter-bg">
-        <div className="container">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
-            <div>
-              <h2 className="text-xl md:text-2xl tracking-wide-brand text-primary-foreground font-light mb-3">NEWSLETTER</h2>
-              <p className="text-sm text-primary-foreground/70">Bëhuni të parët që mësoni për ofertat dhe të rejat tona.</p>
-            </div>
-            <div>
-              <p className="text-sm text-primary-foreground/80 mb-4 md:text-right">Vendosni adresën tuaj të email-it.</p>
-              <div className="flex gap-0">
-                <input type="email" placeholder="E-mail" value={newsletterEmail} onChange={(e) => setNewsletterEmail(e.target.value)} className="flex-1 px-4 py-3 bg-primary-foreground/10 border border-primary-foreground/30 text-primary-foreground placeholder:text-primary-foreground/50 text-sm focus:outline-none focus:border-primary-foreground" />
-                <button type="button" onClick={handleNewsletterSubmit} className="px-6 py-3 bg-primary-foreground text-primary text-xs tracking-wide-brand uppercase hover:bg-primary-foreground/90 transition-colors">Subscribe</button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
 
       <SiteFooter />
     </div>
