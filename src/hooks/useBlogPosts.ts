@@ -67,9 +67,33 @@ export const useUpsertBlogPost = () => {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (post: Partial<BlogPost> & { slug: string }) => {
+      // Ensure slug uniqueness: check for existing posts with same slug (excluding current post)
+      let finalSlug = post.slug;
+      const { data: existing } = await supabase
+        .from("blog_posts")
+        .select("id, slug")
+        .eq("slug", finalSlug);
+      
+      const isDuplicate = existing?.some((e) => e.id !== post.id && e.slug === finalSlug);
+      if (isDuplicate) {
+        // Append suffix to make unique
+        let suffix = 1;
+        let candidate = `${finalSlug}-${suffix}`;
+        while (true) {
+          const { data: check } = await supabase
+            .from("blog_posts")
+            .select("id")
+            .eq("slug", candidate);
+          if (!check?.length || check.every((c) => c.id === post.id)) break;
+          suffix++;
+          candidate = `${finalSlug}-${suffix}`;
+        }
+        finalSlug = candidate;
+      }
+
       const { data, error } = await supabase
         .from("blog_posts")
-        .upsert(post, { onConflict: "slug" })
+        .upsert({ ...post, slug: finalSlug }, { onConflict: "slug" })
         .select()
         .single();
       if (error) throw error;
