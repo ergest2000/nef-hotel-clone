@@ -43,7 +43,7 @@ import { useAuth, type AppRole } from "@/hooks/useAuth";
 type RoleAccess = AppRole[];
 
 const menuItems: { key: string; label: string; icon: any; group: string; roles?: RoleAccess }[] = [
-  // Main
+  // Dashboard - everyone sees it but content differs by role
   { key: "dashboard", label: "Dashboard", icon: LayoutDashboard, group: "main" },
 
   // Pages (CMS) - admin only
@@ -54,7 +54,7 @@ const menuItems: { key: string; label: string; icon: any; group: string; roles?:
   { key: "contact", label: "Contact", icon: Phone, group: "pages", roles: ["admin"] },
   { key: "blog", label: "Blog CMS", icon: FileText, group: "pages", roles: ["admin"] },
 
-  // Content - admin only (except where noted)
+  // Content - admin & editor
   { key: "blog-posts", label: "Blog Posts", icon: PenSquare, group: "content", roles: ["admin", "editor"] },
   { key: "menus", label: "Menus", icon: MenuIcon, group: "content", roles: ["admin"] },
   { key: "clients-logos", label: "Clients Logos", icon: ImageIcon, group: "content", roles: ["admin"] },
@@ -66,10 +66,10 @@ const menuItems: { key: string; label: string; icon: any; group: string; roles?:
   { key: "products", label: "Produktet", icon: Package, group: "products" },
   { key: "suggested-products", label: "Sugjerime Homepage", icon: Star, group: "products", roles: ["admin"] },
   { key: "homepage-categories", label: "Kategoritë Homepage", icon: Grid3X3, group: "products", roles: ["admin"] },
-  { key: "gallery", label: "Galeria", icon: ImageIcon, group: "products" },
-  { key: "media", label: "Media", icon: Image, group: "products" },
+  { key: "gallery", label: "Galeria", icon: ImageIcon, group: "products", roles: ["admin", "editor"] },
+  { key: "media", label: "Media", icon: Image, group: "products", roles: ["admin", "editor"] },
 
-  // Registrations & Offers - admin & manager
+  // Management - admin & manager
   { key: "registrations", label: "Regjistrimet", icon: Users, group: "manage", roles: ["admin", "manager"] },
   { key: "registration-form", label: "Formulari", icon: FileText, group: "manage", roles: ["admin"] },
   { key: "offers", label: "Ofertat", icon: Gift, group: "manage", roles: ["admin", "manager"] },
@@ -113,7 +113,7 @@ export const AdminSidebar = ({ activePage, onPageChange }: AdminSidebarProps) =>
           {!collapsed && (
             <div className="flex flex-col">
               <span className="text-[11px] font-medium text-white tracking-wide">EGJEU</span>
-              <span className="text-[9px] text-white/50">Admin Panel</span>
+              <span className="text-[9px] text-white/50">{role === "admin" ? "Admin Panel" : role === "manager" ? "Manager Panel" : "Editor Panel"}</span>
             </div>
           )}
         </div>
