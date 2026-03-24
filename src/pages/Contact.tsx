@@ -80,7 +80,7 @@ const Contact = () => {
       )}
 
       {isSectionVisible("info") && (
-        <section className="py-16 md:py-20" style={infoBgColor ? { backgroundColor: `hsl(${infoBgColor})` } : undefined}>
+        <section className="py-16 md:py-20" style={{ backgroundColor: `hsl(${infoBgColor || "207 40% 92%"})` }}>
           <div className="container">
             <h2 className="text-lg md:text-xl tracking-wide-brand text-foreground font-light text-center mb-12">
               {getContentValue(content, "info", "title", "INFORMACIONI I KONTAKTIT")}
