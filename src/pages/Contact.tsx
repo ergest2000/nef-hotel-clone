@@ -6,12 +6,13 @@ import MembershipSection from "@/components/MembershipSection";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { MapPin, Phone, Mail, Clock } from "lucide-react";
+import { MapPin, Phone, Mail, Clock, Send } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { usePageContent, usePageSections, getContentValue } from "@/hooks/useCms";
 import { useLanguage } from "@/hooks/useLanguage";
 import { useDesign } from "@/hooks/useDesignSettings";
 import { supabase } from "@/integrations/supabase/client";
+import heroImg from "@/assets/hero-2.jpg";
 
 const Contact = () => {
   const { toast } = useToast();
@@ -24,7 +25,6 @@ const Contact = () => {
   const mapLat = settings["contact_map_lat"] || "41.3275";
   const mapLng = settings["contact_map_lng"] || "19.8187";
   const mapZoom = settings["contact_map_zoom"] || "15";
-  const infoBgColor = settings["contact_info_bg_color"];
 
   const isSectionVisible = (key: string) => {
     if (!sections) return true;
@@ -54,7 +54,6 @@ const Contact = () => {
     setForm({ firstName: "", lastName: "", phone: "", email: "", message: "" });
   };
 
-
   const contactInfo = [
     { icon: MapPin, label: getContentValue(content, "info", "address_label", isAl ? "Adresa" : "Address"), value: getContentValue(content, "info", "address", 'Rruga "Asim Vokshi", në krah të OTP Bank') },
     { icon: Phone, label: getContentValue(content, "info", "phone_label", isAl ? "Telefoni" : "Phone"), value: getContentValue(content, "info", "phone", "+355 68 900 0034") },
@@ -67,29 +66,35 @@ const Contact = () => {
       <SiteHeader />
 
       {isSectionVisible("hero") && (
-        <section className="py-16 md:py-24 bg-warm-gray">
-          <div className="container text-center">
-            <h1 className="text-3xl md:text-5xl font-light tracking-brand text-foreground mb-4">
-              {getContentValue(content, "hero", "title", "NA KONTAKTONI")}
-            </h1>
-            <p className="text-sm md:text-base text-muted-foreground max-w-2xl mx-auto tracking-wide">
-              {getContentValue(content, "hero", "subtitle", "Nëse keni pyetje rreth produkteve ose shërbimeve tona, ekipi ynë është gjithmonë i gatshëm t'ju ndihmojë.")}
-            </p>
+        <section className="relative h-[50vh] md:h-[60vh] overflow-hidden">
+          <img src={heroImg} alt="Contact" className="w-full h-full object-cover" />
+          <div className="absolute inset-0 bg-primary/70" />
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div className="text-center">
+              <h1 className="text-3xl md:text-5xl font-light tracking-brand text-primary-foreground mb-4">
+                {getContentValue(content, "hero", "title", "NA KONTAKTONI")}
+              </h1>
+              <p className="text-sm md:text-base text-primary-foreground/80 max-w-2xl mx-auto tracking-wide px-6">
+                {getContentValue(content, "hero", "subtitle", "Nëse keni pyetje rreth produkteve ose shërbimeve tona, ekipi ynë është gjithmonë i gatshëm t'ju ndihmojë.")}
+              </p>
+            </div>
           </div>
         </section>
       )}
 
       {isSectionVisible("info") && (
-        <section className="py-16 md:py-20" style={{ backgroundColor: `hsl(${infoBgColor || "207 40% 92%"})` }}>
+        <section className="py-16 md:py-20 bg-background">
           <div className="container">
             <h2 className="text-lg md:text-xl tracking-wide-brand text-foreground font-light text-center mb-12">
               {getContentValue(content, "info", "title", "INFORMACIONI I KONTAKTIT")}
             </h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
               {contactInfo.map(({ icon: Icon, label, value }) => (
-                <div key={label} className="bg-background border border-border p-6 text-center hover:shadow-lg transition-shadow">
-                  <Icon size={28} className="mx-auto mb-4 text-primary" strokeWidth={1.2} />
-                  <h3 className="text-xs tracking-wide-brand text-foreground mb-2 uppercase font-semibold">{label}</h3>
+                <div key={label} className="group bg-background border border-border p-8 text-center hover:border-primary hover:shadow-xl transition-all duration-300">
+                  <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-5 group-hover:bg-primary/20 transition-colors">
+                    <Icon size={24} className="text-primary" strokeWidth={1.2} />
+                  </div>
+                  <h3 className="text-xs tracking-wide-brand text-foreground mb-3 uppercase font-semibold">{label}</h3>
                   <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-line">{value}</p>
                 </div>
               ))}
@@ -98,53 +103,64 @@ const Contact = () => {
         </section>
       )}
 
-      {/* Google Maps - after contact info */}
       <section className="py-0">
-        <div className="container">
-          <div className="w-full h-[300px] md:h-[400px] border border-border overflow-hidden">
-            <iframe
-              title="Google Maps"
-              width="100%"
-              height="100%"
-              style={{ border: 0 }}
-              loading="lazy"
-              referrerPolicy="no-referrer-when-downgrade"
-              src={`https://www.google.com/maps?q=${mapLat},${mapLng}&z=${mapZoom}&output=embed`}
-            />
-          </div>
+        <div className="w-full h-[300px] md:h-[450px] overflow-hidden">
+          <iframe
+            title="Google Maps"
+            width="100%"
+            height="100%"
+            style={{ border: 0 }}
+            loading="lazy"
+            referrerPolicy="no-referrer-when-downgrade"
+            src={`https://www.google.com/maps?q=${mapLat},${mapLng}&z=${mapZoom}&output=embed`}
+          />
         </div>
       </section>
 
       {isSectionVisible("form") && (
-        <section className="py-16 md:py-20">
+        <section className="py-16 md:py-20 bg-secondary/30">
           <div className="container">
-            <div className="max-w-2xl mx-auto">
+            <div className="max-w-3xl mx-auto">
               <h2 className="text-lg md:text-xl tracking-wide-brand text-foreground font-light text-center mb-2">
                 {getContentValue(content, "form", "title", "FORMULARI I KONTAKTIT")}
               </h2>
               <p className="text-sm text-muted-foreground text-center mb-10 max-w-lg mx-auto">
                 {getContentValue(content, "form", "subtitle", "Ju lutemi plotësoni formularin më poshtë.")}
               </p>
-              <form onSubmit={handleSubmit} className="bg-background border border-border p-8 md:p-10 space-y-5">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                  <div className="space-y-1.5"><label className="text-xs tracking-brand text-muted-foreground uppercase">Emri</label><Input value={form.firstName} onChange={(e) => update("firstName", e.target.value)} className="h-11 border-border bg-background" required /></div>
-                  <div className="space-y-1.5"><label className="text-xs tracking-brand text-muted-foreground uppercase">Mbiemri</label><Input value={form.lastName} onChange={(e) => update("lastName", e.target.value)} className="h-11 border-border bg-background" required /></div>
+              <form onSubmit={handleSubmit} className="bg-background border border-border p-8 md:p-12 space-y-6 shadow-sm">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                  <div className="space-y-2">
+                    <label className="text-xs tracking-brand text-muted-foreground uppercase">Emri</label>
+                    <Input value={form.firstName} onChange={(e) => update("firstName", e.target.value)} className="h-12 border-border bg-background focus:border-primary" required />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-xs tracking-brand text-muted-foreground uppercase">Mbiemri</label>
+                    <Input value={form.lastName} onChange={(e) => update("lastName", e.target.value)} className="h-12 border-border bg-background focus:border-primary" required />
+                  </div>
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                  <div className="space-y-1.5"><label className="text-xs tracking-brand text-muted-foreground uppercase">Telefoni</label><Input type="tel" value={form.phone} onChange={(e) => update("phone", e.target.value)} className="h-11 border-border bg-background" required /></div>
-                  <div className="space-y-1.5"><label className="text-xs tracking-brand text-muted-foreground uppercase">E-mail</label><Input type="email" value={form.email} onChange={(e) => update("email", e.target.value)} className="h-11 border-border bg-background" required /></div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                  <div className="space-y-2">
+                    <label className="text-xs tracking-brand text-muted-foreground uppercase">Telefoni</label>
+                    <Input type="tel" value={form.phone} onChange={(e) => update("phone", e.target.value)} className="h-12 border-border bg-background focus:border-primary" required />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-xs tracking-brand text-muted-foreground uppercase">E-mail</label>
+                    <Input type="email" value={form.email} onChange={(e) => update("email", e.target.value)} className="h-12 border-border bg-background focus:border-primary" required />
+                  </div>
                 </div>
-                <div className="space-y-1.5">
+                <div className="space-y-2">
                   <label className="text-xs tracking-brand text-muted-foreground uppercase">Mesazhi</label>
-                  <Textarea value={form.message} onChange={(e) => update("message", e.target.value)} className="min-h-[120px] border-border bg-background" required />
+                  <Textarea value={form.message} onChange={(e) => update("message", e.target.value)} className="min-h-[140px] border-border bg-background focus:border-primary" required />
                 </div>
-                <Button type="submit" className="w-full h-11 text-xs tracking-wide-brand uppercase">DËRGO</Button>
+                <Button type="submit" className="w-full h-12 text-xs tracking-wide-brand uppercase gap-2">
+                  <Send size={16} strokeWidth={1.5} />
+                  DËRGO
+                </Button>
               </form>
             </div>
           </div>
         </section>
       )}
-
 
       {isSectionVisible("membership-cta") && (
         <MembershipSection content={content ?? undefined} />
