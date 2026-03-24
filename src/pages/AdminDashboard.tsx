@@ -31,6 +31,8 @@ import { AdminSuggestedProducts } from "@/components/admin/AdminSuggestedProduct
 import { AdminHomepageCategories } from "@/components/admin/AdminHomepageCategories";
 import { AdminStaticPages } from "@/components/admin/AdminStaticPages";
 import { AdminGalleryManager } from "@/components/admin/AdminGalleryManager";
+import { AdminNewsletter } from "@/components/admin/AdminNewsletter";
+import { AdminOfferRequests } from "@/components/admin/AdminOfferRequests";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import type { Tables } from "@/integrations/supabase/types";
 
@@ -49,8 +51,8 @@ const pageTitles: Record<string, string> = {
   menus: "Menu Management",
   "clients-logos": "Clients Logos",
   "certifications-logos": "Certifications Logos",
-  registrations: "Registrations",
-  "registration-form": "Registration Form",
+  registrations: "Regjistrimet",
+  "registration-form": "Formulari i Kontaktit",
   users: "Users",
   "auth-logs": "Auth Logs",
   "auth-texts": "Auth Form Texts",
@@ -63,6 +65,8 @@ const pageTitles: Record<string, string> = {
   gallery: "Galeria",
   design: "Design Settings",
   settings: "Settings",
+  newsletter: "Newsletter",
+  offers: "Kërkesat për Oferta",
 };
 
 const cmsPages = ["home", "company", "clients", "tailor-made", "contact", "blog"];
@@ -264,6 +268,10 @@ const AdminDashboard = () => {
         return <AdminGalleryManager />;
       case "design":
         return <AdminDesignSettings />;
+      case "newsletter":
+        return <AdminNewsletter />;
+      case "offers":
+        return <AdminOfferRequests />;
       case "media":
         return (
           <div>
