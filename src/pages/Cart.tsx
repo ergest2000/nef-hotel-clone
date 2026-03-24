@@ -106,7 +106,7 @@ const Cart = () => {
                         )}
                       </td>
                       <td className="py-6 text-center text-sm text-foreground">{item.size || "—"}</td>
-                      <td className="py-6 text-center text-sm text-foreground">{item.pieces}</td>
+                      <td className="py-6 text-center text-sm text-foreground">{item.pieces * item.boxes}</td>
                       <td className="py-6">
                         <div className="flex items-center justify-center gap-2">
                           <button
