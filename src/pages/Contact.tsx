@@ -56,10 +56,10 @@ const Contact = () => {
 
 
   const contactInfo = [
-    { icon: MapPin, label: "Adresa", value: getContentValue(content, "info", "address", 'Rruga "Asim Vokshi", në krah të OTP Bank') },
-    { icon: Phone, label: "Telefoni", value: getContentValue(content, "info", "phone", "+355 68 900 0034") },
-    { icon: Mail, label: "Email", value: getContentValue(content, "info", "email", "shitje@egjeu.al") },
-    { icon: Clock, label: "Oraret e hapjes", value: getContentValue(content, "info", "hours", "Hënë – Shtunë: 08:30 – 20:30\nE diel: Mbyllur") },
+    { icon: MapPin, label: getContentValue(content, "info", "address_label", isAl ? "Adresa" : "Address"), value: getContentValue(content, "info", "address", 'Rruga "Asim Vokshi", në krah të OTP Bank') },
+    { icon: Phone, label: getContentValue(content, "info", "phone_label", isAl ? "Telefoni" : "Phone"), value: getContentValue(content, "info", "phone", "+355 68 900 0034") },
+    { icon: Mail, label: getContentValue(content, "info", "email_label", "Email"), value: getContentValue(content, "info", "email", "shitje@egjeu.al") },
+    { icon: Clock, label: getContentValue(content, "info", "hours_label", isAl ? "Oraret e hapjes" : "Opening Hours"), value: getContentValue(content, "info", "hours", "Hënë – Shtunë: 08:30 – 20:30\nE diel: Mbyllur") },
   ];
 
   return (
