@@ -20,7 +20,6 @@ const Contact = () => {
   const { data: sections } = usePageSections("contact");
   const { settings } = useDesign();
   const [form, setForm] = useState({ firstName: "", lastName: "", phone: "", email: "", message: "" });
-  const [newsletterEmail, setNewsletterEmail] = useState("");
 
   const mapLat = settings["contact_map_lat"] || "41.3275";
   const mapLng = settings["contact_map_lng"] || "19.8187";
