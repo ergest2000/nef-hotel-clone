@@ -1,4 +1,4 @@
-import { Search, Heart, ShoppingCart, UserPlus, Menu, X, ChevronDown, ChevronUp, Package, User, LogOut, Lock, Settings } from "lucide-react";
+import { Search, Heart, ShoppingCart, UserPlus, Menu, X, ChevronDown, ChevronUp, Package, User, LogOut, Lock, Settings, Tag, Gift } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import SlugLink from "@/components/SlugLink";
@@ -10,6 +10,7 @@ import { useCart } from "@/hooks/useCart";
 import { useAuth } from "@/hooks/useAuth";
 import { useWishlist } from "@/hooks/useCollections";
 import { useProfile } from "@/hooks/useProfile";
+import { useUserOffers } from "@/hooks/useOffers";
 
 const productLinks = [
   { label: "Dhomë Gjumi", href: "#" },
@@ -21,15 +22,12 @@ const productLinks = [
   { label: "Restorant", href: "#" },
 ];
 
-// ─── Search Dropdown ────────────────────────────────────────────
 const SearchDropdown = ({ query, isAl, onSelect }: {
   query: string; isAl: boolean; onSelect: () => void;
 }) => {
   const { results, hasQuery } = useProductSearch(query);
   const navigate = useNavigate();
-
   if (!hasQuery) return null;
-
   return (
     <div className="absolute top-full left-0 right-0 mt-1 bg-background border border-border rounded-lg shadow-lg z-50 max-h-[400px] overflow-y-auto">
       {results.length === 0 ? (
@@ -73,28 +71,75 @@ const SearchDropdown = ({ query, isAl, onSelect }: {
   );
 };
 
-// ─── Profile Dropdown ────────────────────────────────────────────
 const ProfileDropdown = ({ onClose }: { onClose: () => void }) => {
   const { user, signOut, isAdmin } = useAuth();
   const { data: profile } = useProfile(user?.id);
+  const { data: offers } = useUserOffers(user?.id);
   const { isAl } = useLanguage();
   const navigate = useNavigate();
 
   const displayName = profile?.full_name || user?.email?.split("@")[0] || "";
+  const unseenOffers = offers?.filter((o) => !o.seen) ?? [];
 
   const menuItems = [
     { label: isAl ? "Llogaria ime" : "My Account", icon: User, action: () => navigate("/my-account") },
     { label: isAl ? "Të preferuarat" : "Wishlist", icon: Heart, action: () => navigate("/wishlist") },
-    { label: isAl ? "Ndrysho fjalëkalimin" : "Change Password", icon: Lock, action: () => { navigate("/my-account"); /* will open password tab */ } },
+    { label: isAl ? "Ndrysho fjalëkalimin" : "Change Password", icon: Lock, action: () => navigate("/my-account") },
     ...(isAdmin ? [{ label: "Admin Panel", icon: Settings, action: () => navigate("/admin") }] : []),
   ];
 
   return (
-    <div className="absolute top-full right-0 mt-2 w-64 bg-background border border-border rounded-lg shadow-xl z-50 overflow-hidden">
+    <div className="absolute top-full right-0 mt-2 w-72 bg-background border border-border rounded-lg shadow-xl z-50 overflow-hidden">
       <div className="px-4 py-3 border-b border-border bg-muted/30">
         <p className="text-sm font-medium text-foreground truncate">{displayName}</p>
         <p className="text-xs text-muted-foreground truncate">{user?.email}</p>
       </div>
+
+      {/* Ofertat */}
+      {offers && offers.length > 0 && (
+        <div className="border-b border-border">
+          <div className="px-4 py-2 bg-primary/5">
+            <p className="text-xs tracking-brand text-primary uppercase flex items-center gap-1.5">
+              <Gift size={14} />
+              {isAl ? "Ofertat e tua" : "Your Offers"}
+              {unseenOffers.length > 0 && (
+                <span className="ml-auto bg-primary text-primary-foreground text-[10px] px-1.5 py-0.5 rounded-full font-bold">{unseenOffers.length}</span>
+              )}
+            </p>
+          </div>
+          <div className="max-h-[160px] overflow-y-auto">
+            {offers.slice(0, 5).map((offer) => (
+              <button
+                key={offer.id}
+                onClick={() => {
+                  if (offer.product_id) navigate(`/koleksionet/all/${offer.product_id}`);
+                  onClose();
+                }}
+                className="w-full flex items-start gap-3 px-4 py-2.5 hover:bg-muted/50 transition-colors text-left"
+              >
+                <Tag size={14} className="text-primary mt-0.5 shrink-0" />
+                <div className="min-w-0">
+                  <p className="text-xs font-medium text-foreground truncate">
+                    {isAl ? offer.title_al : offer.title_en || offer.title_al}
+                    {offer.discount_percent > 0 && (
+                      <span className="ml-1.5 text-primary font-bold">-{offer.discount_percent}%</span>
+                    )}
+                  </p>
+                  <p className="text-[11px] text-muted-foreground truncate">
+                    {isAl ? offer.description_al : offer.description_en || offer.description_al}
+                  </p>
+                  {!offer.seen && (
+                    <span className="inline-block mt-0.5 text-[9px] bg-primary/10 text-primary px-1.5 py-0.5 rounded uppercase font-semibold">
+                      {isAl ? "E re" : "New"}
+                    </span>
+                  )}
+                </div>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
       <div className="py-1">
         {menuItems.map(({ label, icon: Icon, action }) => (
           <button
@@ -138,7 +183,9 @@ const SiteHeader = () => {
   const { user } = useAuth();
   const { data: profile } = useProfile(user?.id);
   const { data: wishlistItems } = useWishlist(user?.id);
+  const { data: offers } = useUserOffers(user?.id);
   const wishlistCount = wishlistItems?.length ?? 0;
+  const unseenOffersCount = offers?.filter((o) => !o.seen)?.length ?? 0;
   const mainLinks = headerMenus?.map(m => ({ label: m.label, href: m.href })) ?? [
     { label: "About Us", href: "/company" },
     { label: "Our Clients", href: "/clients" },
@@ -152,32 +199,18 @@ const SiteHeader = () => {
   const isAl = lang === "al";
   const userInitial = (profile?.full_name?.[0] || user?.email?.[0] || "U").toUpperCase();
 
-  // Close dropdowns on outside click
   useEffect(() => {
     const handler = (e: MouseEvent) => {
-      if (searchRef.current && !searchRef.current.contains(e.target as Node)) {
-        setSearchFocused(false);
-      }
-      if (mobileSearchRef.current && !mobileSearchRef.current.contains(e.target as Node)) {
-        setMobileSearchFocused(false);
-      }
-      if (profileRef.current && !profileRef.current.contains(e.target as Node)) {
-        setProfileOpen(false);
-      }
+      if (searchRef.current && !searchRef.current.contains(e.target as Node)) setSearchFocused(false);
+      if (mobileSearchRef.current && !mobileSearchRef.current.contains(e.target as Node)) setMobileSearchFocused(false);
+      if (profileRef.current && !profileRef.current.contains(e.target as Node)) setProfileOpen(false);
     };
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
   }, []);
 
-  const clearDesktopSearch = () => {
-    setSearchQuery("");
-    setSearchFocused(false);
-  };
-
-  const clearMobileSearch = () => {
-    setMobileSearchQuery("");
-    setMobileSearchFocused(false);
-  };
+  const clearDesktopSearch = () => { setSearchQuery(""); setSearchFocused(false); };
+  const clearMobileSearch = () => { setMobileSearchQuery(""); setMobileSearchFocused(false); };
 
   return (
     <header className="w-full sticky top-0 z-50 bg-background">
@@ -203,13 +236,7 @@ const SiteHeader = () => {
                 onFocus={() => setSearchFocused(true)}
               />
               <Search size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-              {searchFocused && (
-                <SearchDropdown
-                  query={searchQuery}
-                  isAl={isAl}
-                  onSelect={clearDesktopSearch}
-                />
-              )}
+              {searchFocused && <SearchDropdown query={searchQuery} isAl={isAl} onSelect={clearDesktopSearch} />}
             </div>
             <div className="flex items-center gap-7 shrink-0 ml-auto">
               <Link to="/wishlist" className="flex items-center gap-1.5 text-muted-foreground hover:text-foreground transition-colors">
@@ -225,8 +252,11 @@ const SiteHeader = () => {
                     onClick={() => setProfileOpen(!profileOpen)}
                     className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors px-3"
                   >
-                    <span className="w-7 h-7 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-semibold">
+                    <span className="relative w-7 h-7 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-semibold">
                       {userInitial}
+                      {unseenOffersCount > 0 && (
+                        <span className="absolute -top-1 -right-1 bg-destructive text-destructive-foreground text-[8px] w-4 h-4 rounded-full flex items-center justify-center font-bold">{unseenOffersCount}</span>
+                      )}
                     </span>
                     <span className="whitespace-nowrap text-sm">{profile?.full_name || user.email?.split("@")[0]}</span>
                   </button>
@@ -285,10 +315,13 @@ const SiteHeader = () => {
                 )}
               </Link>
               {user ? (
-                <Link to="/my-account" className="text-muted-foreground hover:text-foreground">
+                <Link to="/my-account" className="relative text-muted-foreground hover:text-foreground">
                   <span className="w-7 h-7 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-semibold">
                     {userInitial}
                   </span>
+                  {unseenOffersCount > 0 && (
+                    <span className="absolute -top-1 -right-1 bg-destructive text-destructive-foreground text-[8px] w-4 h-4 rounded-full flex items-center justify-center font-bold">{unseenOffersCount}</span>
+                  )}
                 </Link>
               ) : (
                 <SlugLink to="/register" className="text-muted-foreground hover:text-foreground"><UserPlus size={18} /></SlugLink>
@@ -314,13 +347,7 @@ const SiteHeader = () => {
               onFocus={() => setMobileSearchFocused(true)}
             />
             <Search size={18} className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground" />
-            {mobileSearchFocused && (
-              <SearchDropdown
-                query={mobileSearchQuery}
-                isAl={isAl}
-                onSelect={clearMobileSearch}
-              />
-            )}
+            {mobileSearchFocused && <SearchDropdown query={mobileSearchQuery} isAl={isAl} onSelect={clearMobileSearch} />}
           </div>
         </div>
         {mobileMenuOpen && (
