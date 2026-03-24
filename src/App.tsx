@@ -14,6 +14,7 @@ import ProductDetail from "./pages/ProductDetail";
 import Cart from "./pages/Cart";
 import Checkout from "./pages/Checkout";
 import Wishlist from "./pages/Wishlist";
+import MyAccount from "./pages/MyAccount";
 import AdminDashboard from "./pages/AdminDashboard";
 import AdminRoute from "./components/AdminRoute";
 import ScrollToTop from "./components/ScrollToTop";
@@ -44,6 +45,7 @@ const App = () => (
                 <Route path="/shporta" element={<Cart />} />
                 <Route path="/checkout" element={<Checkout />} />
                 <Route path="/wishlist" element={<Wishlist />} />
+                <Route path="/my-account" element={<MyAccount />} />
                 {/* Blog post with nested slug */}
                 <Route path="/:slug/:id" element={<BlogPost />} />
                 {/* Dynamic slug-based routing for all pages */}
