@@ -13,6 +13,7 @@ import Collections from "./pages/Collections";
 import ProductDetail from "./pages/ProductDetail";
 import Cart from "./pages/Cart";
 import Checkout from "./pages/Checkout";
+import Wishlist from "./pages/Wishlist";
 import AdminDashboard from "./pages/AdminDashboard";
 import AdminRoute from "./components/AdminRoute";
 import ScrollToTop from "./components/ScrollToTop";
@@ -42,6 +43,7 @@ const App = () => (
                 <Route path="/koleksionet/:slug/:productId" element={<ProductDetail />} />
                 <Route path="/shporta" element={<Cart />} />
                 <Route path="/checkout" element={<Checkout />} />
+                <Route path="/wishlist" element={<Wishlist />} />
                 {/* Blog post with nested slug */}
                 <Route path="/:slug/:id" element={<BlogPost />} />
                 {/* Dynamic slug-based routing for all pages */}
