@@ -157,10 +157,10 @@ const SiteHeader = () => {
               )}
             </div>
             <div className="flex items-center gap-7 shrink-0 ml-auto">
-              <button className="flex items-center gap-1.5 text-muted-foreground hover:text-foreground transition-colors">
+              <Link to="/wishlist" className="flex items-center gap-1.5 text-muted-foreground hover:text-foreground transition-colors">
                 <Heart size={15} className={wishlistCount > 0 ? "fill-primary text-primary" : ""} />
                 <span>{wishlistCount}</span>
-              </button>
+              </Link>
               <Link to="/shporta" className="flex items-center gap-1.5 text-muted-foreground hover:text-foreground transition-colors"><ShoppingCart size={15} /> <span>{totalItems}</span></Link>
               <SlugLink to="/register" className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors px-3"><UserPlus size={15} /> <span className="whitespace-nowrap">{isAl ? "REGJISTROHU / HYR" : "REGISTER / LOGIN"}</span></SlugLink>
             </div>
@@ -203,12 +203,12 @@ const SiteHeader = () => {
             </button>
             <Link to="/" className="absolute left-1/2 -translate-x-1/2"><img src={logo} alt="EGJEU" className="h-9 w-auto" /></Link>
             <div className="flex items-center gap-4">
-              <button className="relative text-muted-foreground hover:text-foreground">
+              <Link to="/wishlist" className="relative text-muted-foreground hover:text-foreground">
                 <Heart size={18} className={wishlistCount > 0 ? "fill-primary text-primary" : ""} />
                 {wishlistCount > 0 && (
                   <span className="absolute -top-1.5 -right-1.5 bg-destructive text-destructive-foreground text-[9px] w-4 h-4 rounded-full flex items-center justify-center font-bold">{wishlistCount}</span>
                 )}
-              </button>
+              </Link>
               <SlugLink to="/register" className="text-muted-foreground hover:text-foreground"><UserPlus size={18} /></SlugLink>
               <Link to="/shporta" className="relative text-muted-foreground hover:text-foreground">
                 <ShoppingCart size={18} />
