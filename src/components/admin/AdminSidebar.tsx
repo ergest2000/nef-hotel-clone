@@ -22,6 +22,7 @@ import {
   Star,
   Grid3X3,
   BookOpen,
+  Gift,
 } from "lucide-react";
 import {
   Sidebar,
@@ -39,35 +40,48 @@ import {
 import logo from "@/assets/egjeu-logo.png";
 import { useAuth, type AppRole } from "@/hooks/useAuth";
 
-// Roles that can see each menu item. undefined = all dashboard roles.
 type RoleAccess = AppRole[];
 
 const menuItems: { key: string; label: string; icon: any; group: string; roles?: RoleAccess }[] = [
+  // Main
   { key: "dashboard", label: "Dashboard", icon: LayoutDashboard, group: "main" },
-  { key: "home", label: "Faqja Kryesore", icon: Home, group: "pages" },
-  { key: "company", label: "Company", icon: Building2, group: "pages" },
-  { key: "clients", label: "Clients", icon: Users, group: "pages" },
-  { key: "tailor-made", label: "Tailor Made", icon: Scissors, group: "pages" },
-  { key: "contact", label: "Contact", icon: Phone, group: "pages" },
-  { key: "blog", label: "Blog", icon: FileText, group: "pages" },
-  { key: "blog-posts", label: "Blog Posts", icon: PenSquare, group: "content" },
-  { key: "menus", label: "Menus", icon: MenuIcon, group: "content", roles: ["admin", "manager"] },
-  { key: "clients-logos", label: "Clients Logos", icon: ImageIcon, group: "content" },
-  { key: "certifications-logos", label: "Certifications Logos", icon: Award, group: "content" },
-  { key: "registrations", label: "Registrations", icon: Users, group: "content", roles: ["admin", "manager"] },
-  { key: "registration-form", label: "Registration Form", icon: FileText, group: "content", roles: ["admin", "manager"] },
-  { key: "collections", label: "Koleksionet", icon: FolderOpen, group: "content" },
-  { key: "products", label: "Produktet", icon: Package, group: "content" },
-  { key: "suggested-products", label: "Sugjerime Homepage", icon: Star, group: "content" },
-  { key: "homepage-categories", label: "Kategoritë Homepage", icon: Grid3X3, group: "content" },
-  { key: "static-pages", label: "Faqet Statike", icon: BookOpen, group: "content" },
-  { key: "gallery", label: "Galeria", icon: ImageIcon, group: "content" },
-  { key: "media", label: "Media", icon: Image, group: "content" },
-  { key: "users", label: "Users", icon: UserCog, group: "users", roles: ["admin", "manager"] },
+
+  // Pages (CMS) - admin only
+  { key: "home", label: "Faqja Kryesore", icon: Home, group: "pages", roles: ["admin"] },
+  { key: "company", label: "Company", icon: Building2, group: "pages", roles: ["admin"] },
+  { key: "clients", label: "Clients", icon: Users, group: "pages", roles: ["admin"] },
+  { key: "tailor-made", label: "Tailor Made", icon: Scissors, group: "pages", roles: ["admin"] },
+  { key: "contact", label: "Contact", icon: Phone, group: "pages", roles: ["admin"] },
+  { key: "blog", label: "Blog CMS", icon: FileText, group: "pages", roles: ["admin"] },
+
+  // Content - admin only (except where noted)
+  { key: "blog-posts", label: "Blog Posts", icon: PenSquare, group: "content", roles: ["admin", "editor"] },
+  { key: "menus", label: "Menus", icon: MenuIcon, group: "content", roles: ["admin"] },
+  { key: "clients-logos", label: "Clients Logos", icon: ImageIcon, group: "content", roles: ["admin"] },
+  { key: "certifications-logos", label: "Certifications Logos", icon: Award, group: "content", roles: ["admin"] },
+  { key: "static-pages", label: "Faqet Statike", icon: BookOpen, group: "content", roles: ["admin"] },
+
+  // Products - admin, manager, editor
+  { key: "collections", label: "Koleksionet", icon: FolderOpen, group: "products" },
+  { key: "products", label: "Produktet", icon: Package, group: "products" },
+  { key: "suggested-products", label: "Sugjerime Homepage", icon: Star, group: "products", roles: ["admin"] },
+  { key: "homepage-categories", label: "Kategoritë Homepage", icon: Grid3X3, group: "products", roles: ["admin"] },
+  { key: "gallery", label: "Galeria", icon: ImageIcon, group: "products" },
+  { key: "media", label: "Media", icon: Image, group: "products" },
+
+  // Registrations & Offers - admin & manager
+  { key: "registrations", label: "Regjistrimet", icon: Users, group: "manage", roles: ["admin", "manager"] },
+  { key: "registration-form", label: "Formulari", icon: FileText, group: "manage", roles: ["admin"] },
+  { key: "offers", label: "Ofertat", icon: Gift, group: "manage", roles: ["admin", "manager"] },
+
+  // Users - admin only
+  { key: "users", label: "Users", icon: UserCog, group: "users", roles: ["admin"] },
   { key: "auth-logs", label: "Auth Logs", icon: ScrollText, group: "users", roles: ["admin"] },
-  { key: "auth-texts", label: "Auth Texts", icon: Type, group: "users", roles: ["admin", "manager"] },
+  { key: "auth-texts", label: "Auth Texts", icon: Type, group: "users", roles: ["admin"] },
+
+  // System - admin only
   { key: "slugs", label: "URL Slugs", icon: LinkIcon, group: "system", roles: ["admin"] },
-  { key: "design", label: "Design Settings", icon: Paintbrush, group: "system", roles: ["admin", "manager"] },
+  { key: "design", label: "Design Settings", icon: Paintbrush, group: "system", roles: ["admin"] },
   { key: "settings", label: "Settings", icon: Settings, group: "system", roles: ["admin"] },
 ];
 
@@ -75,6 +89,8 @@ const groups = [
   { key: "main", label: "" },
   { key: "pages", label: "Faqet" },
   { key: "content", label: "Përmbajtja" },
+  { key: "products", label: "Produktet" },
+  { key: "manage", label: "Menaxhimi" },
   { key: "users", label: "Përdoruesit" },
   { key: "system", label: "Sistemi" },
 ];
