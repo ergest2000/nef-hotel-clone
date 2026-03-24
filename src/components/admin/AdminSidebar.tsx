@@ -23,6 +23,7 @@ import {
   Grid3X3,
   BookOpen,
   Gift,
+  Mail,
 } from "lucide-react";
 import {
   Sidebar,
@@ -43,7 +44,6 @@ import { useAuth, type AppRole } from "@/hooks/useAuth";
 type RoleAccess = AppRole[];
 
 const menuItems: { key: string; label: string; icon: any; group: string; roles?: RoleAccess }[] = [
-  // Dashboard - everyone sees it but content differs by role
   { key: "dashboard", label: "Dashboard", icon: LayoutDashboard, group: "main" },
 
   // Pages (CMS) - admin only
@@ -71,8 +71,9 @@ const menuItems: { key: string; label: string; icon: any; group: string; roles?:
 
   // Management - admin & manager
   { key: "registrations", label: "Regjistrimet", icon: Users, group: "manage", roles: ["admin", "manager"] },
-  { key: "registration-form", label: "Formulari", icon: FileText, group: "manage", roles: ["admin"] },
-  { key: "offers", label: "Ofertat", icon: Gift, group: "manage", roles: ["admin", "manager"] },
+  { key: "registration-form", label: "Formulari i Kontaktit", icon: FileText, group: "manage", roles: ["admin", "manager"] },
+  { key: "newsletter", label: "Newsletter", icon: Mail, group: "manage", roles: ["admin", "manager"] },
+  { key: "offers", label: "Kërkesat për Oferta", icon: Gift, group: "manage", roles: ["admin", "manager"] },
 
   // Users - admin only
   { key: "users", label: "Users", icon: UserCog, group: "users", roles: ["admin"] },
