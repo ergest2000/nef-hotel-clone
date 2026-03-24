@@ -54,21 +54,6 @@ const Contact = () => {
     setForm({ firstName: "", lastName: "", phone: "", email: "", message: "" });
   };
 
-  const handleNewsletterSubmit = async () => {
-    if (!newsletterEmail) return;
-    try {
-      await supabase.from("registrations").insert({
-        data: {
-          type: "newsletter",
-          email: newsletterEmail,
-        },
-      });
-      toast({ title: "U regjistruat me sukses!", description: "Do të merrni të rejat tona." });
-      setNewsletterEmail("");
-    } catch {
-      toast({ title: "Gabim", description: "Provoni përsëri.", variant: "destructive" });
-    }
-  };
 
   const contactInfo = [
     { icon: MapPin, label: "Adresa", value: getContentValue(content, "info", "address", 'Rruga "Asim Vokshi", në krah të OTP Bank') },
