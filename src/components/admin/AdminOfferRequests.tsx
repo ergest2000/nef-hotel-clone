@@ -1,8 +1,12 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Gift, User, Mail, Phone, MapPin, Package, Building2 } from "lucide-react";
+import { Gift, User, Mail, Phone, MapPin, Package, Building2, Trash2 } from "lucide-react";
+import { useState } from "react";
 
 export const AdminOfferRequests = () => {
+  const qc = useQueryClient();
+  const [deleteId, setDeleteId] = useState<string | null>(null);
+
   const { data: requests, isLoading } = useQuery({
     queryKey: ["offer_requests"],
     queryFn: async () => {
@@ -13,8 +17,19 @@ export const AdminOfferRequests = () => {
       if (error) throw error;
       return data.filter((r: any) => {
         const d = r.data as any;
-        return d?.type === "offer_request" || d?.type === "quote_request" || d?.source === "checkout";
+        return d?.type === "offer_request" || d?.source === "checkout";
       });
+    },
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from("registrations").delete().eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["offer_requests"] });
+      setDeleteId(null);
     },
   });
 
@@ -28,6 +43,22 @@ export const AdminOfferRequests = () => {
 
   return (
     <div>
+      {/* Delete confirmation */}
+      {deleteId && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+          <div className="bg-background border border-border rounded-lg p-6 max-w-sm mx-4 shadow-xl">
+            <h3 className="text-sm font-semibold text-foreground mb-2">Jeni i sigurt?</h3>
+            <p className="text-xs text-muted-foreground mb-4">Ky veprim nuk mund të kthehet mbrapa.</p>
+            <div className="flex gap-3">
+              <button onClick={() => setDeleteId(null)} className="flex-1 px-4 py-2 text-xs border border-border rounded hover:bg-muted transition-colors">Anulo</button>
+              <button onClick={() => deleteMutation.mutate(deleteId)} disabled={deleteMutation.isPending} className="flex-1 px-4 py-2 text-xs bg-destructive text-destructive-foreground rounded hover:bg-destructive/90 transition-colors">
+                {deleteMutation.isPending ? "..." : "Fshi"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-xl font-semibold text-foreground">Kërkesat për Oferta</h2>
         <span className="text-sm text-muted-foreground">{requests?.length ?? 0} total</span>
@@ -54,49 +85,34 @@ export const AdminOfferRequests = () => {
                         {d.fullName || d.business || d.email || "Pa emër"}
                       </p>
                       {d.business && (
-                        <p className="text-xs text-muted-foreground flex items-center gap-1">
-                          <Building2 size={12} /> {d.business}
-                        </p>
+                        <p className="text-xs text-muted-foreground flex items-center gap-1"><Building2 size={12} /> {d.business}</p>
                       )}
                     </div>
                     <div className="flex flex-wrap gap-x-5 gap-y-1 mt-2">
-                      {d.email && (
-                        <a href={`mailto:${d.email}`} className="text-xs text-muted-foreground hover:text-primary flex items-center gap-1 transition-colors">
-                          <Mail size={12} /> {d.email}
-                        </a>
-                      )}
-                      {d.phone && (
-                        <a href={`tel:${d.phone}`} className="text-xs text-muted-foreground hover:text-primary flex items-center gap-1 transition-colors">
-                          <Phone size={12} /> {d.phone}
-                        </a>
-                      )}
-                      {d.city && (
-                        <p className="text-xs text-muted-foreground flex items-center gap-1">
-                          <MapPin size={12} /> {d.city}
-                        </p>
-                      )}
+                      {d.email && <a href={`mailto:${d.email}`} className="text-xs text-muted-foreground hover:text-primary flex items-center gap-1 transition-colors"><Mail size={12} /> {d.email}</a>}
+                      {d.phone && <a href={`tel:${d.phone}`} className="text-xs text-muted-foreground hover:text-primary flex items-center gap-1 transition-colors"><Phone size={12} /> {d.phone}</a>}
+                      {d.city && <p className="text-xs text-muted-foreground flex items-center gap-1"><MapPin size={12} /> {d.city}</p>}
                     </div>
                     {d.message && (
                       <div className="mt-3 bg-muted/40 border border-border/50 rounded p-3">
                         <p className="text-xs text-muted-foreground whitespace-pre-line">{d.message}</p>
                       </div>
                     )}
-                    {d.items && Array.isArray(d.items) && (
-                      <div className="mt-3 space-y-1">
-                        <p className="text-xs font-medium text-muted-foreground flex items-center gap-1"><Package size={12} /> Produktet:</p>
+                    {d.items && Array.isArray(d.items) && d.items.length > 0 && (
+                      <div className="mt-3 bg-primary/5 border border-primary/10 rounded p-3">
+                        <p className="text-xs font-medium text-foreground flex items-center gap-1 mb-1"><Package size={12} /> Produktet e kërkuara:</p>
                         {d.items.map((item: any, i: number) => (
-                          <p key={i} className="text-xs text-muted-foreground pl-4">• {item.title || item.name || JSON.stringify(item)}</p>
+                          <p key={i} className="text-xs text-muted-foreground pl-4">
+                            • {item.title || "Produkt"} {item.code ? `(${item.code})` : ""} {item.color ? `— ${item.color}` : ""} {item.boxes ? `× ${item.boxes} kuti` : ""} {item.pieces ? `(${item.pieces} copë)` : ""}
+                          </p>
                         ))}
                       </div>
                     )}
                   </div>
-                  <div className="text-right shrink-0">
-                    <p className="text-xs text-muted-foreground">
-                      {new Date(req.created_at).toLocaleDateString("sq-AL", { day: "numeric", month: "short", year: "numeric" })}
-                    </p>
-                    <p className="text-[10px] text-muted-foreground/60">
-                      {new Date(req.created_at).toLocaleTimeString("sq-AL", { hour: "2-digit", minute: "2-digit" })}
-                    </p>
+                  <div className="text-right shrink-0 flex flex-col items-end gap-2">
+                    <p className="text-xs text-muted-foreground">{new Date(req.created_at).toLocaleDateString("sq-AL", { day: "numeric", month: "short", year: "numeric" })}</p>
+                    <p className="text-[10px] text-muted-foreground/60">{new Date(req.created_at).toLocaleTimeString("sq-AL", { hour: "2-digit", minute: "2-digit" })}</p>
+                    <button onClick={() => setDeleteId(req.id)} className="text-destructive hover:text-destructive/80 transition-colors"><Trash2 size={14} /></button>
                   </div>
                 </div>
               </div>
