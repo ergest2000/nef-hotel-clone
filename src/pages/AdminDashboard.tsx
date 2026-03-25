@@ -30,7 +30,6 @@ import { AdminProductsManager } from "@/components/admin/AdminProductsManager";
 import { AdminSuggestedProducts } from "@/components/admin/AdminSuggestedProducts";
 import { AdminHomepageCategories } from "@/components/admin/AdminHomepageCategories";
 import { AdminStaticPages } from "@/components/admin/AdminStaticPages";
-import { AdminGalleryManager } from "@/components/admin/AdminGalleryManager";
 import { AdminNewsletter } from "@/components/admin/AdminNewsletter";
 import { AdminOfferRequests } from "@/components/admin/AdminOfferRequests";
 import { AdminContactSubmissions } from "@/components/admin/AdminContactSubmissions";
@@ -39,7 +38,7 @@ import type { Tables } from "@/integrations/supabase/types";
 
 type SiteContent = Tables<"site_content">;
 
-const pageTitles: Record<string, string> = {
+var pageTitles: Record<string, string> = {
   dashboard: "Dashboard",
   home: "Faqja Kryesore",
   company: "Company",
@@ -63,46 +62,60 @@ const pageTitles: Record<string, string> = {
   "suggested-products": "Sugjerime Homepage",
   "homepage-categories": "Kategoritë Homepage",
   "static-pages": "Faqet Statike",
-  gallery: "Galeria",
   design: "Design Settings",
   settings: "Settings",
   newsletter: "Newsletter",
   offers: "Kërkesat për Oferta",
 };
 
-const cmsPages = ["home", "company", "clients", "tailor-made", "contact", "blog"];
+var cmsPages = ["home", "company", "clients", "tailor-made", "contact", "blog"];
 
-const AdminDashboard = () => {
-  const { signOut, user, role } = useAuth();
-  const { toast } = useToast();
-  const [lang, setLang] = useState<"al" | "en">("al");
-  const [activePage, setActivePageRaw] = useState(function () {
-    return sessionStorage.getItem("admin_active_page") || "registrations";
+function AdminDashboard() {
+  var authHook = useAuth();
+  var signOut = authHook.signOut;
+  var user = authHook.user;
+  var role = authHook.role;
+  var toastHook = useToast();
+  var toast = toastHook.toast;
+  var langState = useState<"al" | "en">("al");
+  var lang = langState[0];
+  var setLang = langState[1];
+  var activePageState = useState(function () {
+    return localStorage.getItem("admin_active_page") || "registrations";
   });
-  const setActivePage = (page: string) => {
-    sessionStorage.setItem("admin_active_page", page);
+  var activePage = activePageState[0];
+  var setActivePageRaw = activePageState[1];
+
+  function setActivePage(page: string) {
+    localStorage.setItem("admin_active_page", page);
     setActivePageRaw(page);
-  };
+  }
 
-  const { data: content, isLoading: loadingContent } = useAllContent();
-  const { data: sections, isLoading: loadingSections } = useAllSections();
-  const { data: blogPosts, isLoading: loadingBlog } = useBlogPosts();
-  const upsertContent = useUpsertContent();
-  const updateOrder = useUpdateSectionOrder();
-  const toggleVisibility = useToggleSectionVisibility();
-  const upsertBlogPost = useUpsertBlogPost();
-  const deleteBlogPost = useDeleteBlogPost();
+  var contentData = useAllContent();
+  var content = contentData.data;
+  var loadingContent = contentData.isLoading;
+  var sectionsData = useAllSections();
+  var sections = sectionsData.data;
+  var loadingSections = sectionsData.isLoading;
+  var blogData = useBlogPosts();
+  var blogPosts = blogData.data;
+  var loadingBlog = blogData.isLoading;
+  var upsertContent = useUpsertContent();
+  var updateOrder = useUpdateSectionOrder();
+  var toggleVisibility = useToggleSectionVisibility();
+  var upsertBlogPost = useUpsertBlogPost();
+  var deleteBlogPost = useDeleteBlogPost();
 
-  const translateText = useCallback(async (text: string, sourceLang: string, targetLang: string): Promise<string> => {
+  var translateText = useCallback(async function (text: string, sourceLang: string, targetLang: string): Promise<string> {
     if (!text.trim() || sourceLang === targetLang) return text;
     try {
-      const response = await fetch(import.meta.env.VITE_SUPABASE_URL + "/functions/v1/translate", {
+      var response = await fetch(import.meta.env.VITE_SUPABASE_URL + "/functions/v1/translate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ text: text, sourceLang: sourceLang, targetLang: targetLang }),
       });
       if (!response.ok) throw new Error("Translation failed");
-      const data = await response.json();
+      var data = await response.json();
       return data.translated || text;
     } catch (e) {
       console.error("Translation error:", e);
@@ -110,8 +123,8 @@ const AdminDashboard = () => {
     }
   }, []);
 
-  const handleSaveField = useCallback(
-    async (item: SiteContent, newValue: string) => {
+  var handleSaveField = useCallback(
+    async function (item: SiteContent, newValue: string) {
       upsertContent.mutate(
         {
           page: item.page,
@@ -123,11 +136,11 @@ const AdminDashboard = () => {
           sort_order: item.sort_order,
         },
         {
-          onSuccess: async () => {
+          onSuccess: async function () {
             toast({ title: "U ruajt!", description: item.field_key + " u përditësua." });
             if (item.content_type === "text" || item.content_type === "html") {
-              const targetLang = item.lang === "al" ? "en" : "al";
-              const translated = await translateText(newValue, item.lang, targetLang);
+              var targetLang = item.lang === "al" ? "en" : "al";
+              var translated = await translateText(newValue, item.lang, targetLang);
               if (translated) {
                 upsertContent.mutate(
                   {
@@ -140,25 +153,26 @@ const AdminDashboard = () => {
                     sort_order: item.sort_order,
                   },
                   {
-                    onSuccess: () =>
-                      toast({ title: "Përkthimi u ruajt!", description: item.field_key + " (" + targetLang.toUpperCase() + ")" }),
+                    onSuccess: function () {
+                      toast({ title: "Përkthimi u ruajt!", description: item.field_key + " (" + targetLang.toUpperCase() + ")" });
+                    },
                   }
                 );
               }
             }
           },
-          onError: (e) => toast({ title: "Gabim", description: e.message, variant: "destructive" }),
+          onError: function (e: any) { toast({ title: "Gabim", description: e.message, variant: "destructive" }); },
         }
       );
     },
     [upsertContent, toast, translateText]
   );
 
-  const handleUploadImage = useCallback(
-    async (item: SiteContent, file: File) => {
+  var handleUploadImage = useCallback(
+    async function (item: SiteContent, file: File) {
       try {
-        const path = item.page + "/" + item.section_key + "/" + Date.now() + "-" + file.name;
-        const url = await uploadCmsImage(file, path);
+        var path = item.page + "/" + item.section_key + "/" + Date.now() + "-" + file.name;
+        var url = await uploadCmsImage(file, path);
         handleSaveField(item, url);
         toast({ title: "Imazhi u ngarkua!" });
       } catch (e: any) {
@@ -168,37 +182,37 @@ const AdminDashboard = () => {
     [handleSaveField, toast]
   );
 
-  const handleToggleVisibility = useCallback(
-    (id: string, visible: boolean) => {
+  var handleToggleVisibility = useCallback(
+    function (id: string, visible: boolean) {
       toggleVisibility.mutate({ id: id, visible: visible });
     },
     [toggleVisibility]
   );
 
-  const handleDragEnd = useCallback(
-    (event: any) => {
-      const active = event.active;
-      const over = event.over;
+  var handleDragEnd = useCallback(
+    function (event: any) {
+      var active = event.active;
+      var over = event.over;
       if (!over || active.id === over.id || !sections) return;
-      const pageSections = sections.filter((s) => s.page === activePage);
-      const oldIndex = pageSections.findIndex((s) => s.id === active.id);
-      const newIndex = pageSections.findIndex((s) => s.id === over.id);
+      var pageSections = sections.filter(function (s) { return s.page === activePage; });
+      var oldIndex = pageSections.findIndex(function (s) { return s.id === active.id; });
+      var newIndex = pageSections.findIndex(function (s) { return s.id === over.id; });
       if (oldIndex === -1 || newIndex === -1) return;
-      const reordered = pageSections.slice();
-      const moved = reordered.splice(oldIndex, 1)[0];
+      var reordered = pageSections.slice();
+      var moved = reordered.splice(oldIndex, 1)[0];
       reordered.splice(newIndex, 0, moved);
-      const updates = reordered.map((s, i) => ({ id: s.id, sort_order: i }));
+      var updates = reordered.map(function (s, i) { return { id: s.id, sort_order: i }; });
       updateOrder.mutate(updates);
     },
     [sections, activePage, updateOrder]
   );
 
-  const isLoading = loadingContent || loadingSections || loadingBlog;
-  const pageSections = sections ? sections.filter((s) => s.page === activePage) : [];
-  const pageContent = content ? content.filter((c) => c.page === activePage) : [];
-  const uniquePages = new Set(sections ? sections.map((s) => s.page) : []);
+  var isLoading = loadingContent || loadingSections || loadingBlog;
+  var pageSections = sections ? sections.filter(function (s) { return s.page === activePage; }) : [];
+  var pageContent = content ? content.filter(function (c) { return c.page === activePage; }) : [];
+  var uniquePages = new Set(sections ? sections.map(function (s) { return s.page; }) : []);
 
-  const renderContent = () => {
+  function renderContent() {
     if (isLoading) {
       return (
         <div className="flex items-center justify-center py-20">
@@ -226,16 +240,16 @@ const AdminDashboard = () => {
           <AdminBlogManager
             posts={blogPosts || []}
             lang={lang}
-            onSave={function (post) {
+            onSave={function (post: any) {
               upsertBlogPost.mutate(post, {
-                onSuccess: () => toast({ title: "Postimi u ruajt!" }),
-                onError: (e) => toast({ title: "Gabim", description: e.message, variant: "destructive" }),
+                onSuccess: function () { toast({ title: "Postimi u ruajt!" }); },
+                onError: function (e: any) { toast({ title: "Gabim", description: e.message, variant: "destructive" }); },
               });
             }}
-            onDelete={function (id) {
+            onDelete={function (id: string) {
               deleteBlogPost.mutate(id, {
-                onSuccess: () => toast({ title: "Postimi u fshi!" }),
-                onError: (e) => toast({ title: "Gabim", description: e.message, variant: "destructive" }),
+                onSuccess: function () { toast({ title: "Postimi u fshi!" }); },
+                onError: function (e: any) { toast({ title: "Gabim", description: e.message, variant: "destructive" }); },
               });
             }}
             onUploadImage={async function (file: File) {
@@ -275,8 +289,6 @@ const AdminDashboard = () => {
         return <AdminHomepageCategories />;
       case "static-pages":
         return <AdminStaticPages />;
-      case "gallery":
-        return <AdminGalleryManager />;
       case "design":
         return <AdminDesignSettings />;
       case "newsletter":
@@ -326,7 +338,7 @@ const AdminDashboard = () => {
           </div>
         );
     }
-  };
+  }
 
   return (
     <SidebarProvider>
@@ -345,6 +357,6 @@ const AdminDashboard = () => {
       </div>
     </SidebarProvider>
   );
-};
+}
 
 export default AdminDashboard;
