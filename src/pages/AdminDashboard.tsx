@@ -33,6 +33,7 @@ import { AdminStaticPages } from "@/components/admin/AdminStaticPages";
 import { AdminGalleryManager } from "@/components/admin/AdminGalleryManager";
 import { AdminNewsletter } from "@/components/admin/AdminNewsletter";
 import { AdminOfferRequests } from "@/components/admin/AdminOfferRequests";
+import { AdminContactSubmissions } from "@/components/admin/AdminContactSubmissions";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import type { Tables } from "@/integrations/supabase/types";
 
@@ -52,7 +53,7 @@ const pageTitles: Record<string, string> = {
   "clients-logos": "Clients Logos",
   "certifications-logos": "Certifications Logos",
   registrations: "Regjistrimet",
-  "registration-form": "Formulari i Kontaktit",
+  "registration-form": "Kontaktet",
   users: "Users",
   "auth-logs": "Auth Logs",
   "auth-texts": "Auth Form Texts",
@@ -72,7 +73,7 @@ const pageTitles: Record<string, string> = {
 const cmsPages = ["home", "company", "clients", "tailor-made", "contact", "blog"];
 
 const AdminDashboard = () => {
-  const { signOut, user } = useAuth();
+  const { signOut, user, role } = useAuth();
   const { toast } = useToast();
   const [lang, setLang] = useState<"al" | "en">("al");
   const [activePage, setActivePageRaw] = useState(() => sessionStorage.getItem("admin_active_page") || "dashboard");
@@ -245,7 +246,7 @@ const AdminDashboard = () => {
       case "registrations":
         return <AdminRegistrations />;
       case "registration-form":
-        return <AdminFormBuilder />;
+        return role === "manager" ? <AdminContactSubmissions /> : <AdminFormBuilder />;
       case "users":
         return <AdminUsers />;
       case "auth-logs":
@@ -298,7 +299,6 @@ const AdminDashboard = () => {
           </div>
         );
       default:
-        // CMS page editor + SEO
         const showSeo = cmsPages.includes(activePage);
         return (
           <div className="space-y-6">
