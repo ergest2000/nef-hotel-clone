@@ -11,7 +11,10 @@ export const AdminContactSubmissions = () => {
         .select("*")
         .order("created_at", { ascending: false });
       if (error) throw error;
-      return data;
+      return data.filter((r: any) => {
+        const d = r.data as any;
+        return d?.type === "contact";
+      });
     },
   });
 
@@ -45,7 +48,6 @@ export const AdminContactSubmissions = () => {
               <div key={sub.id} className="border border-border rounded-lg p-5 bg-background hover:shadow-sm transition-shadow">
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex-1 min-w-0">
-                    {/* Name & Business */}
                     <div className="flex items-center gap-3 flex-wrap">
                       {(d.fullName || d.business) && (
                         <p className="text-sm font-semibold text-foreground flex items-center gap-1.5">
@@ -60,8 +62,6 @@ export const AdminContactSubmissions = () => {
                         </p>
                       )}
                     </div>
-
-                    {/* Contact details */}
                     <div className="flex flex-wrap gap-x-5 gap-y-1 mt-2">
                       {d.email && (
                         <a href={`mailto:${d.email}`} className="text-xs text-muted-foreground hover:text-primary flex items-center gap-1 transition-colors">
@@ -79,25 +79,12 @@ export const AdminContactSubmissions = () => {
                         </p>
                       )}
                     </div>
-
-                    {/* Message */}
                     {d.message && (
                       <div className="mt-3 bg-muted/40 border border-border/50 rounded p-3">
                         <p className="text-xs text-muted-foreground whitespace-pre-line">{d.message}</p>
                       </div>
                     )}
-
-                    {/* Any other fields */}
-                    {Object.entries(d).filter(([key]) => !["fullName", "business", "email", "phone", "city", "message", "type", "source"].includes(key)).map(([key, val]) => (
-                      val ? (
-                        <p key={key} className="text-xs text-muted-foreground mt-1">
-                          <span className="font-medium capitalize">{key}:</span> {String(val)}
-                        </p>
-                      ) : null
-                    ))}
                   </div>
-
-                  {/* Date */}
                   <div className="text-right shrink-0">
                     <p className="text-xs text-muted-foreground">
                       {new Date(sub.created_at).toLocaleDateString("sq-AL", { day: "numeric", month: "short", year: "numeric" })}
