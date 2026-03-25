@@ -4,14 +4,17 @@ import { Mail } from "lucide-react";
 
 export const AdminNewsletter = () => {
   const { data: subscribers, isLoading } = useQuery({
-    queryKey: ["newsletter_subscribers"],
+    queryKey: ["newsletter_from_registrations"],
     queryFn: async () => {
-      const { data, error } = await (supabase as any)
-        .from("newsletter_subscribers")
+      const { data, error } = await supabase
+        .from("registrations")
         .select("*")
         .order("created_at", { ascending: false });
       if (error) throw error;
-      return data as { id: string; email: string; created_at: string }[];
+      return data.filter((r: any) => {
+        const d = r.data as any;
+        return d?.type === "newsletter";
+      });
     },
   });
 
@@ -47,13 +50,16 @@ export const AdminNewsletter = () => {
               </tr>
             </thead>
             <tbody>
-              {subscribers.map((sub, i) => (
-                <tr key={sub.id} className="border-b border-border last:border-b-0 hover:bg-muted/30">
-                  <td className="px-4 py-3 text-muted-foreground">{i + 1}</td>
-                  <td className="px-4 py-3 font-medium">{sub.email}</td>
-                  <td className="px-4 py-3 text-muted-foreground">{new Date(sub.created_at).toLocaleDateString("sq-AL", { day: "numeric", month: "long", year: "numeric", hour: "2-digit", minute: "2-digit" })}</td>
-                </tr>
-              ))}
+              {subscribers.map((sub: any, i: number) => {
+                const d = sub.data as any;
+                return (
+                  <tr key={sub.id} className="border-b border-border last:border-b-0 hover:bg-muted/30">
+                    <td className="px-4 py-3 text-muted-foreground">{i + 1}</td>
+                    <td className="px-4 py-3 font-medium">{d?.email || "—"}</td>
+                    <td className="px-4 py-3 text-muted-foreground">{new Date(sub.created_at).toLocaleDateString("sq-AL", { day: "numeric", month: "long", year: "numeric", hour: "2-digit", minute: "2-digit" })}</td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
