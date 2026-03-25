@@ -188,7 +188,7 @@ const Collections = () => {
   }, [allSizes, productIds]);
 
   const compositionOptions = useMemo(() => {
-    const comps = products.map((p) => isAl ? p.composition_al : p.composition_en).filter(Boolean) as string[];
+    const comps = products.map((p) => (isAl ? p.composition_al : p.composition_en || "").trim()).filter(Boolean) as string[];
     return [...new Set(comps)].map(c => ({ value: c, label: c }));
   }, [products, isAl]);
 
