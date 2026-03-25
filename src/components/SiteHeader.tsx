@@ -15,16 +15,6 @@ import { usePageContent, getContentValue } from "@/hooks/useCms";
 import { Input } from "@/components/ui/input";
 import { logAuthEvent } from "@/hooks/useAuthTexts";
 
-var productLinks = [
-  { label: "Dhomë Gjumi", href: "#" },
-  { label: "Spa", href: "#" },
-  { label: "Tualet", href: "#" },
-  { label: "Pishinë", href: "#" },
-  { label: "Dyshek", href: "#" },
-  { label: "Shampoo dhe Amenities", href: "#" },
-  { label: "Restorant", href: "#" },
-];
-
 function SearchDropdown(props: { query: string; isAl: boolean; onSelect: () => void }) {
   var query = props.query;
   var isAl = props.isAl;
@@ -270,10 +260,35 @@ function SiteHeader() {
   var wishlistItems = wishlistData.data;
   var offersData = useUserOffers(user ? user.id : undefined);
   var offers = offersData.data;
-  var modalContentData = usePageContent("home", "al");
-  var modalContent = modalContentData.data;
+  var cmsData = usePageContent("home", "al");
+  var cmsContent = cmsData.data;
   var wishlistCount = wishlistItems ? wishlistItems.length : 0;
   var unseenOffersCount = offers ? offers.filter(function (o: any) { return !o.seen; }).length : 0;
+  var isAl = lang === "al";
+
+  // Header CMS values
+  function h(key: string, fallback: string) {
+    return getContentValue(cmsContent, "header", key, fallback);
+  }
+
+  var contactLabel = isAl ? h("contact_text_al", "CONTACT:") : h("contact_text_en", "CONTACT:");
+  var contactPhone = h("contact_phone", "+355 69 000 0000");
+  var searchPlaceholder = isAl ? h("search_placeholder_al", "Kerko per produkte ketu") : h("search_placeholder_en", "Search for products here");
+  var registerBtnText = isAl ? h("register_text_al", "REGJISTROHU / HYR") : h("register_text_en", "REGISTER / LOGIN");
+  var mobileProductsLabel = isAl ? h("mobile_products_al", "Produkte") : h("mobile_products_en", "Products");
+
+  // Categories from CMS
+  var catCountVal = h("cat_count", "7");
+  var catCount = Math.min(10, Math.max(0, parseInt(catCountVal) || 7));
+  var productLinks: { label: string; href: string }[] = [];
+  for (var ci = 1; ci <= catCount; ci++) {
+    var catLabel = h("cat" + ci + "_label", "");
+    var catHref = h("cat" + ci + "_href", "#");
+    if (catLabel) {
+      productLinks.push({ label: catLabel, href: catHref });
+    }
+  }
+
   var mainLinks = headerMenus ? headerMenus.map(function (m: any) { return { label: m.label, href: m.href }; }) : [
     { label: "About Us", href: "/company" },
     { label: "Our Clients", href: "/clients" },
@@ -283,7 +298,7 @@ function SiteHeader() {
     { label: "Tailor Made", href: "/tailor-made" },
     { label: "Contact", href: "/contact" },
   ];
-  var isAl = lang === "al";
+
   var userInitial = "U";
   if (profile && profile.full_name) {
     userInitial = profile.full_name[0].toUpperCase();
@@ -315,9 +330,9 @@ function SiteHeader() {
               <span className="text-border">|</span>
               <button onClick={function () { setLang("en"); }} className={"px-1.5 py-0.5 " + (!isAl ? "text-foreground font-semibold" : "text-muted-foreground")}>EN</button>
             </div>
-            <span className="text-muted-foreground shrink-0">CONTACT: <strong className="text-foreground">+355 69 000 0000</strong></span>
+            <span className="text-muted-foreground shrink-0">{contactLabel} <strong className="text-foreground">{contactPhone}</strong></span>
             <div className="relative flex-1 mx-auto max-w-sm" ref={searchRef}>
-              <input type="text" placeholder={isAl ? "Kerko per produkte ketu" : "Search for products here"} className="w-full h-8 pl-4 pr-9 text-[13px] border border-border bg-background rounded-full focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-muted-foreground/60 text-center placeholder:text-center" value={searchQuery} onChange={function (e: any) { setSearchQuery(e.target.value); }} onFocus={function () { setSearchFocused(true); }} />
+              <input type="text" placeholder={searchPlaceholder} className="w-full h-8 pl-4 pr-9 text-[13px] border border-border bg-background rounded-full focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-muted-foreground/60 text-center placeholder:text-center" value={searchQuery} onChange={function (e: any) { setSearchQuery(e.target.value); }} onFocus={function () { setSearchFocused(true); }} />
               <Search size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
               {searchFocused && <SearchDropdown query={searchQuery} isAl={isAl} onSelect={clearDesktopSearch} />}
             </div>
@@ -341,9 +356,9 @@ function SiteHeader() {
                 <div className="relative" ref={loginRef}>
                   <button onClick={function () { setLoginOpen(!loginOpen); setProfileOpen(false); }} className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors px-3">
                     <UserPlus size={15} />
-                    <span className="whitespace-nowrap">{isAl ? "REGJISTROHU / HYR" : "REGISTER / LOGIN"}</span>
+                    <span className="whitespace-nowrap">{registerBtnText}</span>
                   </button>
-                  {loginOpen && <LoginModal onClose={function () { setLoginOpen(false); }} isAl={isAl} content={modalContent} />}
+                  {loginOpen && <LoginModal onClose={function () { setLoginOpen(false); }} isAl={isAl} content={cmsContent} />}
                 </div>
               )}
             </div>
@@ -396,7 +411,7 @@ function SiteHeader() {
         </div>
         <div className="border-b border-border px-4 py-2" ref={mobileSearchRef}>
           <div className="relative w-full">
-            <input type="text" inputMode="search" placeholder={isAl ? "Kërko për produkte këtu..." : "Search for products here..."} className="w-full h-11 pl-4 pr-12 text-[16px] border border-border bg-background rounded-full focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-muted-foreground/50" value={mobileSearchQuery} onChange={function (e: any) { setMobileSearchQuery(e.target.value); }} onFocus={function () { setMobileSearchFocused(true); }} />
+            <input type="text" inputMode="search" placeholder={isAl ? h("search_placeholder_al", "Kërko për produkte këtu...") : h("search_placeholder_en", "Search for products here...")} className="w-full h-11 pl-4 pr-12 text-[16px] border border-border bg-background rounded-full focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-muted-foreground/50" value={mobileSearchQuery} onChange={function (e: any) { setMobileSearchQuery(e.target.value); }} onFocus={function () { setMobileSearchFocused(true); }} />
             <Search size={18} className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground" />
             {mobileSearchFocused && <SearchDropdown query={mobileSearchQuery} isAl={isAl} onSelect={clearMobileSearch} />}
           </div>
@@ -405,7 +420,7 @@ function SiteHeader() {
           <div className="border-b border-border bg-background">
             <div className="container py-3 flex flex-col gap-1">
               <button onClick={function () { setMobileProductsOpen(!mobileProductsOpen); }} className="flex items-center justify-between text-sm tracking-brand text-muted-foreground hover:text-primary transition-colors uppercase py-2.5 border-b border-border">
-                <span>{isAl ? "Produkte" : "Products"}</span>
+                <span>{mobileProductsLabel}</span>
                 {mobileProductsOpen ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
               </button>
               {mobileProductsOpen && (
