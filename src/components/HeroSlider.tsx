@@ -15,10 +15,16 @@ var defaultSlides = [
   { image: hero3, line1Al: "Produktet e Hotelit Tuaj", line2Al: "në Një Vend", line1En: "Your Hotel Products", line2En: "in One Place" },
 ];
 
-var HeroSlider = function ({ content }: { content?: SiteContent[] }) {
-  const [current, setCurrent] = useState(0);
-  const [isAnimating, setIsAnimating] = useState(true);
-  const { isAl } = useLanguage();
+function HeroSlider(props: { content?: SiteContent[] }) {
+  var content = props.content;
+  var currentState = useState(0);
+  var current = currentState[0];
+  var setCurrent = currentState[1];
+  var animState = useState(true);
+  var isAnimating = animState[0];
+  var setIsAnimating = animState[1];
+  var langHook = useLanguage();
+  var isAl = langHook.isAl;
 
   var slides = defaultSlides.map(function (def, i) {
     var idx = i + 1;
@@ -35,6 +41,8 @@ var HeroSlider = function ({ content }: { content?: SiteContent[] }) {
     var overlayColor = getContentValue(content, "hero", "slide" + idx + "_overlay_color", "0,0,0");
     var line1Size = getContentValue(content, "hero", "slide" + idx + "_line1_size", "42");
     var line2Size = getContentValue(content, "hero", "slide" + idx + "_line2_size", "42");
+    var line1MobileSize = getContentValue(content, "hero", "slide" + idx + "_line1_mobile_size", "20");
+    var line2MobileSize = getContentValue(content, "hero", "slide" + idx + "_line2_mobile_size", "20");
     var fontColor = getContentValue(content, "hero", "slide" + idx + "_font_color", "#ffffff");
     return {
       image: image,
@@ -44,6 +52,8 @@ var HeroSlider = function ({ content }: { content?: SiteContent[] }) {
       overlayColor: overlayColor,
       line1Size: line1Size,
       line2Size: line2Size,
+      line1MobileSize: line1MobileSize,
+      line2MobileSize: line2MobileSize,
       fontColor: fontColor,
     };
   });
@@ -63,17 +73,19 @@ var HeroSlider = function ({ content }: { content?: SiteContent[] }) {
     return function () { clearInterval(timer); };
   }, [current, goTo, slides.length]);
 
+  var slide = slides[current];
+
   return (
-    <section className="relative w-full h-[60vh] md:h-[80vh] overflow-hidden">
-      {slides.map(function (slide, i) {
-        var parts = slide.overlayColor.split(",").map(function (s) { return s.trim(); });
+    <section className="relative w-full h-[50vh] md:h-[80vh] overflow-hidden">
+      {slides.map(function (s, i) {
+        var parts = s.overlayColor.split(",").map(function (v) { return v.trim(); });
         var r = parts[0] || "0";
         var g = parts[1] || "0";
         var b = parts[2] || "0";
-        var overlayBg = "linear-gradient(to right, rgba(" + r + "," + g + "," + b + "," + (slide.overlay / 100) + "), rgba(" + r + "," + g + "," + b + "," + (slide.overlay / 300) + "), transparent)";
+        var overlayBg = "linear-gradient(to right, rgba(" + r + "," + g + "," + b + "," + (s.overlay / 100) + "), rgba(" + r + "," + g + "," + b + "," + (s.overlay / 300) + "), transparent)";
         return (
           <div key={i} className={"absolute inset-0 transition-opacity duration-700 " + (i === current ? "opacity-100" : "opacity-0")}>
-            <img src={slide.image} alt={slide.line1} className="w-full h-full object-cover" loading={i === 0 ? "eager" : "lazy"} />
+            <img src={s.image} alt={s.line1} className="w-full h-full object-cover" loading={i === 0 ? "eager" : "lazy"} />
             <div className="absolute inset-0" style={{ background: overlayBg }} />
           </div>
         );
@@ -82,18 +94,14 @@ var HeroSlider = function ({ content }: { content?: SiteContent[] }) {
       <div className="absolute inset-0 flex items-center">
         <div className="container">
           <div className={"max-w-2xl transition-all duration-700 " + (isAnimating ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4")}>
-            <h1
-              className="font-light leading-tight"
-              style={{
-                color: slides[current].fontColor,
-                textShadow: "0 2px 8px rgba(0,0,0,0.3)",
-              }}
-            >
-              <span style={{ fontSize: slides[current].line1Size + "px", display: "block" }}>
-                {slides[current].line1}
+            <h1 className="font-light leading-tight" style={{ color: slide.fontColor, textShadow: "0 2px 8px rgba(0,0,0,0.3)" }}>
+              <span className="block" style={{ fontSize: slide.line1Size + "px" }}>
+                <span className="hidden md:inline" style={{ fontSize: slide.line1Size + "px" }}>{slide.line1}</span>
+                <span className="inline md:hidden" style={{ fontSize: slide.line1MobileSize + "px" }}>{slide.line1}</span>
               </span>
-              <span style={{ fontSize: slides[current].line2Size + "px", display: "block" }}>
-                {slides[current].line2}
+              <span className="block" style={{ fontSize: slide.line2Size + "px" }}>
+                <span className="hidden md:inline" style={{ fontSize: slide.line2Size + "px" }}>{slide.line2}</span>
+                <span className="inline md:hidden" style={{ fontSize: slide.line2MobileSize + "px" }}>{slide.line2}</span>
               </span>
             </h1>
           </div>
@@ -118,6 +126,6 @@ var HeroSlider = function ({ content }: { content?: SiteContent[] }) {
       </div>
     </section>
   );
-};
+}
 
 export default HeroSlider;
