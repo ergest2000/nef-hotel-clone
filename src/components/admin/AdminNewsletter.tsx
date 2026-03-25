@@ -1,7 +1,23 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Mail, Trash2 } from "lucide-react";
+import { Mail, Trash2, Download } from "lucide-react";
 import { useState } from "react";
+import { Button } from "@/components/ui/button";
+
+const downloadNewsletterList = (subscribers: any[]) => {
+  let content = `Newsletter Subscribers\nSkriruar: ${new Date().toLocaleDateString("sq-AL")}\n${"=".repeat(40)}\n\n`;
+  subscribers.forEach((sub: any, i: number) => {
+    const d = sub.data as any;
+    content += `${i + 1}. ${d?.email || "—"} — ${new Date(sub.created_at).toLocaleDateString("sq-AL")}\n`;
+  });
+  const blob = new Blob([content], { type: "text/plain;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `newsletter-${Date.now()}.txt`;
+  a.click();
+  URL.revokeObjectURL(url);
+};
 
 export const AdminNewsletter = () => {
   const qc = useQueryClient();
@@ -15,10 +31,7 @@ export const AdminNewsletter = () => {
         .select("*")
         .order("created_at", { ascending: false });
       if (error) throw error;
-      return data.filter((r: any) => {
-        const d = r.data as any;
-        return d?.type === "newsletter";
-      });
+      return data.filter((r: any) => (r.data as any)?.type === "newsletter");
     },
   });
 
@@ -27,23 +40,15 @@ export const AdminNewsletter = () => {
       const { error } = await supabase.from("registrations").delete().eq("id", id);
       if (error) throw error;
     },
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["newsletter_from_registrations"] });
-      setDeleteId(null);
-    },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["newsletter_from_registrations"] }); setDeleteId(null); },
   });
 
   if (isLoading) {
-    return (
-      <div className="flex items-center justify-center py-20">
-        <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-      </div>
-    );
+    return <div className="flex items-center justify-center py-20"><div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" /></div>;
   }
 
   return (
     <div>
-      {/* Delete confirmation */}
       {deleteId && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
           <div className="bg-background border border-border rounded-lg p-6 max-w-sm mx-4 shadow-xl">
@@ -51,9 +56,7 @@ export const AdminNewsletter = () => {
             <p className="text-xs text-muted-foreground mb-4">Ky veprim nuk mund të kthehet mbrapa.</p>
             <div className="flex gap-3">
               <button onClick={() => setDeleteId(null)} className="flex-1 px-4 py-2 text-xs border border-border rounded hover:bg-muted transition-colors">Anulo</button>
-              <button onClick={() => deleteMutation.mutate(deleteId)} disabled={deleteMutation.isPending} className="flex-1 px-4 py-2 text-xs bg-destructive text-destructive-foreground rounded hover:bg-destructive/90 transition-colors">
-                {deleteMutation.isPending ? "..." : "Fshi"}
-              </button>
+              <button onClick={() => deleteMutation.mutate(deleteId)} disabled={deleteMutation.isPending} className="flex-1 px-4 py-2 text-xs bg-destructive text-destructive-foreground rounded hover:bg-destructive/90 transition-colors">{deleteMutation.isPending ? "..." : "Fshi"}</button>
             </div>
           </div>
         </div>
@@ -61,14 +64,20 @@ export const AdminNewsletter = () => {
 
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-xl font-semibold text-foreground">Newsletter Subscribers</h2>
-        <span className="text-sm text-muted-foreground">{subscribers?.length ?? 0} total</span>
+        <div className="flex items-center gap-3">
+          <span className="text-sm text-muted-foreground">{subscribers?.length ?? 0} total</span>
+          {subscribers && subscribers.length > 0 && (
+            <Button variant="outline" size="sm" onClick={() => downloadNewsletterList(subscribers)}>
+              <Download className="h-4 w-4 mr-2" /> Shkarko listën
+            </Button>
+          )}
+        </div>
       </div>
 
       {!subscribers || subscribers.length === 0 ? (
         <div className="text-center py-16 border border-dashed border-border rounded-lg">
           <Mail size={40} className="mx-auto mb-3 text-muted-foreground/30" />
           <p className="text-sm text-muted-foreground">Nuk ka abonentë ende.</p>
-          <p className="text-xs text-muted-foreground/60 mt-1">Kur dikush abonohet në newsletter, do shfaqet këtu.</p>
         </div>
       ) : (
         <div className="border border-border rounded-lg overflow-hidden">
