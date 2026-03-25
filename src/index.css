@@ -56,34 +56,24 @@
   :root {
     --background: 0 0% 100%;
     --foreground: 210 29% 20%;
-
     --card: 0 0% 100%;
     --card-foreground: 210 29% 20%;
-
     --popover: 0 0% 100%;
     --popover-foreground: 210 29% 20%;
-
     --primary: 207 56% 28%;
     --primary-foreground: 0 0% 100%;
-
     --secondary: 210 20% 96%;
     --secondary-foreground: 210 29% 20%;
-
     --muted: 210 20% 96%;
     --muted-foreground: 210 10% 50%;
-
     --accent: 207 56% 28%;
     --accent-foreground: 0 0% 100%;
-
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 100%;
-
     --border: 210 20% 90%;
     --input: 210 20% 90%;
     --ring: 207 56% 28%;
-
     --radius: 0px;
-
     --navy: 207 56% 28%;
     --navy-light: 207 40% 40%;
     --navy-dark: 207 60% 18%;
@@ -91,7 +81,6 @@
     --warm-gray-dark: 30 5% 88%;
     --newsletter-bg: 207 35% 35%;
     --gold: 40 60% 50%;
-
     --sidebar-background: 0 0% 98%;
     --sidebar-foreground: 240 5.3% 26.1%;
     --sidebar-primary: 240 5.9% 10%;
@@ -108,36 +97,8 @@
     @apply border-border;
   }
 
-  /* Mobile & Desktop: prevent rubber-band/bounce scrolling */
   html, body {
-    overscroll-behavior: none !important;
-    -webkit-overflow-scrolling: auto !important;
-  }
-
-  @media (max-width: 767px) {
-    html, body {
-      overflow: hidden !important;
-      position: fixed !important;
-      width: 100% !important;
-      height: 100% !important;
-      height: 100dvh !important;
-      touch-action: none;
-    }
-
-    #root {
-      overflow: hidden !important;
-      height: 100%;
-      height: 100dvh;
-      width: 100%;
-      touch-action: none;
-    }
-
-    /* Allow internal scrollable containers */
-    #root > div {
-      touch-action: pan-y;
-      -webkit-overflow-scrolling: touch;
-      overflow-x: hidden !important;
-    }
+    overscroll-behavior: none;
   }
 
   body {
@@ -157,12 +118,10 @@
   h2 { font-size: var(--ds-font-size-h2, 24px); }
   h3 { font-size: var(--ds-font-size-h3, 20px); }
 
-  /* Force Helvetica on all form inputs */
   input, textarea, select, button[type="submit"] {
     font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif !important;
   }
 
-  /* Global button radius from design settings */
   .rounded, .rounded-md {
     border-radius: var(--ds-btn-radius, 4px) !important;
   }
