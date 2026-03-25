@@ -76,7 +76,7 @@ const AdminDashboard = () => {
   const { signOut, user, role } = useAuth();
   const { toast } = useToast();
   const [lang, setLang] = useState<"al" | "en">("al");
-  const [activePage, setActivePageRaw] = useState(() => sessionStorage.getItem("admin_active_page") || "dashboard");
+  const [activePage, setActivePageRaw] = useState(() => sessionStorage.getItem("admin_active_page") || "registrations");
   const setActivePage = (page: string) => {
     sessionStorage.setItem("admin_active_page", page);
     setActivePageRaw(page);
