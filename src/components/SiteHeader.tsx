@@ -385,7 +385,7 @@ function SiteHeader() {
                   {unseenOffersCount > 0 && <span className="absolute -top-1 -right-1 bg-destructive text-destructive-foreground text-[8px] w-4 h-4 rounded-full flex items-center justify-center font-bold">{unseenOffersCount}</span>}
                 </Link>
               ) : (
-                <SlugLink to="/register" className="text-muted-foreground hover:text-foreground"><UserPlus size={18} /></SlugLink>
+                <SlugLink to="/login" className="text-muted-foreground hover:text-foreground"><UserPlus size={18} /></SlugLink>
               )}
               <Link to="/shporta" className="relative text-muted-foreground hover:text-foreground">
                 <ShoppingCart size={18} />
