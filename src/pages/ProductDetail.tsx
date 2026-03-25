@@ -479,8 +479,7 @@ const ProductDetail = () => {
                       <p><span className="font-medium text-foreground">{t("Përbërja:", "Composition:")}</span> {isAl ? product.composition_al : product.composition_en}</p>
                     )}
                     {(isAl ? product.dimensions_al : product.dimensions_en) && (
-                      <p><span className="font-medium text-foreground">{t("Dimensionet:", "Dimensions:")}</span> {isAl ? product.dimensions_al : product.dimensions_en}</p>
-                    )}
+<p><span className="font-medium text-foreground">{t("Përmasat:", "Sizes:")}</span> {isAl ? product.dimensions_al : product.dimensions_en}</p>                    )}
                     {productColors.length > 0 && (
                       <p>
                         <span className="font-medium text-foreground">{t("Ngjyrat:", "Colors:")}</span>{" "}
