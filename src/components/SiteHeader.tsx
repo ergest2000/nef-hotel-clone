@@ -25,9 +25,14 @@ var productLinks = [
   { label: "Restorant", href: "#" },
 ];
 
-var SearchDropdown = function ({ query, isAl, onSelect }: { query: string; isAl: boolean; onSelect: () => void }) {
-  const { results, hasQuery } = useProductSearch(query);
-  const navigate = useNavigate();
+function SearchDropdown(props: { query: string; isAl: boolean; onSelect: function(): void }) {
+  var query = props.query;
+  var isAl = props.isAl;
+  var onSelect = props.onSelect;
+  var searchResult = useProductSearch(query);
+  var results = searchResult.results;
+  var hasQuery = searchResult.hasQuery;
+  var navigate = useNavigate();
   if (!hasQuery) return null;
   return (
     <div className="absolute top-full left-0 right-0 mt-1 bg-background border border-border rounded-lg shadow-lg z-50 max-h-[400px] overflow-y-auto">
@@ -35,7 +40,7 @@ var SearchDropdown = function ({ query, isAl, onSelect }: { query: string; isAl:
         <div className="px-4 py-6 text-center text-sm text-muted-foreground">{isAl ? "Nuk u gjetën produkte" : "No products found"}</div>
       ) : (
         <div>
-          {results.map(function (product) {
+          {results.map(function (product: any) {
             return (
               <button key={product.id} className="w-full flex items-center gap-3 px-4 py-3 hover:bg-muted/50 transition-colors text-left border-b border-border last:border-b-0" onClick={function () { navigate("/koleksionet/" + product.collectionSlug + "/" + product.id); onSelect(); }}>
                 <div className="w-12 h-12 rounded bg-muted overflow-hidden flex-shrink-0">
@@ -52,19 +57,31 @@ var SearchDropdown = function ({ query, isAl, onSelect }: { query: string; isAl:
       )}
     </div>
   );
-};
+}
 
-var LoginModal = function ({ onClose, isAl, content }: { onClose: () => void; isAl: boolean; content: any[] | undefined }) {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-  const { signIn } = useAuth();
-  const navigate = useNavigate();
+function LoginModal(props: { onClose: function(): void; isAl: boolean; content: any[] | undefined }) {
+  var onClose = props.onClose;
+  var isAl = props.isAl;
+  var content = props.content;
+  var emailState = useState("");
+  var email = emailState[0];
+  var setEmail = emailState[1];
+  var passwordState = useState("");
+  var password = passwordState[0];
+  var setPassword = passwordState[1];
+  var loadingState = useState(false);
+  var loading = loadingState[0];
+  var setLoading = loadingState[1];
+  var errorState = useState("");
+  var error = errorState[0];
+  var setError = errorState[1];
+  var auth = useAuth();
+  var signIn = auth.signIn;
+  var navigate = useNavigate();
 
-  var g = function (key: string, fallback: string) {
+  function g(key: string, fallback: string) {
     return getContentValue(content, "login-modal", key, fallback);
-  };
+  }
 
   var modalTitle = isAl ? g("title_al", "HYRJE") : g("title_en", "LOGIN");
   var emailLabel = g("email_label", "E-MAIL");
@@ -72,27 +89,28 @@ var LoginModal = function ({ onClose, isAl, content }: { onClose: () => void; is
   var forgotText = isAl ? g("forgot_text_al", "KENI HARRUAR FJALËKALIMIN?") : g("forgot_text_en", "FORGOT YOUR PASSWORD?");
   var buttonText = isAl ? g("button_text_al", "HYRJE") : g("button_text_en", "ENTRY");
   var registerText = isAl ? g("register_text_al", "DUA TË KRIJOJ NJË LLOGARI") : g("register_text_en", "I WANT TO CREATE AN ACCOUNT");
-  var errorText = isAl ? g("error_text_al", "Email ose fjalëkalim i pasaktë.") : g("error_text_en", "Invalid email or password.");
+  var errorMsg = isAl ? g("error_text_al", "Email ose fjalëkalim i pasaktë.") : g("error_text_en", "Invalid email or password.");
   var modalBg = g("modal_bg_color", "#ffffff");
   var buttonBg = g("button_bg_color", "#1a4a6e");
   var buttonTextColor = g("button_text_color", "#ffffff");
 
-  var handleSubmit = async function (e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
     setError("");
     var result = await signIn(email.trim().toLowerCase(), password.trim());
     setLoading(false);
     if (result.error) {
-      setError(errorText);
+      setError(errorMsg);
     } else {
       await logAuthEvent(email, "login");
       onClose();
-      if (result.role === "admin" || result.role === "manager" || result.role === "editor") {
+      var r = result.role;
+      if (r === "admin" || r === "manager" || r === "editor") {
         navigate("/admin");
       }
     }
-  };
+  }
 
   return (
     <div className="absolute top-full right-0 mt-0 w-80 border border-border rounded-lg shadow-2xl z-50 overflow-hidden" style={{ backgroundColor: modalBg }}>
@@ -101,11 +119,11 @@ var LoginModal = function ({ onClose, isAl, content }: { onClose: () => void; is
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="text-[10px] tracking-wider text-muted-foreground uppercase">{emailLabel}</label>
-            <Input value={email} onChange={function (e) { setEmail(e.target.value); }} type="email" required className="h-10 text-sm border-0 border-b border-border rounded-none px-0 focus-visible:ring-0" />
+            <Input value={email} onChange={function (e: any) { setEmail(e.target.value); }} type="email" required className="h-10 text-sm border-0 border-b border-border rounded-none px-0 focus-visible:ring-0" />
           </div>
           <div>
             <label className="text-[10px] tracking-wider text-muted-foreground uppercase">{passwordLabel}</label>
-            <Input value={password} onChange={function (e) { setPassword(e.target.value); }} type="password" required className="h-10 text-sm border-0 border-b border-border rounded-none px-0 focus-visible:ring-0" />
+            <Input value={password} onChange={function (e: any) { setPassword(e.target.value); }} type="password" required className="h-10 text-sm border-0 border-b border-border rounded-none px-0 focus-visible:ring-0" />
           </div>
           <div className="text-right">
             <Link to="/reset-password" onClick={onClose} className="text-[9px] tracking-wider text-muted-foreground hover:text-foreground uppercase">{forgotText}</Link>
@@ -121,22 +139,34 @@ var LoginModal = function ({ onClose, isAl, content }: { onClose: () => void; is
       </div>
     </div>
   );
-};
+}
 
-var ProfileDropdown = function ({ onClose }: { onClose: () => void }) {
-  const { user, signOut, isAdmin } = useAuth();
-  const { data: profile } = useProfile(user?.id);
-  const { data: offers } = useUserOffers(user?.id);
-  const { isAl } = useLanguage();
-  const navigate = useNavigate();
-  var displayName = profile?.full_name || (user?.email ? user.email.split("@")[0] : "");
-  var unseenOffers = offers ? offers.filter(function (o) { return !o.seen; }) : [];
+function ProfileDropdown(props: { onClose: function(): void }) {
+  var onClose = props.onClose;
+  var auth = useAuth();
+  var user = auth.user;
+  var signOut = auth.signOut;
+  var isAdminUser = auth.isAdmin;
+  var profileData = useProfile(user ? user.id : undefined);
+  var profile = profileData.data;
+  var offersData = useUserOffers(user ? user.id : undefined);
+  var offers = offersData.data;
+  var langHook = useLanguage();
+  var isAl = langHook.isAl;
+  var navigate = useNavigate();
+  var displayName = "";
+  if (profile && profile.full_name) {
+    displayName = profile.full_name;
+  } else if (user && user.email) {
+    displayName = user.email.split("@")[0];
+  }
+  var unseenOffers = offers ? offers.filter(function (o: any) { return !o.seen; }) : [];
   var menuItems = [
     { label: isAl ? "Llogaria ime" : "My Account", icon: User, action: function () { navigate("/my-account"); } },
     { label: isAl ? "Të preferuarat" : "Wishlist", icon: Heart, action: function () { navigate("/wishlist"); } },
     { label: isAl ? "Ndrysho fjalëkalimin" : "Change Password", icon: Lock, action: function () { navigate("/my-account"); } },
   ];
-  if (isAdmin) {
+  if (isAdminUser) {
     menuItems.push({ label: "Admin Panel", icon: Settings, action: function () { navigate("/admin"); } });
   }
 
@@ -144,7 +174,7 @@ var ProfileDropdown = function ({ onClose }: { onClose: () => void }) {
     <div className="absolute top-full right-0 mt-0 w-72 bg-background border border-border rounded-lg shadow-2xl z-50 overflow-hidden">
       <div className="px-4 py-3 border-b border-border bg-muted/30">
         <p className="text-sm font-medium text-foreground truncate">{displayName}</p>
-        <p className="text-xs text-muted-foreground truncate">{user?.email}</p>
+        <p className="text-xs text-muted-foreground truncate">{user ? user.email : ""}</p>
       </div>
       {offers && offers.length > 0 && (
         <div className="border-b border-border">
@@ -156,7 +186,7 @@ var ProfileDropdown = function ({ onClose }: { onClose: () => void }) {
             </p>
           </div>
           <div className="max-h-[160px] overflow-y-auto">
-            {offers.slice(0, 5).map(function (offer) {
+            {offers.slice(0, 5).map(function (offer: any) {
               return (
                 <button key={offer.id} onClick={function () { if (offer.product_id) navigate("/koleksionet/all/" + offer.product_id); onClose(); }} className="w-full flex items-start gap-3 px-4 py-2.5 hover:bg-muted/50 transition-colors text-left">
                   <Tag size={14} className="text-primary mt-0.5 shrink-0" />
@@ -175,10 +205,11 @@ var ProfileDropdown = function ({ onClose }: { onClose: () => void }) {
         </div>
       )}
       <div className="py-1">
-        {menuItems.map(function (item) {
+        {menuItems.map(function (item: any) {
+          var Icon = item.icon;
           return (
             <button key={item.label} onClick={function () { item.action(); onClose(); }} className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-foreground hover:bg-muted/50 transition-colors text-left">
-              <item.icon size={16} className="text-muted-foreground" />{item.label}
+              <Icon size={16} className="text-muted-foreground" />{item.label}
             </button>
           );
         })}
@@ -190,33 +221,60 @@ var ProfileDropdown = function ({ onClose }: { onClose: () => void }) {
       </div>
     </div>
   );
-};
+}
 
-var SiteHeader = function () {
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [desktopMenuOpen, setDesktopMenuOpen] = useState(false);
-  const [mobileProductsOpen, setMobileProductsOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [searchFocused, setSearchFocused] = useState(false);
-  const [mobileSearchQuery, setMobileSearchQuery] = useState("");
-  const [mobileSearchFocused, setMobileSearchFocused] = useState(false);
-  const [profileOpen, setProfileOpen] = useState(false);
-  const [loginOpen, setLoginOpen] = useState(false);
-  const searchRef = useRef<HTMLDivElement>(null);
-  const mobileSearchRef = useRef<HTMLDivElement>(null);
-  const profileRef = useRef<HTMLDivElement>(null);
-  const loginRef = useRef<HTMLDivElement>(null);
-  const { lang, setLang } = useLanguage();
-  const { data: headerMenus } = useNavMenusByLocation("header");
-  const { totalItems } = useCart();
-  const { user } = useAuth();
-  const { data: profile } = useProfile(user?.id);
-  const { data: wishlistItems } = useWishlist(user?.id);
-  const { data: offers } = useUserOffers(user?.id);
-  const { data: modalContent } = usePageContent("home", "al");
+function SiteHeader() {
+  var mobileMenuState = useState(false);
+  var mobileMenuOpen = mobileMenuState[0];
+  var setMobileMenuOpen = mobileMenuState[1];
+  var desktopMenuState = useState(false);
+  var desktopMenuOpen = desktopMenuState[0];
+  var setDesktopMenuOpen = desktopMenuState[1];
+  var mobileProductsState = useState(false);
+  var mobileProductsOpen = mobileProductsState[0];
+  var setMobileProductsOpen = mobileProductsState[1];
+  var searchQueryState = useState("");
+  var searchQuery = searchQueryState[0];
+  var setSearchQuery = searchQueryState[1];
+  var searchFocusedState = useState(false);
+  var searchFocused = searchFocusedState[0];
+  var setSearchFocused = searchFocusedState[1];
+  var mobileSearchQueryState = useState("");
+  var mobileSearchQuery = mobileSearchQueryState[0];
+  var setMobileSearchQuery = mobileSearchQueryState[1];
+  var mobileSearchFocusedState = useState(false);
+  var mobileSearchFocused = mobileSearchFocusedState[0];
+  var setMobileSearchFocused = mobileSearchFocusedState[1];
+  var profileOpenState = useState(false);
+  var profileOpen = profileOpenState[0];
+  var setProfileOpen = profileOpenState[1];
+  var loginOpenState = useState(false);
+  var loginOpen = loginOpenState[0];
+  var setLoginOpen = loginOpenState[1];
+  var searchRef = useRef<HTMLDivElement>(null);
+  var mobileSearchRef = useRef<HTMLDivElement>(null);
+  var profileRef = useRef<HTMLDivElement>(null);
+  var loginRef = useRef<HTMLDivElement>(null);
+  var langHook = useLanguage();
+  var lang = langHook.lang;
+  var setLang = langHook.setLang;
+  var headerMenusData = useNavMenusByLocation("header");
+  var headerMenus = headerMenusData.data;
+  var cartHook = useCart();
+  var totalItems = cartHook.totalItems;
+  var authHook = useAuth();
+  var user = authHook.user;
+  var profileData = useProfile(user ? user.id : undefined);
+  var profile = profileData.data;
+  var wishlistData = useWishlist(user ? user.id : undefined);
+  var wishlistItems = wishlistData.data;
+  var offersData = useUserOffers(user ? user.id : undefined);
+  var offers = offersData.data;
+  var modalContentData = usePageContent("home", "al");
+  var modalContent = modalContentData.data;
   var wishlistCount = wishlistItems ? wishlistItems.length : 0;
-  var unseenOffersCount = offers ? offers.filter(function (o) { return !o.seen; }).length : 0;
-  var mainLinks = headerMenus ? headerMenus.map(function (m) { return { label: m.label, href: m.href }; }) : [
+  var unseenOffersCount = offers ? offers.filter(function (o: any) { return !o.seen; }).length : 0;
+  var mainLinks = headerMenus ? headerMenus.map(function (m: any) { return { label: m.label, href: m.href }; }) : [
     { label: "About Us", href: "/company" },
     { label: "Our Clients", href: "/clients" },
     { label: "Certifications", href: "/#certifications" },
@@ -226,21 +284,26 @@ var SiteHeader = function () {
     { label: "Contact", href: "/contact" },
   ];
   var isAl = lang === "al";
-  var userInitial = (profile?.full_name ? profile.full_name[0] : (user?.email ? user.email[0] : "U")).toUpperCase();
+  var userInitial = "U";
+  if (profile && profile.full_name) {
+    userInitial = profile.full_name[0].toUpperCase();
+  } else if (user && user.email) {
+    userInitial = user.email[0].toUpperCase();
+  }
 
   useEffect(function () {
-    var handler = function (e: MouseEvent) {
+    function handler(e: MouseEvent) {
       if (searchRef.current && !searchRef.current.contains(e.target as Node)) setSearchFocused(false);
       if (mobileSearchRef.current && !mobileSearchRef.current.contains(e.target as Node)) setMobileSearchFocused(false);
       if (profileRef.current && !profileRef.current.contains(e.target as Node)) setProfileOpen(false);
       if (loginRef.current && !loginRef.current.contains(e.target as Node)) setLoginOpen(false);
-    };
+    }
     document.addEventListener("mousedown", handler);
     return function () { document.removeEventListener("mousedown", handler); };
   }, []);
 
-  var clearDesktopSearch = function () { setSearchQuery(""); setSearchFocused(false); };
-  var clearMobileSearch = function () { setMobileSearchQuery(""); setMobileSearchFocused(false); };
+  function clearDesktopSearch() { setSearchQuery(""); setSearchFocused(false); }
+  function clearMobileSearch() { setMobileSearchQuery(""); setMobileSearchFocused(false); }
 
   return (
     <header className="w-full sticky top-0 z-50 bg-background">
@@ -254,7 +317,7 @@ var SiteHeader = function () {
             </div>
             <span className="text-muted-foreground shrink-0">CONTACT: <strong className="text-foreground">+355 69 000 0000</strong></span>
             <div className="relative flex-1 mx-auto max-w-sm" ref={searchRef}>
-              <input type="text" placeholder={isAl ? "Kerko per produkte ketu" : "Search for products here"} className="w-full h-8 pl-4 pr-9 text-[13px] border border-border bg-background rounded-full focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-muted-foreground/60 text-center placeholder:text-center" value={searchQuery} onChange={function (e) { setSearchQuery(e.target.value); }} onFocus={function () { setSearchFocused(true); }} />
+              <input type="text" placeholder={isAl ? "Kerko per produkte ketu" : "Search for products here"} className="w-full h-8 pl-4 pr-9 text-[13px] border border-border bg-background rounded-full focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-muted-foreground/60 text-center placeholder:text-center" value={searchQuery} onChange={function (e: any) { setSearchQuery(e.target.value); }} onFocus={function () { setSearchFocused(true); }} />
               <Search size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
               {searchFocused && <SearchDropdown query={searchQuery} isAl={isAl} onSelect={clearDesktopSearch} />}
             </div>
@@ -270,7 +333,7 @@ var SiteHeader = function () {
                       {userInitial}
                       {unseenOffersCount > 0 && <span className="absolute -top-1 -right-1 bg-destructive text-destructive-foreground text-[8px] w-4 h-4 rounded-full flex items-center justify-center font-bold">{unseenOffersCount}</span>}
                     </span>
-                    <span className="whitespace-nowrap text-sm">{profile?.full_name || (user.email ? user.email.split("@")[0] : "")}</span>
+                    <span className="whitespace-nowrap text-sm">{profile ? profile.full_name : (user.email ? user.email.split("@")[0] : "")}</span>
                   </button>
                   {profileOpen && <ProfileDropdown onClose={function () { setProfileOpen(false); }} />}
                 </div>
@@ -299,7 +362,7 @@ var SiteHeader = function () {
           <div className="border-b border-border bg-background shadow-sm">
             <div className="container py-6">
               <div className="flex flex-col gap-1">
-                {mainLinks.map(function (item) { return <SlugLink key={item.label} to={item.href} onClick={function () { setDesktopMenuOpen(false); }} className="text-xs tracking-brand text-muted-foreground hover:text-primary transition-colors uppercase py-2">{item.label}</SlugLink>; })}
+                {mainLinks.map(function (item: any) { return <SlugLink key={item.label} to={item.href} onClick={function () { setDesktopMenuOpen(false); }} className="text-xs tracking-brand text-muted-foreground hover:text-primary transition-colors uppercase py-2">{item.label}</SlugLink>; })}
               </div>
             </div>
           </div>
@@ -333,7 +396,7 @@ var SiteHeader = function () {
         </div>
         <div className="border-b border-border px-4 py-2" ref={mobileSearchRef}>
           <div className="relative w-full">
-            <input type="text" inputMode="search" placeholder={isAl ? "Kërko për produkte këtu..." : "Search for products here..."} className="w-full h-11 pl-4 pr-12 text-[16px] border border-border bg-background rounded-full focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-muted-foreground/50" value={mobileSearchQuery} onChange={function (e) { setMobileSearchQuery(e.target.value); }} onFocus={function () { setMobileSearchFocused(true); }} />
+            <input type="text" inputMode="search" placeholder={isAl ? "Kërko për produkte këtu..." : "Search for products here..."} className="w-full h-11 pl-4 pr-12 text-[16px] border border-border bg-background rounded-full focus:outline-none focus:ring-1 focus:ring-primary placeholder:text-muted-foreground/50" value={mobileSearchQuery} onChange={function (e: any) { setMobileSearchQuery(e.target.value); }} onFocus={function () { setMobileSearchFocused(true); }} />
             <Search size={18} className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground" />
             {mobileSearchFocused && <SearchDropdown query={mobileSearchQuery} isAl={isAl} onSelect={clearMobileSearch} />}
           </div>
@@ -350,7 +413,7 @@ var SiteHeader = function () {
                   {productLinks.map(function (item) { return <SlugLink key={item.label} to={item.href} onClick={function () { setMobileMenuOpen(false); setMobileProductsOpen(false); }} className="text-sm tracking-brand text-muted-foreground/80 hover:text-primary transition-colors uppercase py-2 border-b border-border/50 last:border-b-0">{item.label}</SlugLink>; })}
                 </div>
               )}
-              {mainLinks.map(function (item) { return <SlugLink key={item.label} to={item.href} onClick={function () { setMobileMenuOpen(false); }} className="text-sm tracking-brand text-muted-foreground hover:text-primary transition-colors uppercase py-2.5 border-b border-border last:border-b-0">{item.label}</SlugLink>; })}
+              {mainLinks.map(function (item: any) { return <SlugLink key={item.label} to={item.href} onClick={function () { setMobileMenuOpen(false); }} className="text-sm tracking-brand text-muted-foreground hover:text-primary transition-colors uppercase py-2.5 border-b border-border last:border-b-0">{item.label}</SlugLink>; })}
               <div className="flex items-center gap-2 pt-3 text-xs text-muted-foreground">
                 <button onClick={function () { setLang("al"); }} className={isAl ? "font-semibold text-foreground" : ""}>AL</button>
                 <span>|</span>
@@ -362,6 +425,6 @@ var SiteHeader = function () {
       </div>
     </header>
   );
-};
+}
 
 export default SiteHeader;
