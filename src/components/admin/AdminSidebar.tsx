@@ -43,7 +43,7 @@ const menuItems: { key: string; label: string; icon: any; group: string; roles?:
   { key: "settings", label: "Settings", icon: Settings, group: "system", roles: ["admin"] },
 ];
 
-const groups = [
+var groups = [
   { key: "main", label: "" },
   { key: "pages", label: "Faqet" },
   { key: "content", label: "Përmbajtja" },
@@ -53,12 +53,18 @@ const groups = [
   { key: "system", label: "Sistemi" },
 ];
 
-interface AdminSidebarProps { activePage: string; onPageChange: (page: string) => void; }
+interface AdminSidebarProps {
+  activePage: string;
+  onPageChange: (page: string) => void;
+}
 
-export const AdminSidebar = ({ activePage, onPageChange }: AdminSidebarProps) => {
+export const AdminSidebar = function ({ activePage, onPageChange }: AdminSidebarProps) {
   const { state } = useSidebar();
   const { role } = useAuth();
-  const collapsed = state === "collapsed";
+  var collapsed = state === "collapsed";
+  var panelLabel = "Admin Panel";
+  if (role === "manager") panelLabel = "Manager Panel";
+  if (role === "editor") panelLabel = "Editor Panel";
 
   return (
     <Sidebar collapsible="icon" className="border-r-0">
@@ -68,14 +74,14 @@ export const AdminSidebar = ({ activePage, onPageChange }: AdminSidebarProps) =>
           {!collapsed && (
             <div className="flex flex-col">
               <span className="text-[11px] font-medium text-white tracking-wide">EGJEU</span>
-              <span className="text-[9px] text-white/50">{role === "admin" ? "Admin Panel" : role === "manager" ? "Manager Panel" : "Editor Panel"}</span>
+              <span className="text-[9px] text-white/50">{panelLabel}</span>
             </div>
           )}
         </div>
       </SidebarHeader>
       <SidebarContent className="bg-[hsl(207,56%,25%)]">
-        {groups.map((group) => {
-          const items = menuItems.filter((m) => {
+        {groups.map(function (group) {
+          var items = menuItems.filter(function (m) {
             if (m.group !== group.key) return false;
             if (m.roles && !m.roles.includes(role)) return false;
             return true;
@@ -90,12 +96,17 @@ export const AdminSidebar = ({ activePage, onPageChange }: AdminSidebarProps) =>
               )}
               <SidebarGroupContent>
                 <SidebarMenu>
-                  {items.map((item) => {
-                    const isActive = activePage === item.key;
+                  {items.map(function (item) {
+                    var isActive = activePage === item.key;
+                    var cls = "h-9 rounded-none text-white/70 hover:text-white hover:bg-white/10 transition-colors duration-150 ";
+                    if (isActive) {
+                      cls += "bg-primary text-white border-l-[3px] border-white font-medium";
+                    } else {
+                      cls += "border-l-[3px] border-transparent";
+                    }
                     return (
                       <SidebarMenuItem key={item.key}>
-                        <SidebarMenuButton onClick={() => onPageChange(item.key)} isActive={isActive} tooltip={item.label}
-                          className={`h-9 rounded-none text-white/70 hover:text-white hover:bg-white/10 transition-colors duration-150 ${isActive ? "bg-primary text-white border-l-[3px] border-white font-medium" : "border-l-[3px] border-transparent"}`}>
+                        <SidebarMenuButton onClick={function () { onPageChange(item.key); }} isActive={isActive} tooltip={item.label} className={cls}>
                           <item.icon className="h-[18px] w-[18px] shrink-0" strokeWidth={1.5} />
                           {!collapsed && <span className="text-[13px]">{item.label}</span>}
                         </SidebarMenuButton>
@@ -109,7 +120,11 @@ export const AdminSidebar = ({ activePage, onPageChange }: AdminSidebarProps) =>
         })}
       </SidebarContent>
       <SidebarFooter className="bg-[hsl(207,56%,22%)] border-t border-white/5">
-        {!collapsed && <div className="px-4 py-3"><p className="text-[9px] text-white/30">© 2026 EGJEU Admin</p></div>}
+        {!collapsed && (
+          <div className="px-4 py-3">
+            <p className="text-[9px] text-white/30">© 2026 EGJEU Admin</p>
+          </div>
+        )}
       </SidebarFooter>
     </Sidebar>
   );
