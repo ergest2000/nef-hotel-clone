@@ -1,49 +1,61 @@
 import { useState } from "react";
-import { useStaticPages, useUpsertStaticPage, type StaticPage } from "@/hooks/useStaticPages";
+import { useStaticPages, useUpsertStaticPage } from "@/hooks/useStaticPages";
+import type { StaticPage } from "@/hooks/useStaticPages";
 import { useToast } from "@/hooks/use-toast";
 import { useAutoTranslate } from "@/hooks/useAutoTranslate";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Save } from "lucide-react";
+import { Save, Link as LinkIcon } from "lucide-react";
 import { TranslateButton } from "./TranslateButton";
 import { RichTextEditor } from "./RichTextEditor";
 
-const pageLabels: Record<string, string> = {
-  shipping: "Shipping",
-  "payment-terms": "Payment Terms",
-  "terms-of-use": "Terms of Use",
-  "privacy-policy": "Privacy Policy",
+var pageLabels: Record<string, string> = {
+  shipping: "Dergesa",
+  "payment-terms": "Politikat e pageses",
+  "terms-of-use": "Termat dhe Kushtet",
+  "privacy-policy": "Politikat e Privatësisë",
 };
 
-export const AdminStaticPages = () => {
-  const { data: pages, isLoading } = useStaticPages();
-  const upsert = useUpsertStaticPage();
-  const { toast } = useToast();
-  const { translateField, translating } = useAutoTranslate();
-  const [editPage, setEditPage] = useState<string>("shipping");
-  const [edits, setEdits] = useState<Record<string, Partial<StaticPage>>>({});
+export function AdminStaticPages() {
+  var pagesData = useStaticPages();
+  var pages = pagesData.data;
+  var isLoading = pagesData.isLoading;
+  var upsert = useUpsertStaticPage();
+  var toastHook = useToast();
+  var toast = toastHook.toast;
+  var translateHook = useAutoTranslate();
+  var translateField = translateHook.translateField;
+  var translating = translateHook.translating;
+  var editPageState = useState("shipping");
+  var editPage = editPageState[0];
+  var setEditPage = editPageState[1];
+  var editsState = useState<Record<string, Partial<StaticPage>>>({});
+  var edits = editsState[0];
+  var setEdits = editsState[1];
 
-  const currentPage = pages?.find((p) => p.page_key === editPage);
-  const editData = edits[editPage] ?? currentPage ?? { page_key: editPage, title_al: "", title_en: "", content_al: "", content_en: "" };
+  var currentPage = pages ? pages.find(function (p) { return p.page_key === editPage; }) : undefined;
+  var editData = edits[editPage] || currentPage || { page_key: editPage, title_al: "", title_en: "", content_al: "", content_en: "", slug: "/" + editPage };
 
-  const updateField = (field: keyof StaticPage, value: string) => {
-    setEdits((prev) => ({
-      ...prev,
-      [editPage]: { ...editData, page_key: editPage, [field]: value },
-    }));
-  };
-
-  const handleSave = () => {
-    upsert.mutate({ ...editData, page_key: editPage } as any, {
-      onSuccess: () => {
-        toast({ title: "U ruajt!" });
-        setEdits((prev) => { const n = { ...prev }; delete n[editPage]; return n; });
-      },
-      onError: (e) => toast({ title: "Gabim", description: e.message, variant: "destructive" }),
+  function updateField(field: string, value: string) {
+    setEdits(function (prev) {
+      var next = Object.assign({}, prev);
+      var current = Object.assign({}, editData, { page_key: editPage });
+      (current as any)[field] = value;
+      next[editPage] = current;
+      return next;
     });
-  };
+  }
+
+  function handleSave() {
+    upsert.mutate(Object.assign({}, editData, { page_key: editPage }) as any, {
+      onSuccess: function () {
+        toast({ title: "U ruajt!" });
+        setEdits(function (prev) { var n = Object.assign({}, prev); delete n[editPage]; return n; });
+      },
+      onError: function (e: any) { toast({ title: "Gabim", description: e.message, variant: "destructive" }); },
+    });
+  }
 
   if (isLoading) return <div className="text-sm text-muted-foreground">Duke ngarkuar...</div>;
 
@@ -58,49 +70,68 @@ export const AdminStaticPages = () => {
 
       <Tabs value={editPage} onValueChange={setEditPage}>
         <TabsList>
-          {Object.entries(pageLabels).map(([key, label]) => (
-            <TabsTrigger key={key} value={key}>{label}</TabsTrigger>
-          ))}
+          {Object.entries(pageLabels).map(function (entry) {
+            return <TabsTrigger key={entry[0]} value={entry[0]}>{entry[1]}</TabsTrigger>;
+          })}
         </TabsList>
 
-        {Object.keys(pageLabels).map((key) => (
-          <TabsContent key={key} value={key} className="space-y-4 mt-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <div className="flex items-center justify-between">
-                  <label className="text-xs font-medium text-muted-foreground">Titulli (AL)</label>
-                  <TranslateButton direction="al_to_en" loading={translating === "sp_title"} onClick={() => translateField("sp_title", editData.title_al ?? "", "al_to_en", (t) => updateField("title_en", t))} />
+        {Object.keys(pageLabels).map(function (key) {
+          return (
+            <TabsContent key={key} value={key} className="space-y-4 mt-4">
+              {/* Slug / Link */}
+              <div className="bg-muted/30 border border-border rounded-lg p-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <LinkIcon size={14} className="text-primary" />
+                  <label className="text-xs font-medium text-muted-foreground uppercase">Linku Final (URL)</label>
                 </div>
-                <Input value={editData.title_al ?? ""} onChange={(e) => updateField("title_al", e.target.value)} />
+                <Input
+                  value={(editData as any).slug || "/" + key}
+                  onChange={function (e: any) { updateField("slug", e.target.value); }}
+                  placeholder={"/" + key}
+                  className="h-9 text-sm font-mono"
+                />
+                <p className="text-[10px] text-muted-foreground mt-1">Kjo është URL-ja ku do hapet faqja. P.sh. /dergesa ose /politikat-e-pageses</p>
               </div>
-              <div>
-                <div className="flex items-center justify-between">
-                  <label className="text-xs font-medium text-muted-foreground">Title (EN)</label>
-                  <TranslateButton direction="en_to_al" loading={translating === "sp_title_r"} onClick={() => translateField("sp_title_r", editData.title_en ?? "", "en_to_al", (t) => updateField("title_al", t))} />
-                </div>
-                <Input value={editData.title_en ?? ""} onChange={(e) => updateField("title_en", e.target.value)} />
-              </div>
-            </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <div className="flex items-center justify-between mb-1">
-                  <label className="text-xs font-medium text-muted-foreground">Përmbajtja (AL)</label>
-                  <TranslateButton direction="al_to_en" loading={translating === "sp_content"} onClick={() => translateField("sp_content", editData.content_al ?? "", "al_to_en", (t) => updateField("content_en", t))} />
+              {/* Titles */}
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <div className="flex items-center justify-between">
+                    <label className="text-xs font-medium text-muted-foreground">Titulli (AL)</label>
+                    <TranslateButton direction="al_to_en" loading={translating === "sp_title"} onClick={function () { translateField("sp_title", (editData as any).title_al || "", "al_to_en", function (t: string) { updateField("title_en", t); }); }} />
+                  </div>
+                  <Input value={(editData as any).title_al || ""} onChange={function (e: any) { updateField("title_al", e.target.value); }} />
                 </div>
-                <RichTextEditor content={editData.content_al ?? ""} onChange={(v) => updateField("content_al", v)} />
-              </div>
-              <div>
-                <div className="flex items-center justify-between mb-1">
-                  <label className="text-xs font-medium text-muted-foreground">Content (EN)</label>
-                  <TranslateButton direction="en_to_al" loading={translating === "sp_content_r"} onClick={() => translateField("sp_content_r", editData.content_en ?? "", "en_to_al", (t) => updateField("content_al", t))} />
+                <div>
+                  <div className="flex items-center justify-between">
+                    <label className="text-xs font-medium text-muted-foreground">Title (EN)</label>
+                    <TranslateButton direction="en_to_al" loading={translating === "sp_title_r"} onClick={function () { translateField("sp_title_r", (editData as any).title_en || "", "en_to_al", function (t: string) { updateField("title_al", t); }); }} />
+                  </div>
+                  <Input value={(editData as any).title_en || ""} onChange={function (e: any) { updateField("title_en", e.target.value); }} />
                 </div>
-                <RichTextEditor content={editData.content_en ?? ""} onChange={(v) => updateField("content_en", v)} />
               </div>
-            </div>
-          </TabsContent>
-        ))}
+
+              {/* Content */}
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="text-xs font-medium text-muted-foreground">Përmbajtja (AL)</label>
+                    <TranslateButton direction="al_to_en" loading={translating === "sp_content"} onClick={function () { translateField("sp_content", (editData as any).content_al || "", "al_to_en", function (t: string) { updateField("content_en", t); }); }} />
+                  </div>
+                  <RichTextEditor content={(editData as any).content_al || ""} onChange={function (v: string) { updateField("content_al", v); }} />
+                </div>
+                <div>
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="text-xs font-medium text-muted-foreground">Content (EN)</label>
+                    <TranslateButton direction="en_to_al" loading={translating === "sp_content_r"} onClick={function () { translateField("sp_content_r", (editData as any).content_en || "", "en_to_al", function (t: string) { updateField("content_al", t); }); }} />
+                  </div>
+                  <RichTextEditor content={(editData as any).content_en || ""} onChange={function (v: string) { updateField("content_en", v); }} />
+                </div>
+              </div>
+            </TabsContent>
+          );
+        })}
       </Tabs>
     </div>
   );
-};
+}
