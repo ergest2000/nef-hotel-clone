@@ -1,5 +1,4 @@
 import { useState } from "react";
-import SlugLink from "@/components/SlugLink";
 import SiteHeader from "@/components/SiteHeader";
 import SiteFooter from "@/components/SiteFooter";
 import MembershipSection from "@/components/MembershipSection";
@@ -41,6 +40,10 @@ function Contact() {
     return s ? s.visible : true;
   }
 
+  function g(section: string, key: string, fallback: string) {
+    return getContentValue(content, section, key, fallback);
+  }
+
   function update(field: string, value: string) {
     setForm(function (prev) {
       var next = Object.assign({}, prev);
@@ -62,21 +65,21 @@ function Contact() {
         },
       });
     } catch (err) {}
-    var subject = encodeURIComponent("Kërkesë e re nga faqja e internetit");
-    var body = encodeURIComponent("Emri: " + form.firstName + "\nMbiemri: " + form.lastName + "\nTelefoni: " + form.phone + "\nEmail: " + form.email + "\n\nMesazhi:\n" + form.message);
-    window.open("mailto:shitje@egjeu.al?subject=" + subject + "&body=" + body);
-    toast({ title: "Formulari u dërgua!", description: "Ekipi ynë do t'ju kontaktojë sa më shpejt." });
+    var subject = encodeURIComponent(isAl ? "Kërkesë e re nga faqja e internetit" : "New request from website");
+    var body = encodeURIComponent((isAl ? "Emri" : "Name") + ": " + form.firstName + " " + form.lastName + "\n" + (isAl ? "Telefoni" : "Phone") + ": " + form.phone + "\nEmail: " + form.email + "\n\n" + (isAl ? "Mesazhi" : "Message") + ":\n" + form.message);
+    window.open("mailto:" + g("info", "email", "shitje@egjeu.al") + "?subject=" + subject + "&body=" + body);
+    toast({ title: g("form", "success_title", "Formulari u dërgua!"), description: g("form", "success_desc", "Ekipi ynë do t'ju kontaktojë sa më shpejt.") });
     setForm({ firstName: "", lastName: "", phone: "", email: "", message: "" });
   }
 
-  var heroImage = getContentValue(content, "hero", "image", "");
+  var heroImage = g("hero", "image", "");
   var heroSrc = heroImage && !heroImage.startsWith("/src/") ? heroImage : contactHero;
 
   var contactInfo = [
-    { icon: MapPin, label: getContentValue(content, "info", "address_label", isAl ? "Adresa" : "Address"), value: getContentValue(content, "info", "address", 'Rruga "Asim Vokshi", në krah të OTP Bank') },
-    { icon: Phone, label: getContentValue(content, "info", "phone_label", isAl ? "Telefoni" : "Phone"), value: getContentValue(content, "info", "phone", "+355 68 900 0034") },
-    { icon: Mail, label: getContentValue(content, "info", "email_label", "Email"), value: getContentValue(content, "info", "email", "shitje@egjeu.al") },
-    { icon: Clock, label: getContentValue(content, "info", "hours_label", isAl ? "Oraret e hapjes" : "Opening Hours"), value: getContentValue(content, "info", "hours", "Hënë – Shtunë: 08:30 – 20:30\nE diel: Mbyllur") },
+    { icon: MapPin, label: g("info", "address_label", isAl ? "Adresa" : "Address"), value: g("info", "address", 'Rruga "Asim Vokshi", në krah të OTP Bank') },
+    { icon: Phone, label: g("info", "phone_label", isAl ? "Telefoni" : "Phone"), value: g("info", "phone", "+355 68 900 0034") },
+    { icon: Mail, label: g("info", "email_label", "Email"), value: g("info", "email", "shitje@egjeu.al") },
+    { icon: Clock, label: g("info", "hours_label", isAl ? "Oraret e hapjes" : "Opening Hours"), value: g("info", "hours", "Hënë – Shtunë: 08:30 – 20:30\nE diel: Mbyllur") },
   ];
 
   return (
@@ -85,14 +88,14 @@ function Contact() {
 
       {isSectionVisible("hero") && (
         <section className="relative h-[35vh] md:h-[50vh] overflow-hidden">
-          <img src={heroSrc} alt="Contact" className="absolute inset-0 w-full h-full object-cover" />
+          <img src={heroSrc} alt="Contact" className="absolute inset-0 w-full h-full object-cover" loading="eager" />
           <div className="absolute inset-0 bg-primary/60" />
           <div className="relative z-10 h-full flex flex-col items-center justify-center text-center px-4">
             <h1 className="text-2xl md:text-5xl font-light tracking-brand text-primary-foreground mb-3 md:mb-4">
-              {getContentValue(content, "hero", "title", "NA KONTAKTONI")}
+              {g("hero", "title", "NA KONTAKTONI")}
             </h1>
             <p className="text-xs md:text-base text-primary-foreground/80 max-w-2xl mx-auto tracking-wide">
-              {getContentValue(content, "hero", "subtitle", "Nëse keni pyetje rreth produkteve ose shërbimeve tona, ekipi ynë është gjithmonë i gatshëm t'ju ndihmojë.")}
+              {g("hero", "subtitle", isAl ? "Nëse keni pyetje rreth produkteve ose shërbimeve tona, ekipi ynë është gjithmonë i gatshëm t'ju ndihmojë." : "If you have questions about our products or services, our team is always ready to help.")}
             </p>
           </div>
         </section>
@@ -102,7 +105,7 @@ function Contact() {
         <section className="py-12 md:py-20" style={{ backgroundColor: "hsl(" + (infoBgColor || "207 40% 92%") + ")" }}>
           <div className="container">
             <h2 className="text-lg md:text-xl tracking-wide-brand text-foreground font-light text-center mb-10 md:mb-12">
-              {getContentValue(content, "info", "title", "INFORMACIONI I KONTAKTIT")}
+              {g("info", "title", isAl ? "INFORMACIONI I KONTAKTIT" : "CONTACT INFORMATION")}
             </h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
               {contactInfo.map(function (item) {
@@ -140,25 +143,25 @@ function Contact() {
           <div className="container">
             <div className="max-w-2xl mx-auto">
               <h2 className="text-lg md:text-xl tracking-wide-brand text-foreground font-light text-center mb-3">
-                {getContentValue(content, "form", "title", "NA SHKRUANI")}
+                {g("form", "title", isAl ? "NA SHKRUANI" : "WRITE TO US")}
               </h2>
               <p className="text-sm text-muted-foreground text-center mb-8 md:mb-10 max-w-lg mx-auto">
-                {getContentValue(content, "form", "subtitle", "Ju lutemi plotësoni formularin më poshtë.")}
+                {g("form", "subtitle", isAl ? "Ju lutemi plotësoni formularin më poshtë." : "Please fill in the form below.")}
               </p>
               <form onSubmit={handleSubmit} className="bg-background border border-border p-6 md:p-10 space-y-5">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                  <div className="space-y-1.5"><label className="text-xs tracking-brand text-muted-foreground uppercase">Emri</label><Input value={form.firstName} onChange={function (e: any) { update("firstName", e.target.value); }} className="h-11 border-border bg-background" required /></div>
-                  <div className="space-y-1.5"><label className="text-xs tracking-brand text-muted-foreground uppercase">Mbiemri</label><Input value={form.lastName} onChange={function (e: any) { update("lastName", e.target.value); }} className="h-11 border-border bg-background" required /></div>
+                  <div className="space-y-1.5"><label className="text-xs tracking-brand text-muted-foreground uppercase">{g("form", "firstname_label", isAl ? "Emri" : "First Name")}</label><Input value={form.firstName} onChange={function (e: any) { update("firstName", e.target.value); }} className="h-11 border-border bg-background" required /></div>
+                  <div className="space-y-1.5"><label className="text-xs tracking-brand text-muted-foreground uppercase">{g("form", "lastname_label", isAl ? "Mbiemri" : "Last Name")}</label><Input value={form.lastName} onChange={function (e: any) { update("lastName", e.target.value); }} className="h-11 border-border bg-background" required /></div>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                  <div className="space-y-1.5"><label className="text-xs tracking-brand text-muted-foreground uppercase">Telefoni</label><Input type="tel" value={form.phone} onChange={function (e: any) { update("phone", e.target.value); }} className="h-11 border-border bg-background" required /></div>
-                  <div className="space-y-1.5"><label className="text-xs tracking-brand text-muted-foreground uppercase">E-mail</label><Input type="email" value={form.email} onChange={function (e: any) { update("email", e.target.value); }} className="h-11 border-border bg-background" required /></div>
+                  <div className="space-y-1.5"><label className="text-xs tracking-brand text-muted-foreground uppercase">{g("form", "phone_label", isAl ? "Telefoni" : "Phone")}</label><Input type="tel" value={form.phone} onChange={function (e: any) { update("phone", e.target.value); }} className="h-11 border-border bg-background" required /></div>
+                  <div className="space-y-1.5"><label className="text-xs tracking-brand text-muted-foreground uppercase">{g("form", "email_label", "E-mail")}</label><Input type="email" value={form.email} onChange={function (e: any) { update("email", e.target.value); }} className="h-11 border-border bg-background" required /></div>
                 </div>
                 <div className="space-y-1.5">
-                  <label className="text-xs tracking-brand text-muted-foreground uppercase">Mesazhi <span className="text-muted-foreground/50 normal-case">(opsional)</span></label>
+                  <label className="text-xs tracking-brand text-muted-foreground uppercase">{g("form", "message_label", isAl ? "Mesazhi" : "Message")} <span className="text-muted-foreground/50 normal-case">({isAl ? "opsional" : "optional"})</span></label>
                   <Textarea value={form.message} onChange={function (e: any) { update("message", e.target.value); }} className="min-h-[120px] border-border bg-background" />
                 </div>
-                <Button type="submit" className="w-full h-11 text-xs tracking-wide-brand uppercase">DËRGO</Button>
+                <Button type="submit" className="w-full h-11 text-xs tracking-wide-brand uppercase">{g("form", "button_text", isAl ? "DËRGO" : "SEND")}</Button>
               </form>
             </div>
           </div>
