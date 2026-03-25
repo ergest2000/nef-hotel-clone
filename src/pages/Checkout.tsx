@@ -41,6 +41,7 @@ const Checkout = () => {
   const [newEmail, setNewEmail] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [registerLoading, setRegisterLoading] = useState(false);
+  const [requestLoading, setRequestLoading] = useState(false);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -81,6 +82,33 @@ const Checkout = () => {
     }
   };
 
+  const handleRequestQuote = async () => {
+    if (!user) return;
+    setRequestLoading(true);
+    try {
+      await supabase.from("registrations").insert({
+        data: {
+          type: "offer_request",
+          source: "checkout",
+          email: user.email,
+          fullName: user.user_metadata?.full_name || user.email,
+          items: items.map((item) => ({
+            title: item.title || item.title_al || item.title_en || "",
+            code: item.code || "",
+            color: item.color || "",
+            quantity: item.quantity || 0,
+            boxes: item.boxes || 0,
+            pieces: (item.pieces || 0) * (item.boxes || 0),
+          })),
+        },
+      });
+      toast({ title: "Sukses", description: t("checkout_request_sent", "Kërkesa u dërgua!", "Request sent!") });
+    } catch {
+      toast({ title: "Gabim", variant: "destructive" });
+    }
+    setRequestLoading(false);
+  };
+
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <SiteHeader />
@@ -98,10 +126,12 @@ const Checkout = () => {
                 <p className="text-sm text-foreground">
                   {t("checkout_logged_as", "Jeni identifikuar si", "Logged in as")} <strong>{user.email}</strong>
                 </p>
-                <Button className="mt-4 h-12 px-8 text-xs tracking-wider uppercase rounded-none" onClick={() => {
-                  toast({ title: "Sukses", description: t("checkout_request_sent", "Kërkesa u dërgua!", "Request sent!") });
-                }}>
-                  {t("checkout_request_quote", "KËRKO NJË OFERTË", "REQUEST A QUOTE")}
+                <Button
+                  className="mt-4 h-12 px-8 text-xs tracking-wider uppercase rounded-none"
+                  disabled={requestLoading}
+                  onClick={handleRequestQuote}
+                >
+                  {requestLoading ? "..." : t("checkout_request_quote", "KËRKO NJË OFERTË", "REQUEST A QUOTE")}
                 </Button>
               </div>
             ) : (
