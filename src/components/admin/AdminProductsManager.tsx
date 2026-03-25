@@ -286,7 +286,6 @@ export const AdminProductsManager = () => {
                 <h4 className="font-medium text-sm truncate">{product.title_al || product.code || "Pa titull"}</h4>
                 <p className="text-xs text-muted-foreground mt-0.5">{product.code}</p>
                 <div className="flex items-center gap-2 mt-2">
-                  <span className="text-xs text-muted-foreground">{product.dimensions_al}</span>
                 </div>
                 <div className="flex items-center justify-between mt-3">
                   <Badge variant={product.visible ? "default" : "secondary"} className="text-[10px]">
@@ -465,7 +464,7 @@ export const AdminProductsManager = () => {
                     <Input value={editItem.composition_en ?? ""} onChange={(e) => setEditItem({ ...editItem, composition_en: e.target.value })} />
                   </div>
                 </div>
-                <div className="grid grid-cols-2 gap-4">
+               <div className="grid grid-cols-2 gap-4">
                   <div>
                     <div className="flex items-center justify-between">
                       <label className="text-xs font-medium text-muted-foreground">Dimensionet (AL)</label>
