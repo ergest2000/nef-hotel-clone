@@ -11,8 +11,8 @@ import { useAuth } from "@/hooks/useAuth";
 import { useWishlist } from "@/hooks/useCollections";
 import { useProfile } from "@/hooks/useProfile";
 import { useUserOffers } from "@/hooks/useOffers";
+import { usePageContent, getContentValue } from "@/hooks/useCms";
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
 import { logAuthEvent } from "@/hooks/useAuthTexts";
 
 var productLinks = [
@@ -54,24 +54,28 @@ var SearchDropdown = function ({ query, isAl, onSelect }: { query: string; isAl:
   );
 };
 
-var LoginModal = function ({ onClose, isAl }: { onClose: () => void; isAl: boolean }) {
+var LoginModal = function ({ onClose, isAl, content }: { onClose: () => void; isAl: boolean; content: any[] | undefined }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const { signIn } = useAuth();
   const navigate = useNavigate();
-  const modalRef = useRef<HTMLDivElement>(null);
 
-  useEffect(function () {
-    var handler = function (e: MouseEvent) {
-      if (modalRef.current && !modalRef.current.contains(e.target as Node)) {
-        onClose();
-      }
-    };
-    document.addEventListener("mousedown", handler);
-    return function () { document.removeEventListener("mousedown", handler); };
-  }, [onClose]);
+  var g = function (key: string, fallback: string) {
+    return getContentValue(content, "login-modal", key, fallback);
+  };
+
+  var modalTitle = isAl ? g("title_al", "HYRJE") : g("title_en", "LOGIN");
+  var emailLabel = g("email_label", "E-MAIL");
+  var passwordLabel = isAl ? g("password_label_al", "KODI") : g("password_label_en", "PASSWORD");
+  var forgotText = isAl ? g("forgot_text_al", "KENI HARRUAR FJALËKALIMIN?") : g("forgot_text_en", "FORGOT YOUR PASSWORD?");
+  var buttonText = isAl ? g("button_text_al", "HYRJE") : g("button_text_en", "ENTRY");
+  var registerText = isAl ? g("register_text_al", "DUA TË KRIJOJ NJË LLOGARI") : g("register_text_en", "I WANT TO CREATE AN ACCOUNT");
+  var errorText = isAl ? g("error_text_al", "Email ose fjalëkalim i pasaktë.") : g("error_text_en", "Invalid email or password.");
+  var modalBg = g("modal_bg_color", "#ffffff");
+  var buttonBg = g("button_bg_color", "#1a4a6e");
+  var buttonTextColor = g("button_text_color", "#ffffff");
 
   var handleSubmit = async function (e: React.FormEvent) {
     e.preventDefault();
@@ -80,7 +84,7 @@ var LoginModal = function ({ onClose, isAl }: { onClose: () => void; isAl: boole
     var result = await signIn(email.trim().toLowerCase(), password.trim());
     setLoading(false);
     if (result.error) {
-      setError(isAl ? "Email ose fjalëkalim i pasaktë." : "Invalid email or password.");
+      setError(errorText);
     } else {
       await logAuthEvent(email, "login");
       onClose();
@@ -91,32 +95,28 @@ var LoginModal = function ({ onClose, isAl }: { onClose: () => void; isAl: boole
   };
 
   return (
-    <div className="absolute top-full right-0 mt-2 w-72 bg-background border border-border rounded-lg shadow-xl z-50 overflow-hidden" ref={modalRef}>
-      <div className="p-5">
-        <h3 className="text-xs tracking-brand text-foreground uppercase font-semibold mb-4">{isAl ? "HYRJE" : "LOGIN"}</h3>
-        <form onSubmit={handleSubmit} className="space-y-3">
+    <div className="absolute top-full right-0 mt-0 w-80 border border-border rounded-lg shadow-2xl z-50 overflow-hidden" style={{ backgroundColor: modalBg }}>
+      <div className="p-6">
+        <h3 className="text-xs tracking-brand text-foreground uppercase font-semibold mb-5">{modalTitle}</h3>
+        <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="text-[10px] tracking-wider text-muted-foreground uppercase">E-MAIL</label>
-            <Input value={email} onChange={function (e) { setEmail(e.target.value); }} type="email" required className="h-9 text-sm border-0 border-b border-border rounded-none px-0 focus-visible:ring-0" />
+            <label className="text-[10px] tracking-wider text-muted-foreground uppercase">{emailLabel}</label>
+            <Input value={email} onChange={function (e) { setEmail(e.target.value); }} type="email" required className="h-10 text-sm border-0 border-b border-border rounded-none px-0 focus-visible:ring-0" />
           </div>
           <div>
-            <label className="text-[10px] tracking-wider text-muted-foreground uppercase">{isAl ? "KODI" : "PASSWORD"}</label>
-            <Input value={password} onChange={function (e) { setPassword(e.target.value); }} type="password" required className="h-9 text-sm border-0 border-b border-border rounded-none px-0 focus-visible:ring-0" />
+            <label className="text-[10px] tracking-wider text-muted-foreground uppercase">{passwordLabel}</label>
+            <Input value={password} onChange={function (e) { setPassword(e.target.value); }} type="password" required className="h-10 text-sm border-0 border-b border-border rounded-none px-0 focus-visible:ring-0" />
           </div>
           <div className="text-right">
-            <Link to="/reset-password" onClick={onClose} className="text-[9px] tracking-wider text-muted-foreground hover:text-foreground uppercase">
-              {isAl ? "KENI HARRUAR FJALËKALIMIN?" : "FORGOT YOUR PASSWORD?"}
-            </Link>
+            <Link to="/reset-password" onClick={onClose} className="text-[9px] tracking-wider text-muted-foreground hover:text-foreground uppercase">{forgotText}</Link>
           </div>
           {error && <p className="text-xs text-destructive">{error}</p>}
-          <Button type="submit" disabled={loading} className="w-full h-10 text-xs tracking-wider uppercase rounded-none bg-foreground text-background hover:bg-foreground/90">
-            {loading ? "..." : isAl ? "HYRJE" : "ENTRY"}
-          </Button>
+          <button type="submit" disabled={loading} className="w-full h-11 text-xs tracking-wider uppercase rounded-none font-semibold transition-colors" style={{ backgroundColor: buttonBg, color: buttonTextColor }}>
+            {loading ? "..." : buttonText}
+          </button>
         </form>
-        <div className="mt-4 pt-3 border-t border-border text-center">
-          <SlugLink to="/register" onClick={onClose} className="text-[10px] tracking-wider text-muted-foreground hover:text-foreground uppercase">
-            {isAl ? "DUA TË KRIJOJ NJË LLOGARI" : "I WANT TO CREATE AN ACCOUNT"}
-          </SlugLink>
+        <div className="mt-5 pt-4 border-t border-border text-center">
+          <SlugLink to="/register" onClick={onClose} className="text-[10px] tracking-wider text-muted-foreground hover:text-foreground uppercase">{registerText}</SlugLink>
         </div>
       </div>
     </div>
@@ -141,7 +141,7 @@ var ProfileDropdown = function ({ onClose }: { onClose: () => void }) {
   }
 
   return (
-    <div className="absolute top-full right-0 mt-2 w-72 bg-background border border-border rounded-lg shadow-xl z-50 overflow-hidden">
+    <div className="absolute top-full right-0 mt-0 w-72 bg-background border border-border rounded-lg shadow-2xl z-50 overflow-hidden">
       <div className="px-4 py-3 border-b border-border bg-muted/30">
         <p className="text-sm font-medium text-foreground truncate">{displayName}</p>
         <p className="text-xs text-muted-foreground truncate">{user?.email}</p>
@@ -213,6 +213,7 @@ var SiteHeader = function () {
   const { data: profile } = useProfile(user?.id);
   const { data: wishlistItems } = useWishlist(user?.id);
   const { data: offers } = useUserOffers(user?.id);
+  const { data: modalContent } = usePageContent("home", "al");
   var wishlistCount = wishlistItems ? wishlistItems.length : 0;
   var unseenOffersCount = offers ? offers.filter(function (o) { return !o.seen; }).length : 0;
   var mainLinks = headerMenus ? headerMenus.map(function (m) { return { label: m.label, href: m.href }; }) : [
@@ -279,7 +280,7 @@ var SiteHeader = function () {
                     <UserPlus size={15} />
                     <span className="whitespace-nowrap">{isAl ? "REGJISTROHU / HYR" : "REGISTER / LOGIN"}</span>
                   </button>
-                  {loginOpen && <LoginModal onClose={function () { setLoginOpen(false); }} isAl={isAl} />}
+                  {loginOpen && <LoginModal onClose={function () { setLoginOpen(false); }} isAl={isAl} content={modalContent} />}
                 </div>
               )}
             </div>
