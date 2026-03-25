@@ -94,12 +94,12 @@ function HeroSlider(props: { content?: SiteContent[] }) {
       <div className="absolute inset-0 flex items-center">
         <div className="container">
           <div className={"max-w-2xl transition-all duration-700 " + (isAnimating ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4")}>
-            <h1 className="font-light leading-tight" style={{ color: slide.fontColor, textShadow: "0 2px 8px rgba(0,0,0,0.3)" }}>
-              <span className="block" style={{ fontSize: slide.line1Size + "px" }}>
+            <h1 className="font-light" style={{ color: slide.fontColor, textShadow: "0 2px 8px rgba(0,0,0,0.3)", lineHeight: 1.1 }}>
+              <span className="block">
                 <span className="hidden md:inline" style={{ fontSize: slide.line1Size + "px" }}>{slide.line1}</span>
                 <span className="inline md:hidden" style={{ fontSize: slide.line1MobileSize + "px" }}>{slide.line1}</span>
               </span>
-              <span className="block" style={{ fontSize: slide.line2Size + "px" }}>
+              <span className="block mt-1 md:mt-2">
                 <span className="hidden md:inline" style={{ fontSize: slide.line2Size + "px" }}>{slide.line2}</span>
                 <span className="inline md:hidden" style={{ fontSize: slide.line2MobileSize + "px" }}>{slide.line2}</span>
               </span>
