@@ -41,8 +41,8 @@ function HeroSlider(props: { content?: SiteContent[] }) {
     var overlayColor = getContentValue(content, "hero", "slide" + idx + "_overlay_color", "0,0,0");
     var line1Size = getContentValue(content, "hero", "slide" + idx + "_line1_size", "42");
     var line2Size = getContentValue(content, "hero", "slide" + idx + "_line2_size", "42");
-    var line1MobileSize = getContentValue(content, "hero", "slide" + idx + "_line1_mobile_size", "20");
-    var line2MobileSize = getContentValue(content, "hero", "slide" + idx + "_line2_mobile_size", "20");
+    var line1MobileSize = getContentValue(content, "hero", "slide" + idx + "_line1_mobile_size", "18");
+    var line2MobileSize = getContentValue(content, "hero", "slide" + idx + "_line2_mobile_size", "18");
     var fontColor = getContentValue(content, "hero", "slide" + idx + "_font_color", "#ffffff");
     return {
       image: image,
@@ -76,7 +76,7 @@ function HeroSlider(props: { content?: SiteContent[] }) {
   var slide = slides[current];
 
   return (
-    <section className="relative w-full h-[50vh] md:h-[80vh] overflow-hidden">
+    <section className="relative w-full h-[45vh] md:h-[80vh] overflow-hidden">
       {slides.map(function (s, i) {
         var parts = s.overlayColor.split(",").map(function (v) { return v.trim(); });
         var r = parts[0] || "0";
@@ -93,13 +93,13 @@ function HeroSlider(props: { content?: SiteContent[] }) {
 
       <div className="absolute inset-0 flex items-center">
         <div className="container">
-          <div className={"max-w-2xl transition-all duration-700 " + (isAnimating ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4")}>
-            <h1 className="font-light" style={{ color: slide.fontColor, textShadow: "0 2px 8px rgba(0,0,0,0.3)", lineHeight: 1.1 }}>
-              <span className="block">
+          <div className={"max-w-[280px] md:max-w-2xl transition-all duration-700 " + (isAnimating ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4")}>
+            <h1 className="font-light" style={{ color: slide.fontColor, textShadow: "0 2px 8px rgba(0,0,0,0.3)", lineHeight: 1 }}>
+              <span className="block overflow-hidden text-ellipsis whitespace-nowrap md:whitespace-normal">
                 <span className="hidden md:inline" style={{ fontSize: slide.line1Size + "px" }}>{slide.line1}</span>
                 <span className="inline md:hidden" style={{ fontSize: slide.line1MobileSize + "px" }}>{slide.line1}</span>
               </span>
-              <span className="block mt-1 md:mt-2">
+              <span className="block overflow-hidden text-ellipsis whitespace-nowrap md:whitespace-normal mt-0 md:mt-2">
                 <span className="hidden md:inline" style={{ fontSize: slide.line2Size + "px" }}>{slide.line2}</span>
                 <span className="inline md:hidden" style={{ fontSize: slide.line2MobileSize + "px" }}>{slide.line2}</span>
               </span>
@@ -108,18 +108,18 @@ function HeroSlider(props: { content?: SiteContent[] }) {
         </div>
       </div>
 
-      <button onClick={function () { goTo((current - 1 + slides.length) % slides.length); }} className="absolute left-3 md:left-6 bottom-16 md:bottom-8 w-9 h-9 md:w-11 md:h-11 rounded-full backdrop-blur-md bg-background/10 border border-primary-foreground/10 flex items-center justify-center text-primary-foreground/70 hover:text-primary-foreground hover:bg-background/20 transition-all">
-        <ChevronLeft size={18} strokeWidth={1.5} />
+      <button onClick={function () { goTo((current - 1 + slides.length) % slides.length); }} className="absolute left-3 md:left-6 bottom-14 md:bottom-8 w-8 h-8 md:w-11 md:h-11 rounded-full backdrop-blur-md bg-background/10 border border-primary-foreground/10 flex items-center justify-center text-primary-foreground/70 hover:text-primary-foreground hover:bg-background/20 transition-all">
+        <ChevronLeft size={16} strokeWidth={1.5} />
       </button>
-      <button onClick={function () { goTo((current + 1) % slides.length); }} className="absolute right-3 md:right-6 bottom-16 md:bottom-8 w-9 h-9 md:w-11 md:h-11 rounded-full backdrop-blur-md bg-background/10 border border-primary-foreground/10 flex items-center justify-center text-primary-foreground/70 hover:text-primary-foreground hover:bg-background/20 transition-all">
-        <ChevronRight size={18} strokeWidth={1.5} />
+      <button onClick={function () { goTo((current + 1) % slides.length); }} className="absolute right-3 md:right-6 bottom-14 md:bottom-8 w-8 h-8 md:w-11 md:h-11 rounded-full backdrop-blur-md bg-background/10 border border-primary-foreground/10 flex items-center justify-center text-primary-foreground/70 hover:text-primary-foreground hover:bg-background/20 transition-all">
+        <ChevronRight size={16} strokeWidth={1.5} />
       </button>
 
-      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex items-center gap-3">
+      <div className="absolute bottom-6 md:bottom-8 left-1/2 -translate-x-1/2 flex items-center gap-2 md:gap-3">
         {slides.map(function (_, i) {
           return (
             <button key={i} onClick={function () { goTo(i); }} className="group relative flex items-center justify-center">
-              <span className={"block rounded-full transition-all duration-500 " + (i === current ? "w-8 h-2.5 bg-primary" : "w-2 h-2 bg-muted-foreground/30 group-hover:bg-muted-foreground/60")} />
+              <span className={"block rounded-full transition-all duration-500 " + (i === current ? "w-6 md:w-8 h-2 md:h-2.5 bg-primary" : "w-1.5 md:w-2 h-1.5 md:h-2 bg-muted-foreground/30 group-hover:bg-muted-foreground/60")} />
             </button>
           );
         })}
