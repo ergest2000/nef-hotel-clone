@@ -44,7 +44,8 @@ import { useAuth, type AppRole } from "@/hooks/useAuth";
 type RoleAccess = AppRole[];
 
 const menuItems: { key: string; label: string; icon: any; group: string; roles?: RoleAccess }[] = [
-  { key: "dashboard", label: "Dashboard", icon: LayoutDashboard, group: "main" },
+  // Dashboard - admin & editor only (manager skips straight to manage)
+  { key: "dashboard", label: "Dashboard", icon: LayoutDashboard, group: "main", roles: ["admin", "editor"] },
 
   // Pages (CMS) - admin only
   { key: "home", label: "Faqja Kryesore", icon: Home, group: "pages", roles: ["admin"] },
@@ -61,9 +62,9 @@ const menuItems: { key: string; label: string; icon: any; group: string; roles?:
   { key: "certifications-logos", label: "Certifications Logos", icon: Award, group: "content", roles: ["admin"] },
   { key: "static-pages", label: "Faqet Statike", icon: BookOpen, group: "content", roles: ["admin"] },
 
-  // Products - admin, manager, editor
-  { key: "collections", label: "Koleksionet", icon: FolderOpen, group: "products" },
-  { key: "products", label: "Produktet", icon: Package, group: "products" },
+  // Products - admin & editor only (NOT manager)
+  { key: "collections", label: "Koleksionet", icon: FolderOpen, group: "products", roles: ["admin", "editor"] },
+  { key: "products", label: "Produktet", icon: Package, group: "products", roles: ["admin", "editor"] },
   { key: "suggested-products", label: "Sugjerime Homepage", icon: Star, group: "products", roles: ["admin"] },
   { key: "homepage-categories", label: "Kategoritë Homepage", icon: Grid3X3, group: "products", roles: ["admin"] },
   { key: "gallery", label: "Galeria", icon: ImageIcon, group: "products", roles: ["admin", "editor"] },
@@ -71,7 +72,7 @@ const menuItems: { key: string; label: string; icon: any; group: string; roles?:
 
   // Management - admin & manager
   { key: "registrations", label: "Regjistrimet", icon: Users, group: "manage", roles: ["admin", "manager"] },
-  { key: "registration-form", label: "Formulari i Kontaktit", icon: FileText, group: "manage", roles: ["admin", "manager"] },
+  { key: "registration-form", label: "Kontaktet", icon: FileText, group: "manage", roles: ["admin", "manager"] },
   { key: "newsletter", label: "Newsletter", icon: Mail, group: "manage", roles: ["admin", "manager"] },
   { key: "offers", label: "Kërkesat për Oferta", icon: Gift, group: "manage", roles: ["admin", "manager"] },
 
