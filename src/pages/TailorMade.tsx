@@ -1,12 +1,11 @@
-import { useState } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import SiteHeader from "@/components/SiteHeader";
 import SiteFooter from "@/components/SiteFooter";
-import ProductGalleryCarousel from "@/components/ProductGalleryCarousel";
 import MembershipSection from "@/components/MembershipSection";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { Stamp, Ruler, Gem, Factory, Scissors, Palette, ShieldCheck, Truck, Star, Sparkles } from "lucide-react";
+import { Stamp, Ruler, Gem, Factory, Scissors, Palette, ShieldCheck, Truck, Star, Sparkles, ChevronLeft, ChevronRight } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { usePageContent, usePageSections, getContentValue } from "@/hooks/useCms";
 import { useLanguage } from "@/hooks/useLanguage";
@@ -18,6 +17,54 @@ var iconMap: Record<string, any> = {
   scissors: Scissors, palette: Palette, shield: ShieldCheck, truck: Truck,
   star: Star, sparkles: Sparkles,
 };
+
+function GalleryCarousel(props: { images: string[] }) {
+  var images = props.images;
+  var currentState = useState(0);
+  var current = currentState[0];
+  var setCurrent = currentState[1];
+
+  var goTo = useCallback(function (idx: number) {
+    var len = images.length;
+    setCurrent(((idx % len) + len) % len);
+  }, [images.length]);
+
+  useEffect(function () {
+    if (images.length <= 1) return;
+    var timer = setInterval(function () { goTo(current + 1); }, 4000);
+    return function () { clearInterval(timer); };
+  }, [current, goTo, images.length]);
+
+  if (images.length === 0) return null;
+
+  return (
+    <section className="py-12 md:py-20 bg-background">
+      <div className="container">
+        <div className="relative overflow-hidden">
+          <div className="flex transition-transform duration-500" style={{ transform: "translateX(-" + (current * 100) + "%)" }}>
+            {images.map(function (src, i) {
+              return (
+                <div key={i} className="w-full flex-shrink-0 px-1 md:px-2" style={{ minWidth: "33.333%" }}>
+                  <img src={src} alt={"Gallery " + (i + 1)} className="w-full aspect-[4/3] object-cover rounded" />
+                </div>
+              );
+            })}
+          </div>
+          {images.length > 3 && (
+            <div>
+              <button onClick={function () { goTo(current - 1); }} className="absolute left-2 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full backdrop-blur-md bg-background/80 border border-border flex items-center justify-center text-foreground hover:bg-background transition-all">
+                <ChevronLeft size={18} />
+              </button>
+              <button onClick={function () { goTo(current + 1); }} className="absolute right-2 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full backdrop-blur-md bg-background/80 border border-border flex items-center justify-center text-foreground hover:bg-background transition-all">
+                <ChevronRight size={18} />
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+    </section>
+  );
+}
 
 function TailorMade() {
   var toastHook = useToast();
@@ -39,8 +86,12 @@ function TailorMade() {
     return s ? s.visible : true;
   }
 
+  function g(section: string, key: string, fallback: string) {
+    return getContentValue(content, section, key, fallback);
+  }
+
   function getImg(sectionKey: string, fieldKey: string, fallback: string) {
-    var val = getContentValue(content, sectionKey, fieldKey, "");
+    var val = g(sectionKey, fieldKey, "");
     if (val && !val.startsWith("/src/")) return val;
     return fallback;
   }
@@ -68,33 +119,42 @@ function TailorMade() {
         },
       });
     } catch (err) {}
-    toast({ title: isAl ? "Kërkesa u dërgua!" : "Request sent!", description: isAl ? "Do t'ju kontaktojmë së shpejti." : "We'll contact you soon." });
+    toast({
+      title: g("contact-form", "success_title", isAl ? "Kërkesa u dërgua!" : "Request sent!"),
+      description: g("contact-form", "success_desc", isAl ? "Do t'ju kontaktojmë së shpejti." : "We'll contact you soon."),
+    });
     setForm({ firstName: "", lastName: "", hotelName: "", city: "", phone: "", email: "", specification: "" });
   }
 
-  // Build services from CMS
-  var svcCountVal = getContentValue(content, "services", "svc_count", "4");
+  // Services from CMS
+  var svcCountVal = g("services", "svc_count", "4");
   var svcCount = Math.min(10, Math.max(1, parseInt(svcCountVal) || 4));
   var defaultIcons = ["stamp", "ruler", "gem", "factory", "scissors", "palette", "shield", "truck", "star", "sparkles"];
-  var defaultTitles = ["Logo Embroidery", "Custom Dimensions", "Premium Materials", "Professional Production", "Tailoring", "Color Matching", "Quality Assurance", "Fast Delivery", "Excellence", "Innovation"];
+  var defaultTitles = ["Logo Embroidery", "Custom Dimensions", "Premium Materials", "Professional Production"];
   var defaultDescs = [
-    "Vendosja e logos së hotelit në çarçafë, peshqirë dhe produkte të tjera tekstile.",
-    "Prodhim me dimensione specifike sipas kërkesës së hotelit.",
-    "Përdorim i materialeve cilësore dhe rezistente për përdorim profesional.",
-    "Prodhim i dedikuar për hotele, resorte dhe struktura akomodimi.",
-    "Qepje profesionale sipas specifikimeve.", "Përshtatje e ngjyrave me brandin tuaj.",
-    "Kontroll cilësie rigoroz.", "Dorëzim i shpejtë në të gjithë Europën.",
-    "Standarde të larta cilësie.", "Zgjidhje inovative për industrinë hoteliere.",
+    "Vendosja e logos së hotelit në çarçafë dhe peshqirë.",
+    "Prodhim me dimensione specifike sipas kërkesës.",
+    "Materiale cilësore dhe rezistente për përdorim profesional.",
+    "Prodhim i dedikuar për hotele dhe resorte.",
   ];
 
   var services = [];
   for (var si = 0; si < svcCount; si++) {
     var svcKey = "svc" + (si + 1);
-    var iconName = getContentValue(content, "services", svcKey + "_icon", defaultIcons[si] || "star");
-    var Icon = iconMap[iconName] || Star;
-    var title = getContentValue(content, "services", svcKey + "_title", defaultTitles[si] || "Service");
-    var desc = getContentValue(content, "services", svcKey + "_desc", defaultDescs[si] || "");
-    services.push({ icon: Icon, title: title, desc: desc, key: svcKey });
+    var iconName = g("services", svcKey + "_icon", defaultIcons[si] || "star");
+    var SvcIcon = iconMap[iconName] || Star;
+    var svcTitle = g("services", svcKey + "_title", defaultTitles[si] || "Service");
+    var svcDesc = g("services", svcKey + "_desc", defaultDescs[si] || "");
+    services.push({ icon: SvcIcon, title: svcTitle, desc: svcDesc, key: svcKey });
+  }
+
+  // Gallery from CMS (photo1-photo10)
+  var galleryImages: string[] = [];
+  for (var gi = 1; gi <= 10; gi++) {
+    var photoUrl = g("gallery", "photo" + gi, "");
+    if (photoUrl && !photoUrl.startsWith("/src/")) {
+      galleryImages.push(photoUrl);
+    }
   }
 
   return (
@@ -107,13 +167,13 @@ function TailorMade() {
           <div className="absolute inset-0 bg-foreground/50" />
           <div className="relative z-10 h-full flex flex-col items-center justify-center text-center px-4">
             <h1 className="text-xl md:text-5xl tracking-wide-brand text-primary-foreground font-light mb-3 md:mb-6">
-              {getContentValue(content, "hero", "title", "TEKSTILE TË PERSONALIZUARA")}
+              {g("hero", "title", "TEKSTILE TË PERSONALIZUARA")}
             </h1>
             <p className="max-w-2xl text-xs md:text-base text-primary-foreground/90 leading-relaxed mb-6 md:mb-8">
-              {getContentValue(content, "hero", "subtitle", isAl ? "Pse të mos ofroni një eksperiencë luksi dhe mikpritjeje me emrin tuaj në liri?" : "Why not offer an experience of luxury and hospitality with your name on the linen?")}
+              {g("hero", "subtitle", isAl ? "Pse të mos ofroni një eksperiencë luksi?" : "Why not offer a luxury experience?")}
             </p>
             <a href="#contact-form" className="rounded inline-block px-8 md:px-10 py-2.5 md:py-3 bg-primary text-primary-foreground text-[10px] md:text-xs tracking-wide-brand uppercase hover:bg-navy-dark transition-colors">
-              {getContentValue(content, "hero", "cta_text", isAl ? "Aplikime të Personalizuara" : "Tailor Made Applications")}
+              {g("hero", "cta_text", isAl ? "Aplikime të Personalizuara" : "Tailor Made Applications")}
             </a>
           </div>
         </section>
@@ -123,14 +183,14 @@ function TailorMade() {
         <section className="py-12 md:py-24 bg-warm-gray">
           <div className="container">
             <h2 className="text-lg md:text-2xl tracking-wide-brand text-foreground font-light text-center mb-10 md:mb-14">
-              {getContentValue(content, "services", "title", isAl ? "SHËRBIMET TONA" : "OUR SERVICES")}
+              {g("services", "title", isAl ? "SHËRBIMET TONA" : "OUR SERVICES")}
             </h2>
-            <div className={"grid gap-4 md:gap-8 " + (svcCount <= 3 ? "grid-cols-1 sm:grid-cols-" + svcCount : "grid-cols-2 lg:grid-cols-4")}>
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-8">
               {services.map(function (svc) {
-                var SvcIcon = svc.icon;
+                var Icon = svc.icon;
                 return (
                   <div key={svc.key} className="bg-background border border-border p-5 md:p-8 text-center hover:shadow-lg transition-shadow">
-                    <SvcIcon size={28} className="mx-auto mb-3 md:mb-5 text-primary" strokeWidth={1.2} />
+                    <Icon size={28} className="mx-auto mb-3 md:mb-5 text-primary" strokeWidth={1.2} />
                     <h3 className="text-[10px] md:text-xs tracking-wide-brand text-foreground mb-2 md:mb-3 uppercase font-semibold">{svc.title}</h3>
                     <p className="text-xs md:text-sm text-muted-foreground leading-relaxed">{svc.desc}</p>
                   </div>
@@ -141,8 +201,8 @@ function TailorMade() {
         </section>
       )}
 
-      {isSectionVisible("gallery") && (
-        <ProductGalleryCarousel />
+      {isSectionVisible("gallery") && galleryImages.length > 0 && (
+        <GalleryCarousel images={galleryImages} />
       )}
 
       {isSectionVisible("contact-form") && (
@@ -150,29 +210,29 @@ function TailorMade() {
           <div className="container">
             <div className="max-w-2xl mx-auto bg-background border border-border p-6 md:p-12">
               <h2 className="text-lg md:text-2xl tracking-wide-brand text-foreground font-light text-center mb-2">
-                {getContentValue(content, "contact-form", "title", isAl ? "FORMULARI I KONTAKTIT" : "CONTACT FORM")}
+                {g("contact-form", "title", isAl ? "FORMULARI I KONTAKTIT" : "CONTACT FORM")}
               </h2>
               <p className="text-xs text-muted-foreground text-center tracking-brand mb-8 md:mb-10">
-                {getContentValue(content, "contact-form", "subtitle", isAl ? "KËRKESË PËR PERSONALIZIM" : "TAILOR MADE REQUEST")}
+                {g("contact-form", "subtitle", isAl ? "KËRKESË PËR PERSONALIZIM" : "TAILOR MADE REQUEST")}
               </p>
               <form onSubmit={handleSubmit} className="space-y-5">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                  <div className="space-y-1.5"><label className="text-xs tracking-brand text-muted-foreground uppercase">{isAl ? "Emri" : "First Name"}</label><Input value={form.firstName} onChange={function (e: any) { update("firstName", e.target.value); }} className="h-11 border-border bg-background" required /></div>
-                  <div className="space-y-1.5"><label className="text-xs tracking-brand text-muted-foreground uppercase">{isAl ? "Mbiemri" : "Last Name"}</label><Input value={form.lastName} onChange={function (e: any) { update("lastName", e.target.value); }} className="h-11 border-border bg-background" required /></div>
+                  <div className="space-y-1.5"><label className="text-xs tracking-brand text-muted-foreground uppercase">{g("contact-form", "firstname_label", isAl ? "Emri" : "First Name")}</label><Input value={form.firstName} onChange={function (e: any) { update("firstName", e.target.value); }} className="h-11 border-border bg-background" required /></div>
+                  <div className="space-y-1.5"><label className="text-xs tracking-brand text-muted-foreground uppercase">{g("contact-form", "lastname_label", isAl ? "Mbiemri" : "Last Name")}</label><Input value={form.lastName} onChange={function (e: any) { update("lastName", e.target.value); }} className="h-11 border-border bg-background" required /></div>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                  <div className="space-y-1.5"><label className="text-xs tracking-brand text-muted-foreground uppercase">{isAl ? "Emri i Hotelit" : "Hotel Name"}</label><Input value={form.hotelName} onChange={function (e: any) { update("hotelName", e.target.value); }} className="h-11 border-border bg-background" required /></div>
-                  <div className="space-y-1.5"><label className="text-xs tracking-brand text-muted-foreground uppercase">{isAl ? "Qyteti" : "City"}</label><Input value={form.city} onChange={function (e: any) { update("city", e.target.value); }} className="h-11 border-border bg-background" required /></div>
+                  <div className="space-y-1.5"><label className="text-xs tracking-brand text-muted-foreground uppercase">{g("contact-form", "hotel_label", isAl ? "Emri i Hotelit" : "Hotel Name")}</label><Input value={form.hotelName} onChange={function (e: any) { update("hotelName", e.target.value); }} className="h-11 border-border bg-background" required /></div>
+                  <div className="space-y-1.5"><label className="text-xs tracking-brand text-muted-foreground uppercase">{g("contact-form", "city_label", isAl ? "Qyteti" : "City")}</label><Input value={form.city} onChange={function (e: any) { update("city", e.target.value); }} className="h-11 border-border bg-background" required /></div>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                  <div className="space-y-1.5"><label className="text-xs tracking-brand text-muted-foreground uppercase">{isAl ? "Telefoni" : "Phone"}</label><Input type="tel" value={form.phone} onChange={function (e: any) { update("phone", e.target.value); }} className="h-11 border-border bg-background" required /></div>
-                  <div className="space-y-1.5"><label className="text-xs tracking-brand text-muted-foreground uppercase">E-mail</label><Input type="email" value={form.email} onChange={function (e: any) { update("email", e.target.value); }} className="h-11 border-border bg-background" required /></div>
+                  <div className="space-y-1.5"><label className="text-xs tracking-brand text-muted-foreground uppercase">{g("contact-form", "phone_label", isAl ? "Telefoni" : "Phone")}</label><Input type="tel" value={form.phone} onChange={function (e: any) { update("phone", e.target.value); }} className="h-11 border-border bg-background" required /></div>
+                  <div className="space-y-1.5"><label className="text-xs tracking-brand text-muted-foreground uppercase">{g("contact-form", "email_label", "E-mail")}</label><Input type="email" value={form.email} onChange={function (e: any) { update("email", e.target.value); }} className="h-11 border-border bg-background" required /></div>
                 </div>
                 <div className="space-y-1.5">
-                  <label className="text-xs tracking-brand text-muted-foreground uppercase">{isAl ? "Specifikimi" : "Specification"} <span className="text-muted-foreground/50 normal-case">({isAl ? "opsional" : "optional"})</span></label>
+                  <label className="text-xs tracking-brand text-muted-foreground uppercase">{g("contact-form", "spec_label", isAl ? "Specifikimi" : "Specification")} <span className="text-muted-foreground/50 normal-case">({isAl ? "opsional" : "optional"})</span></label>
                   <Textarea value={form.specification} onChange={function (e: any) { update("specification", e.target.value); }} className="min-h-[120px] border-border bg-background" />
                 </div>
-                <Button type="submit" className="w-full h-11 text-xs tracking-wide-brand uppercase">{isAl ? "DËRGO KËRKESËN" : "SUBMIT REQUEST"}</Button>
+                <Button type="submit" className="w-full h-11 text-xs tracking-wide-brand uppercase">{g("contact-form", "button_text", isAl ? "DËRGO KËRKESËN" : "SUBMIT REQUEST")}</Button>
               </form>
             </div>
           </div>
