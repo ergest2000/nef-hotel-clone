@@ -8,49 +8,52 @@ export interface StaticPage {
   title_en: string;
   content_al: string;
   content_en: string;
+  slug: string;
   created_at: string;
   updated_at: string;
 }
 
-export const useStaticPages = () =>
-  useQuery({
+export var useStaticPages = function () {
+  return useQuery({
     queryKey: ["static_pages"],
-    queryFn: async () => {
-      const { data, error } = await supabase
+    queryFn: async function () {
+      var result = await supabase
         .from("static_pages" as any)
         .select("*")
         .order("page_key");
-      if (error) throw error;
-      return data as unknown as StaticPage[];
+      if (result.error) throw result.error;
+      return result.data as unknown as StaticPage[];
     },
   });
+};
 
-export const useStaticPage = (pageKey: string) =>
-  useQuery({
+export var useStaticPage = function (pageKey: string) {
+  return useQuery({
     queryKey: ["static_pages", pageKey],
-    queryFn: async () => {
-      const { data, error } = await supabase
+    queryFn: async function () {
+      var result = await supabase
         .from("static_pages" as any)
         .select("*")
         .eq("page_key", pageKey)
         .single();
-      if (error) throw error;
-      return data as unknown as StaticPage;
+      if (result.error) throw result.error;
+      return result.data as unknown as StaticPage;
     },
   });
+};
 
-export const useUpsertStaticPage = () => {
-  const qc = useQueryClient();
+export var useUpsertStaticPage = function () {
+  var qc = useQueryClient();
   return useMutation({
-    mutationFn: async (item: Partial<StaticPage> & { page_key: string }) => {
-      const { data, error } = await supabase
+    mutationFn: async function (item: Partial<StaticPage> & { page_key: string }) {
+      var result = await supabase
         .from("static_pages" as any)
         .upsert(item, { onConflict: "page_key" })
         .select()
         .single();
-      if (error) throw error;
-      return data;
+      if (result.error) throw result.error;
+      return result.data;
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["static_pages"] }),
+    onSuccess: function () { qc.invalidateQueries({ queryKey: ["static_pages"] }); },
   });
 };
