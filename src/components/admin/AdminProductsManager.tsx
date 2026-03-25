@@ -29,7 +29,7 @@ type Product = Tables<"products">;
 const emptyProduct: Partial<Product> = {
   title_al: "", title_en: "", description_al: "", description_en: "",
   code: "",
-  composition_al: "", composition_en: "", dimensions_al: "", dimensions_en: "",
+  composition_al: "", composition_en: "",
   weight_gsm: 0, box_quantity: 1, pieces_per_box: 1,
   in_stock: true, customizable: false,
   product_info_al: "", product_info_en: "",
@@ -38,7 +38,6 @@ const emptyProduct: Partial<Product> = {
   image_url: "", visible: true, sort_order: 0,
 };
 
-// Sub-component for managing product images
 const ProductImagesManager = ({ productId }: { productId: string }) => {
   const { data: images, isLoading } = useProductImages(productId);
   const addImage = useAddProductImage();
@@ -91,7 +90,6 @@ const ProductImagesManager = ({ productId }: { productId: string }) => {
   );
 };
 
-// Sub-component for managing product colors
 const ProductColorsManager = ({ productId }: { productId: string }) => {
   const { data: colors } = useProductColors(productId);
   const addColor = useAddProductColor();
@@ -135,7 +133,6 @@ const ProductColorsManager = ({ productId }: { productId: string }) => {
   );
 };
 
-// Sub-component for managing product sizes
 const ProductSizesManager = ({ productId }: { productId: string }) => {
   const { data: sizes } = useProductSizes(productId);
   const addSize = useAddProductSize();
@@ -224,7 +221,6 @@ export const AdminProductsManager = () => {
     setDialogOpen(true);
   };
 
-  // Find collection slug for preview link
   const getCollectionSlug = (collectionId: string) => {
     return collections?.find(c => c.id === collectionId)?.slug;
   };
@@ -242,7 +238,6 @@ export const AdminProductsManager = () => {
         </Button>
       </div>
 
-      {/* Filter by collection */}
       <div className="flex items-center gap-3">
         <label className="text-sm font-medium text-muted-foreground">Koleksioni:</label>
         <Select value={selectedCollection} onValueChange={setSelectedCollection}>
@@ -285,8 +280,6 @@ export const AdminProductsManager = () => {
               <CardContent className="p-3">
                 <h4 className="font-medium text-sm truncate">{product.title_al || product.code || "Pa titull"}</h4>
                 <p className="text-xs text-muted-foreground mt-0.5">{product.code}</p>
-                <div className="flex items-center gap-2 mt-2">
-                </div>
                 <div className="flex items-center justify-between mt-3">
                   <Badge variant={product.visible ? "default" : "secondary"} className="text-[10px]">
                     {product.visible ? "Aktiv" : "Fshehur"}
@@ -315,7 +308,6 @@ export const AdminProductsManager = () => {
         </div>
       )}
 
-      {/* Edit / Create Dialog */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
@@ -405,7 +397,6 @@ export const AdminProductsManager = () => {
                     <span className="text-sm">I dukshëm</span>
                   </div>
                 </div>
-                {/* Product Info Accordion */}
                 <Accordion type="multiple" className="w-full">
                   <AccordionItem value="product-info">
                     <AccordionTrigger className="text-sm">Informacion mbi Produktin</AccordionTrigger>
@@ -464,22 +455,6 @@ export const AdminProductsManager = () => {
                     <Input value={editItem.composition_en ?? ""} onChange={(e) => setEditItem({ ...editItem, composition_en: e.target.value })} />
                   </div>
                 </div>
-               <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <div className="flex items-center justify-between">
-                      <label className="text-xs font-medium text-muted-foreground">Dimensionet (AL)</label>
-                      <TranslateButton direction="al_to_en" loading={translating === "p_dim"} onClick={() => translateField("p_dim", editItem.dimensions_al ?? "", "al_to_en", (t) => setEditItem((p) => p ? { ...p, dimensions_en: t } : p))} />
-                    </div>
-                    <Input value={editItem.dimensions_al ?? ""} onChange={(e) => setEditItem({ ...editItem, dimensions_al: e.target.value })} />
-                  </div>
-                  <div>
-                    <div className="flex items-center justify-between">
-                      <label className="text-xs font-medium text-muted-foreground">Dimensions (EN)</label>
-                      <TranslateButton direction="en_to_al" loading={translating === "p_dim_r"} onClick={() => translateField("p_dim_r", editItem.dimensions_en ?? "", "en_to_al", (t) => setEditItem((p) => p ? { ...p, dimensions_al: t } : p))} />
-                    </div>
-                    <Input value={editItem.dimensions_en ?? ""} onChange={(e) => setEditItem({ ...editItem, dimensions_en: e.target.value })} />
-                  </div>
-                </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <div className="flex items-center justify-between">
@@ -527,8 +502,6 @@ export const AdminProductsManager = () => {
                     </label>
                   </div>
                 </div>
-
-                {/* Additional images - only after product is saved */}
                 {editItem.id ? (
                   <ProductImagesManager productId={editItem.id} />
                 ) : (
