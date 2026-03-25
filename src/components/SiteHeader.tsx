@@ -25,7 +25,7 @@ var productLinks = [
   { label: "Restorant", href: "#" },
 ];
 
-function SearchDropdown(props: { query: string; isAl: boolean; onSelect: function(): void }) {
+function SearchDropdown(props: { query: string; isAl: boolean; onSelect: () => void }) {
   var query = props.query;
   var isAl = props.isAl;
   var onSelect = props.onSelect;
@@ -59,7 +59,7 @@ function SearchDropdown(props: { query: string; isAl: boolean; onSelect: functio
   );
 }
 
-function LoginModal(props: { onClose: function(): void; isAl: boolean; content: any[] | undefined }) {
+function LoginModal(props: { onClose: () => void; isAl: boolean; content: any[] | undefined }) {
   var onClose = props.onClose;
   var isAl = props.isAl;
   var content = props.content;
@@ -141,7 +141,7 @@ function LoginModal(props: { onClose: function(): void; isAl: boolean; content: 
   );
 }
 
-function ProfileDropdown(props: { onClose: function(): void }) {
+function ProfileDropdown(props: { onClose: () => void }) {
   var onClose = props.onClose;
   var auth = useAuth();
   var user = auth.user;
