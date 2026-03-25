@@ -76,7 +76,9 @@ const AdminDashboard = () => {
   const { signOut, user, role } = useAuth();
   const { toast } = useToast();
   const [lang, setLang] = useState<"al" | "en">("al");
-  const [activePage, setActivePageRaw] = useState(() => sessionStorage.getItem("admin_active_page") || "registrations");
+  const [activePage, setActivePageRaw] = useState(function () {
+    return sessionStorage.getItem("admin_active_page") || "registrations";
+  });
   const setActivePage = (page: string) => {
     sessionStorage.setItem("admin_active_page", page);
     setActivePageRaw(page);
@@ -94,10 +96,10 @@ const AdminDashboard = () => {
   const translateText = useCallback(async (text: string, sourceLang: string, targetLang: string): Promise<string> => {
     if (!text.trim() || sourceLang === targetLang) return text;
     try {
-      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/translate`, {
+      const response = await fetch(import.meta.env.VITE_SUPABASE_URL + "/functions/v1/translate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text, sourceLang, targetLang }),
+        body: JSON.stringify({ text: text, sourceLang: sourceLang, targetLang: targetLang }),
       });
       if (!response.ok) throw new Error("Translation failed");
       const data = await response.json();
@@ -122,22 +124,26 @@ const AdminDashboard = () => {
         },
         {
           onSuccess: async () => {
-            toast({ title: "U ruajt!", description: `${item.field_key} u përditësua.` });
+            toast({ title: "U ruajt!", description: item.field_key + " u përditësua." });
             if (item.content_type === "text" || item.content_type === "html") {
               const targetLang = item.lang === "al" ? "en" : "al";
               const translated = await translateText(newValue, item.lang, targetLang);
               if (translated) {
-                upsertContent.mutate({
-                  page: item.page,
-                  section_key: item.section_key,
-                  field_key: item.field_key,
-                  lang: targetLang,
-                  content_type: item.content_type,
-                  value: translated,
-                  sort_order: item.sort_order,
-                }, {
-                  onSuccess: () => toast({ title: "Përkthimi u ruajt!", description: `${item.field_key} (${targetLang.toUpperCase()})` }),
-                });
+                upsertContent.mutate(
+                  {
+                    page: item.page,
+                    section_key: item.section_key,
+                    field_key: item.field_key,
+                    lang: targetLang,
+                    content_type: item.content_type,
+                    value: translated,
+                    sort_order: item.sort_order,
+                  },
+                  {
+                    onSuccess: () =>
+                      toast({ title: "Përkthimi u ruajt!", description: item.field_key + " (" + targetLang.toUpperCase() + ")" }),
+                  }
+                );
               }
             }
           },
@@ -151,7 +157,7 @@ const AdminDashboard = () => {
   const handleUploadImage = useCallback(
     async (item: SiteContent, file: File) => {
       try {
-        const path = `${item.page}/${item.section_key}/${Date.now()}-${file.name}`;
+        const path = item.page + "/" + item.section_key + "/" + Date.now() + "-" + file.name;
         const url = await uploadCmsImage(file, path);
         handleSaveField(item, url);
         toast({ title: "Imazhi u ngarkua!" });
@@ -164,21 +170,22 @@ const AdminDashboard = () => {
 
   const handleToggleVisibility = useCallback(
     (id: string, visible: boolean) => {
-      toggleVisibility.mutate({ id, visible });
+      toggleVisibility.mutate({ id: id, visible: visible });
     },
     [toggleVisibility]
   );
 
   const handleDragEnd = useCallback(
     (event: any) => {
-      const { active, over } = event;
+      const active = event.active;
+      const over = event.over;
       if (!over || active.id === over.id || !sections) return;
       const pageSections = sections.filter((s) => s.page === activePage);
       const oldIndex = pageSections.findIndex((s) => s.id === active.id);
       const newIndex = pageSections.findIndex((s) => s.id === over.id);
       if (oldIndex === -1 || newIndex === -1) return;
-      const reordered = [...pageSections];
-      const [moved] = reordered.splice(oldIndex, 1);
+      const reordered = pageSections.slice();
+      const moved = reordered.splice(oldIndex, 1)[0];
       reordered.splice(newIndex, 0, moved);
       const updates = reordered.map((s, i) => ({ id: s.id, sort_order: i }));
       updateOrder.mutate(updates);
@@ -187,9 +194,9 @@ const AdminDashboard = () => {
   );
 
   const isLoading = loadingContent || loadingSections || loadingBlog;
-  const pageSections = sections?.filter((s) => s.page === activePage) ?? [];
-  const pageContent = content?.filter((c) => c.page === activePage) ?? [];
-  const uniquePages = new Set(sections?.map((s) => s.page) ?? []);
+  const pageSections = sections ? sections.filter((s) => s.page === activePage) : [];
+  const pageContent = content ? content.filter((c) => c.page === activePage) : [];
+  const uniquePages = new Set(sections ? sections.map((s) => s.page) : []);
 
   const renderContent = () => {
     if (isLoading) {
@@ -207,9 +214,9 @@ const AdminDashboard = () => {
       case "dashboard":
         return (
           <AdminDashboardOverview
-            totalSections={sections?.length ?? 0}
-            totalContent={content?.length ?? 0}
-            totalBlogPosts={blogPosts?.length ?? 0}
+            totalSections={sections ? sections.length : 0}
+            totalContent={content ? content.length : 0}
+            totalBlogPosts={blogPosts ? blogPosts.length : 0}
             totalPages={uniquePages.size}
             onNavigate={setActivePage}
           />
@@ -217,22 +224,22 @@ const AdminDashboard = () => {
       case "blog-posts":
         return (
           <AdminBlogManager
-            posts={blogPosts ?? []}
+            posts={blogPosts || []}
             lang={lang}
-            onSave={(post) =>
+            onSave={function (post) {
               upsertBlogPost.mutate(post, {
                 onSuccess: () => toast({ title: "Postimi u ruajt!" }),
                 onError: (e) => toast({ title: "Gabim", description: e.message, variant: "destructive" }),
-              })
-            }
-            onDelete={(id) =>
+              });
+            }}
+            onDelete={function (id) {
               deleteBlogPost.mutate(id, {
                 onSuccess: () => toast({ title: "Postimi u fshi!" }),
                 onError: (e) => toast({ title: "Gabim", description: e.message, variant: "destructive" }),
-              })
-            }
-            onUploadImage={async (file: File) => {
-              const path = `blog/${Date.now()}-${file.name}`;
+              });
+            }}
+            onUploadImage={async function (file: File) {
+              var path = "blog/" + Date.now() + "-" + file.name;
               return await uploadCmsImage(file, path);
             }}
           />
@@ -246,7 +253,10 @@ const AdminDashboard = () => {
       case "registrations":
         return <AdminRegistrations />;
       case "registration-form":
-        return role === "manager" ? <AdminContactSubmissions /> : <AdminFormBuilder />;
+        if (role === "manager") {
+          return <AdminContactSubmissions />;
+        }
+        return <AdminFormBuilder />;
       case "users":
         return <AdminUsers />;
       case "auth-logs":
@@ -289,7 +299,7 @@ const AdminDashboard = () => {
             <div className="bg-background border border-border rounded-lg p-6 space-y-4">
               <div>
                 <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Email i administratorit</label>
-                <p className="text-sm text-foreground mt-1">{user?.email}</p>
+                <p className="text-sm text-foreground mt-1">{user ? user.email : ""}</p>
               </div>
               <div>
                 <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Gjuha aktive</label>
@@ -299,7 +309,7 @@ const AdminDashboard = () => {
           </div>
         );
       default:
-        const showSeo = cmsPages.includes(activePage);
+        var showSeo = cmsPages.includes(activePage);
         return (
           <div className="space-y-6">
             <AdminPageEditor
@@ -330,9 +340,7 @@ const AdminDashboard = () => {
             onSignOut={signOut}
             pageTitle={pageTitles[activePage] || activePage}
           />
-          <main className="flex-1 p-6 md:p-8 bg-muted/30 overflow-auto">
-            {renderContent()}
-          </main>
+          <main className="flex-1 p-6 md:p-8 bg-muted/30 overflow-auto">{renderContent()}</main>
         </div>
       </div>
     </SidebarProvider>
