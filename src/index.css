@@ -157,6 +157,11 @@
   h2 { font-size: var(--ds-font-size-h2, 24px); }
   h3 { font-size: var(--ds-font-size-h3, 20px); }
 
+  /* Force Helvetica on all form inputs */
+  input, textarea, select, button[type="submit"] {
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif !important;
+  }
+
   /* Global button radius from design settings */
   .rounded, .rounded-md {
     border-radius: var(--ds-btn-radius, 4px) !important;
