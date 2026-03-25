@@ -35,20 +35,20 @@ function SearchDropdown(props: { query: string; isAl: boolean; onSelect: () => v
   var navigate = useNavigate();
   if (!hasQuery) return null;
   return (
-    <div className="absolute top-full left-0 right-0 mt-1 bg-background border border-border rounded-lg shadow-lg z-50 max-h-[400px] overflow-y-auto">
+    <div className="absolute top-full left-0 right-0 mt-1 bg-background border border-border shadow-lg z-50 max-h-[420px] overflow-y-auto" style={{ scrollbarWidth: "thin" }}>
       {results.length === 0 ? (
         <div className="px-4 py-6 text-center text-sm text-muted-foreground">{isAl ? "Nuk u gjetën produkte" : "No products found"}</div>
       ) : (
         <div>
           {results.map(function (product: any) {
             return (
-              <button key={product.id} className="w-full flex items-center gap-3 px-4 py-3 hover:bg-muted/50 transition-colors text-left border-b border-border last:border-b-0" onClick={function () { navigate("/koleksionet/" + product.collectionSlug + "/" + product.id); onSelect(); }}>
-                <div className="w-12 h-12 rounded bg-muted overflow-hidden flex-shrink-0">
-                  {product.image_url ? <img src={product.image_url} alt="" className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center"><Package className="w-5 h-5 text-muted-foreground/30" /></div>}
+              <button key={product.id} className="w-full flex items-center gap-4 px-4 py-3 hover:bg-muted/40 transition-colors text-left border-b border-border/50 last:border-b-0" onClick={function () { navigate("/koleksionet/" + product.collectionSlug + "/" + product.id); onSelect(); }}>
+                <div className="w-16 h-16 bg-muted overflow-hidden flex-shrink-0 border border-border/30">
+                  {product.image_url ? <img src={product.image_url} alt="" className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center bg-muted"><Package className="w-6 h-6 text-muted-foreground/20" /></div>}
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="text-sm font-medium text-foreground truncate">{isAl ? product.title_al : product.title_en || product.title_al}</p>
-                  <p className="text-xs text-muted-foreground truncate">{isAl ? product.collectionTitle_al : product.collectionTitle_en || product.collectionTitle_al}{product.code ? " • " + product.code : ""}</p>
+                  <p className="text-sm font-medium text-foreground leading-snug">{isAl ? product.title_al : product.title_en || product.title_al}</p>
+                  {product.code && <p className="text-xs text-muted-foreground mt-0.5">{"Kod.: " + product.code}</p>}
                 </div>
               </button>
             );
