@@ -77,7 +77,9 @@ const ProductCard = ({ product, isAl, allColors, collectionSlug, t, user, wishli
           {isAl ? product.composition_al : product.composition_en}
         </p>
         <p className="text-xs text-muted-foreground">
-{t("Përmasa:", "Size:")} {isAl ? product.dimensions_al : product.dimensions_en}      </Link>
+          {t("Përmasa:", "Size:")} {isAl ? product.dimensions_al : product.dimensions_en}
+        </p>
+      </Link>
       {productColors.length > 0 && (
         <div className="flex items-center gap-1.5 mt-2">
           {productColors.map(c => (
@@ -252,7 +254,7 @@ const Collections = () => {
         onToggle={toggleFilter(compositionFilters, setCompositionFilters)}
       />
       <FilterSection
-        title={t("DIMENSIONI", "DIMENSION")}
+        title={t("PËRMASA", "SIZE")}
         options={sizeOptions}
         selected={sizeFilters}
         onToggle={toggleFilter(sizeFilters, setSizeFilters)}
