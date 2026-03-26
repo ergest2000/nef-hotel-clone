@@ -161,14 +161,14 @@ const SuggestionsSection = ({ content }: { content?: SiteContent[] }) => {
           {title}
         </h2>
 
-        {/* Carousel wrapper — relative so arrows position off it */}
-        <div className="relative">
+        {/* Carousel wrapper */}
+        <div className="relative px-14 md:px-16">
           {/* ← Arrow */}
           <button
             onClick={() => slide("left")}
             aria-label="Scroll left"
             style={{ top: arrowTop || "35%" }}
-            className={`absolute -left-5 md:-left-6 -translate-y-1/2 z-20 w-10 h-10 md:w-12 md:h-12 rounded-full bg-white border border-border shadow-md flex items-center justify-center transition-all duration-200 ${
+            className={`absolute left-0 -translate-y-1/2 z-20 w-10 h-10 md:w-12 md:h-12 rounded-full bg-white border border-border shadow-md flex items-center justify-center transition-all duration-200 ${
               canLeft
                 ? "opacity-100 hover:bg-foreground hover:text-white hover:border-foreground cursor-pointer"
                 : "opacity-0 pointer-events-none"
@@ -182,7 +182,7 @@ const SuggestionsSection = ({ content }: { content?: SiteContent[] }) => {
             onClick={() => slide("right")}
             aria-label="Scroll right"
             style={{ top: arrowTop || "35%" }}
-            className={`absolute -right-5 md:-right-6 -translate-y-1/2 z-20 w-10 h-10 md:w-12 md:h-12 rounded-full bg-white border border-border shadow-md flex items-center justify-center transition-all duration-200 ${
+            className={`absolute right-0 -translate-y-1/2 z-20 w-10 h-10 md:w-12 md:h-12 rounded-full bg-white border border-border shadow-md flex items-center justify-center transition-all duration-200 ${
               canRight
                 ? "opacity-100 hover:bg-foreground hover:text-white hover:border-foreground cursor-pointer"
                 : "opacity-0 pointer-events-none"
