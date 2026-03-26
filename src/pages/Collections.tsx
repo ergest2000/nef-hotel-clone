@@ -20,6 +20,12 @@ import type { Tables } from "@/integrations/supabase/types";
 type Collection = Tables<"collections">;
 type Product = Tables<"products">;
 
+/* ── Title Case helper ─────────────────────────────────────────── */
+const toTitleCase = (str: string) =>
+  str
+    .toLowerCase()
+    .replace(/(?:^|\s|[-/])\S/g, (match) => match.toUpperCase());
+
 /* ── Product Card ──────────────────────────────────────────────── */
 const ProductCard = ({
   product,
@@ -71,7 +77,7 @@ const ProductCard = ({
         {/* Info */}
         <div className="mt-3 space-y-1">
           <span className="block text-sm md:text-base text-foreground font-medium leading-snug group-hover:text-primary transition-colors line-clamp-2" style={{ textTransform: 'none', letterSpacing: 'normal' }}>
-            {title}
+            {title ? toTitleCase(title) : ""}
           </span>
           {dimensions && (
             <p className="text-xs md:text-sm text-muted-foreground">
