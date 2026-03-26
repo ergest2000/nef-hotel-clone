@@ -401,14 +401,12 @@ const Collections = () => {
           </aside>
 
           {/* Products grid */}
-          <div className="flex-1 min-w-0">
+          <div className="flex-1 min-w-0 w-full">
             {paginatedProducts.length === 0 ? (
-              <div className="flex items-center justify-center py-20 w-full">
-                <div className="text-center">
-                  <Package className="h-16 w-16 mx-auto text-muted-foreground/20 mb-4" />
-                  <h3 className="text-lg font-semibold text-foreground mb-2">{t("Nuk ka produkte", "No products")}</h3>
-                  <p className="text-sm text-muted-foreground max-w-sm">{t("Kjo koleksion nuk ka produkte të listuara aktualisht.", "This collection has no listed products currently.")}</p>
-                </div>
+              <div className="w-full flex flex-col items-center justify-center py-24 text-center">
+                <Package className="h-16 w-16 text-muted-foreground/20 mb-4" />
+                <h3 className="text-lg font-semibold text-foreground mb-2">{t("Nuk ka produkte", "No products")}</h3>
+                <p className="text-sm text-muted-foreground max-w-xs">{t("Kjo koleksion nuk ka produkte të listuara aktualisht.", "This collection has no listed products currently.")}</p>
               </div>
             ) : (
               <>
