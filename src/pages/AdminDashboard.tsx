@@ -77,9 +77,16 @@ function AdminDashboard() {
   var role = authHook.role;
   var toastHook = useToast();
   var toast = toastHook.toast;
-  var langState = useState<"al" | "en">("al");
+  var langState = useState<"al" | "en">(function () {
+    return (localStorage.getItem("admin_lang") as "al" | "en") || "al";
+  });
   var lang = langState[0];
-  var setLang = langState[1];
+  var setLangRaw = langState[1];
+
+  function setLang(l: "al" | "en") {
+    localStorage.setItem("admin_lang", l);
+    setLangRaw(l);
+  }
   var activePageState = useState(function () {
     return localStorage.getItem("admin_active_page") || "registrations";
   });
