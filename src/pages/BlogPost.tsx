@@ -9,11 +9,12 @@ import whatsappIcon from "@/assets/whatsapp-icon.svg";
 import { useLanguage } from "@/hooks/useLanguage";
 
 const BlogPost = () => {
-  const { id } = useParams<{ id: string }>();
-  const { data: dbPost, isLoading } = useBlogPostBySlug(id || "");
+  // Route: /blog/:postSlug  — param quhet postSlug jo id
+  const { postSlug } = useParams<{ postSlug: string }>();
+  const { data: dbPost, isLoading } = useBlogPostBySlug(postSlug || "");
   const { isAl } = useLanguage();
 
-  const staticPost = fallbackPosts.find((p) => p.id === id);
+  const staticPost = fallbackPosts.find((p) => p.id === postSlug);
 
   const post = dbPost
     ? {
@@ -98,11 +99,7 @@ const BlogPost = () => {
 
           {post.image && (
             <div className="aspect-[16/9] overflow-hidden mb-10">
-              <img
-                src={post.image}
-                alt={post.title}
-                className="w-full h-full object-cover"
-              />
+              <img src={post.image} alt={post.title} className="w-full h-full object-cover" />
             </div>
           )}
 
@@ -111,9 +108,7 @@ const BlogPost = () => {
               <div dangerouslySetInnerHTML={{ __html: post.content }} />
             ) : (
               post.content.split("\n\n").map((paragraph, i) => (
-                <p key={i} className="mb-6">
-                  {paragraph}
-                </p>
+                <p key={i} className="mb-6">{paragraph}</p>
               ))
             )}
           </div>
@@ -132,11 +127,7 @@ const BlogPost = () => {
                   className={`inline-flex items-center gap-1.5 px-3 py-2 md:px-5 md:py-2.5 rounded-full text-[10px] md:text-xs tracking-brand uppercase transition-colors ${item.className}`}
                 >
                   {"iconSrc" in item ? (
-                    <img
-                      src={item.iconSrc}
-                      alt={item.label}
-                      className="w-3.5 h-3.5 brightness-0 invert"
-                    />
+                    <img src={item.iconSrc} alt={item.label} className="w-3.5 h-3.5 brightness-0 invert" />
                   ) : (
                     <item.icon size={14} />
                   )}
