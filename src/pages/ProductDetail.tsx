@@ -18,6 +18,12 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { Heart, ShoppingBag, Package, Palette, ChevronLeft, ChevronRight, Search, X } from "lucide-react";
 import { useDesign } from "@/hooks/useDesignSettings";
 
+// ─── Title Case helper ─────────────────────────────────────────
+const toTitleCase = (str: string) =>
+  str
+    .toLowerCase()
+    .replace(/(?:^|\s|[-/])\S/g, (match) => match.toUpperCase());
+
 // Global Return Policy component
 const GlobalReturnPolicy = ({ isAl }: { isAl: boolean }) => {
   const { settings } = useDesign();
@@ -159,7 +165,7 @@ const RelatedProducts = ({ collectionId, currentProductId, isAl, collectionSlug 
                 )}
               </div>
               <p className="text-sm font-medium text-foreground group-hover:text-primary transition-colors line-clamp-2">
-                {isAl ? p.title_al : p.title_en}
+                {toTitleCase(isAl ? p.title_al : p.title_en)}
               </p>
             </Link>
           ))}
@@ -255,7 +261,7 @@ const ProductDetail = () => {
             )}
             <span>-</span>
             <span className="text-foreground">
-              {isAl ? product.title_al : product.title_en}
+              {toTitleCase(isAl ? product.title_al : product.title_en)}
             </span>
           </div>
         </div>
@@ -276,7 +282,7 @@ const ProductDetail = () => {
             {/* Title & Code */}
             <div>
               <h1 className="text-xl md:text-2xl font-light text-foreground leading-tight" style={{ textTransform: 'none', letterSpacing: 'normal' }}>
-                {isAl ? product.title_al : product.title_en}
+                {toTitleCase(isAl ? product.title_al : product.title_en)}
               </h1>
               {product.code && (
                 <p className="text-sm text-muted-foreground mt-1">
