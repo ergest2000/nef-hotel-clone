@@ -14,6 +14,7 @@ import {
 } from "@/hooks/useCollections";
 import { useLanguage } from "@/hooks/useLanguage";
 import { useAuth } from "@/hooks/useAuth";
+import { usePageContent, getContentValue } from "@/hooks/useCms";
 import { Heart, ChevronRight } from "lucide-react";
 import type { Tables } from "@/integrations/supabase/types";
 
@@ -356,10 +357,12 @@ const Breadcrumb = ({
   collection,
   parentCollection,
   isAl,
+  hasImage = true,
 }: {
   collection?: Collection;
   parentCollection?: Collection;
   isAl: boolean;
+  hasImage?: boolean;
 }) => {
   const crumbs: { label: string; to?: string }[] = [
     { label: isAl ? "Kryesore" : "Home", to: "/" },
@@ -384,22 +387,26 @@ const Breadcrumb = ({
     crumbs.push({ label: isAl ? "Koleksionet" : "Collections" });
   }
 
+  const sepColor = hasImage ? "text-white/50" : "text-muted-foreground/50";
+  const linkColor = hasImage ? "text-white/70 hover:text-white" : "text-muted-foreground hover:text-foreground";
+  const activeColor = hasImage ? "text-white/90" : "text-foreground";
+
   return (
     <nav className="flex items-center gap-1.5 text-[11px] tracking-brand uppercase">
       {crumbs.map((crumb, i) => (
         <span key={i} className="flex items-center gap-1.5">
           {i > 0 && (
-            <span className="text-white/50">–</span>
+            <span className={sepColor}>–</span>
           )}
           {crumb.to ? (
             <Link
               to={crumb.to}
-              className="text-white/70 hover:text-white transition-colors"
+              className={`${linkColor} transition-colors`}
             >
               {crumb.label}
             </Link>
           ) : (
-            <span className="text-white/90">{crumb.label}</span>
+            <span className={activeColor}>{crumb.label}</span>
           )}
         </span>
       ))}
@@ -410,12 +417,15 @@ const Breadcrumb = ({
 /* ── Main Collections Page ─────────────────────────────────────── */
 const Collections = () => {
   const { slug } = useParams<{ slug: string }>();
-  const { isAl } = useLanguage();
+  const { isAl, lang } = useLanguage();
   const navigate = useNavigate();
   const { data: collections, isLoading: loadingCols } = useCollections();
   const { data: allProducts, isLoading: loadingProducts } = useProducts();
   const { data: allColors } = useAllProductColors();
   const { data: allSizes } = useAllProductSizes();
+
+  // CMS content for collections page
+  const { data: cmsContent } = usePageContent("collections", lang);
 
   // Filter state
   const [selectedColors, setSelectedColors] = useState<string[]>([]);
@@ -538,24 +548,23 @@ const Collections = () => {
     return col?.slug || slug || "all";
   };
 
-  // Page text
+  // Page text — CMS first, then collection data, then hardcoded fallback
   const pageTitle = activeCollection
-    ? isAl
-      ? activeCollection.title_al || activeCollection.title_en
-      : activeCollection.title_en || activeCollection.title_al
-    : isAl
-    ? "Koleksionet"
-    : "Collections";
+    ? getContentValue(cmsContent, `collection_${activeCollection.slug}`, "title", "")
+      || (isAl ? activeCollection.title_al || activeCollection.title_en : activeCollection.title_en || activeCollection.title_al)
+    : getContentValue(cmsContent, "hero", "title", isAl ? "Koleksionet" : "Collections");
 
   const pageDescription = activeCollection
-    ? isAl
-      ? activeCollection.description_al || activeCollection.description_en
-      : activeCollection.description_en || activeCollection.description_al
-    : isAl
-    ? "Zbuloni gamën tonë të plotë të produkteve premium për hotele."
-    : "Discover our full range of premium hotel products.";
+    ? getContentValue(cmsContent, `collection_${activeCollection.slug}`, "subtitle", "")
+      || (isAl ? activeCollection.description_al || activeCollection.description_en : activeCollection.description_en || activeCollection.description_al)
+    : getContentValue(cmsContent, "hero", "subtitle", isAl ? "Zbuloni gamën tonë të plotë të produkteve premium për hotele." : "Discover our full range of premium hotel products.");
 
-  const heroImage = activeCollection?.image_url || "";
+  // Hero image — CMS first, then collection image, then first collection's image as fallback
+  const heroImage = activeCollection
+    ? getContentValue(cmsContent, `collection_${activeCollection.slug}`, "image", "")
+      || activeCollection.image_url || ""
+    : getContentValue(cmsContent, "hero", "image", "")
+      || collections?.find((c) => c.image_url && c.visible !== false)?.image_url || "";
 
   const isLoading = loadingCols || loadingProducts;
 
@@ -567,37 +576,40 @@ const Collections = () => {
       <SiteHeader />
 
       {/* ── Hero Banner with image overlay ── */}
-      <section className="relative bg-secondary overflow-hidden">
+      <section className="relative bg-secondary overflow-hidden min-h-[220px] md:min-h-[280px]">
         {/* Background image */}
-        {heroImage && (
+        {heroImage ? (
           <img
             src={heroImage}
             alt={pageTitle}
             className="absolute inset-0 w-full h-full object-cover"
           />
-        )}
-        {/* Gradient overlay */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/40 to-black/20" />
+        ) : null}
+        {/* Gradient overlay — always show for text readability */}
+        <div className={`absolute inset-0 ${heroImage ? "bg-gradient-to-t from-black/70 via-black/40 to-black/20" : "bg-foreground/5"}`} />
 
         {/* Content */}
-        <div className="relative z-10 container py-16 md:py-24">
-          <h1 className="text-2xl md:text-4xl lg:text-5xl font-light text-white leading-tight max-w-xl">
+        <div className="relative z-10 container py-12 md:py-20">
+          <h1
+            className={`text-2xl md:text-4xl lg:text-5xl font-light leading-tight max-w-xl ${heroImage ? "text-white" : "text-foreground"}`}
+          >
             {pageTitle}.
           </h1>
           {pageDescription && (
-            <p className="mt-3 text-sm md:text-base text-white/80 max-w-lg leading-relaxed">
+            <p className={`mt-3 text-sm md:text-base max-w-lg leading-relaxed ${heroImage ? "text-white/80" : "text-muted-foreground"}`}>
               {pageDescription}
             </p>
           )}
         </div>
 
         {/* Breadcrumb bar */}
-        <div className="relative z-10 bg-black/30 backdrop-blur-sm">
+        <div className={`relative z-10 ${heroImage ? "bg-black/30 backdrop-blur-sm" : "bg-muted/50"}`}>
           <div className="container py-2.5">
             <Breadcrumb
               collection={activeCollection}
               parentCollection={parentCollection}
               isAl={isAl}
+              hasImage={!!heroImage}
             />
           </div>
         </div>
