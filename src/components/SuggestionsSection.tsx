@@ -11,17 +11,14 @@ import type { Tables } from "@/integrations/supabase/types";
 
 type SiteContent = Tables<"site_content">;
 
-/* ── Title Case helper ─────────────────────────────────────────── */
 const toTitleCase = (str: string) =>
-  str
-    .toLowerCase()
-    .replace(/(?:^|\s|[-/])\S/g, (match) => match.toUpperCase());
+  str.toLowerCase().replace(/(?:^|\s|[-/])\S/g, (m) => m.toUpperCase());
 
 const defaultProducts = [
-  { key: "prod1", name: "Premium Cotton Sheet Set", category: "Bedroom", image: catBedroom },
-  { key: "prod2", name: "Luxury Bath Towel Pack", category: "Bathroom", image: catBathroom },
-  { key: "prod3", name: "Pool Towel Collection", category: "Pool", image: catPool },
-  { key: "prod4", name: "Spa Robe Deluxe", category: "Spa", image: catSpa },
+  { key: "prod1", name: "Premium Cotton Sheet Set", image: catBedroom },
+  { key: "prod2", name: "Luxury Bath Towel Pack", image: catBathroom },
+  { key: "prod3", name: "Pool Towel Collection", image: catPool },
+  { key: "prod4", name: "Spa Robe Deluxe", image: catSpa },
 ];
 
 const SuggestionsSection = ({ content }: { content?: SiteContent[] }) => {
@@ -43,99 +40,101 @@ const SuggestionsSection = ({ content }: { content?: SiteContent[] }) => {
         collectionSlug: "all",
       }));
 
-  // ── Scroll logic ────────────────────────────────────────────────
-  const scrollRef = useRef<HTMLDivElement>(null);
+  /* ── Scroll state ──────────────────────────────────────────────── */
+  const trackRef = useRef<HTMLDivElement>(null);
   const [scrollProgress, setScrollProgress] = useState(0);
-  const [canScrollLeft, setCanScrollLeft] = useState(false);
-  const [canScrollRight, setCanScrollRight] = useState(true);
+  const [canLeft, setCanLeft] = useState(false);
+  const [canRight, setCanRight] = useState(true);
 
-  const updateScrollState = useCallback(() => {
-    const el = scrollRef.current;
+  const sync = useCallback(() => {
+    const el = trackRef.current;
     if (!el) return;
-    const maxScroll = el.scrollWidth - el.clientWidth;
-    if (maxScroll <= 0) {
+    const max = el.scrollWidth - el.clientWidth;
+    if (max <= 0) {
       setScrollProgress(0);
-      setCanScrollLeft(false);
-      setCanScrollRight(false);
+      setCanLeft(false);
+      setCanRight(false);
       return;
     }
-    const progress = el.scrollLeft / maxScroll;
-    setScrollProgress(progress);
-    setCanScrollLeft(el.scrollLeft > 2);
-    setCanScrollRight(el.scrollLeft < maxScroll - 2);
+    setScrollProgress(el.scrollLeft / max);
+    setCanLeft(el.scrollLeft > 2);
+    setCanRight(el.scrollLeft < max - 2);
   }, []);
 
   useEffect(() => {
-    const el = scrollRef.current;
+    const el = trackRef.current;
     if (!el) return;
-    updateScrollState();
-    el.addEventListener("scroll", updateScrollState, { passive: true });
-    window.addEventListener("resize", updateScrollState);
+    sync();
+    el.addEventListener("scroll", sync, { passive: true });
+    window.addEventListener("resize", sync);
     return () => {
-      el.removeEventListener("scroll", updateScrollState);
-      window.removeEventListener("resize", updateScrollState);
+      el.removeEventListener("scroll", sync);
+      window.removeEventListener("resize", sync);
     };
-  }, [updateScrollState, products.length]);
+  }, [sync, products.length]);
 
-  const scrollBy = (direction: "left" | "right") => {
-    const el = scrollRef.current;
+  const slide = (dir: "left" | "right") => {
+    const el = trackRef.current;
     if (!el) return;
-    // Scroll by ~1 card width
-    const cardWidth = el.querySelector("a")?.offsetWidth || 280;
-    const amount = direction === "left" ? -cardWidth - 16 : cardWidth + 16;
-    el.scrollBy({ left: amount, behavior: "smooth" });
+    const card = el.querySelector("a");
+    const step = card ? card.offsetWidth + 16 : 300;
+    el.scrollBy({ left: dir === "left" ? -step : step, behavior: "smooth" });
   };
 
-  return (
-    <section className="py-16 md:py-24">
-      <div className="container">
-        {/* Title row with arrows */}
-        <div className="flex items-center justify-between mb-12">
-          <div className="flex-1" />
-          <h2 className="text-xl md:text-2xl tracking-wide-brand text-foreground font-light text-center">
-            {title}
-          </h2>
-          <div className="flex-1 flex justify-end gap-2">
-            <button
-              onClick={() => scrollBy("left")}
-              disabled={!canScrollLeft}
-              aria-label="Scroll left"
-              className={`w-10 h-10 md:w-11 md:h-11 border flex items-center justify-center transition-colors ${
-                canScrollLeft
-                  ? "border-foreground/30 text-foreground hover:bg-foreground hover:text-background"
-                  : "border-border text-muted-foreground/30 cursor-default"
-              }`}
-            >
-              <ChevronLeft size={18} />
-            </button>
-            <button
-              onClick={() => scrollBy("right")}
-              disabled={!canScrollRight}
-              aria-label="Scroll right"
-              className={`w-10 h-10 md:w-11 md:h-11 border flex items-center justify-center transition-colors ${
-                canScrollRight
-                  ? "border-foreground/30 text-foreground hover:bg-foreground hover:text-background"
-                  : "border-border text-muted-foreground/30 cursor-default"
-              }`}
-            >
-              <ChevronRight size={18} />
-            </button>
-          </div>
-        </div>
+  /* ── Scrollbar thumb sizing ────────────────────────────────────── */
+  const thumbWidth = Math.max(15, Math.min(40, 100 / Math.ceil(products.length / 4)));
 
-        {/* Slider wrapper */}
+  return (
+    <section className="py-16 md:py-24 overflow-hidden">
+      <div className="container">
+        {/* Title */}
+        <h2 className="text-xl md:text-2xl tracking-wide-brand text-foreground font-light text-center mb-12">
+          {title}
+        </h2>
+
+        {/* Slider area */}
         <div className="relative">
-          {/* Scrollable product row */}
+          {/* ← Arrow — left side, vertically centered on images */}
+          <button
+            onClick={() => slide("left")}
+            aria-label="Scroll left"
+            className={`absolute left-0 md:-left-1 top-[28%] -translate-y-1/2 z-20 w-10 h-10 md:w-12 md:h-12 bg-white/90 backdrop-blur border border-border/60 shadow-lg flex items-center justify-center transition-all duration-200 ${
+              canLeft
+                ? "opacity-100 hover:bg-foreground hover:text-background hover:border-foreground"
+                : "opacity-0 pointer-events-none"
+            }`}
+          >
+            <ChevronLeft size={20} />
+          </button>
+
+          {/* → Arrow — right side, vertically centered on images */}
+          <button
+            onClick={() => slide("right")}
+            aria-label="Scroll right"
+            className={`absolute right-0 md:-right-1 top-[28%] -translate-y-1/2 z-20 w-10 h-10 md:w-12 md:h-12 bg-white/90 backdrop-blur border border-border/60 shadow-lg flex items-center justify-center transition-all duration-200 ${
+              canRight
+                ? "opacity-100 hover:bg-foreground hover:text-background hover:border-foreground"
+                : "opacity-0 pointer-events-none"
+            }`}
+          >
+            <ChevronRight size={20} />
+          </button>
+
+          {/* Scrollable track — native touch swipe works automatically */}
           <div
-            ref={scrollRef}
-            className="flex gap-4 md:gap-6 overflow-x-auto scroll-smooth scrollbar-hide px-1 pb-2"
-            style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+            ref={trackRef}
+            className="flex gap-4 md:gap-6 overflow-x-auto overscroll-x-contain snap-x snap-mandatory scroll-smooth"
+            style={{
+              scrollbarWidth: "none",
+              msOverflowStyle: "none",
+              WebkitOverflowScrolling: "touch",
+            }}
           >
             {products.map((product) => (
               <a
                 key={product.id}
                 href={`/koleksionet/${product.collectionSlug}/${product.id}`}
-                className="group shrink-0 w-[45vw] sm:w-[35vw] md:w-[22%] lg:w-[18%]"
+                className="group shrink-0 snap-start w-[44vw] sm:w-[35vw] md:w-[calc(25%-12px)] lg:w-[calc(20%-13px)]"
               >
                 <div className="aspect-square overflow-hidden mb-3 bg-secondary">
                   <img
@@ -156,14 +155,13 @@ const SuggestionsSection = ({ content }: { content?: SiteContent[] }) => {
           </div>
 
           {/* Scrollbar indicator */}
-          <div className="mt-6 mx-auto max-w-2xl">
-            <div className="h-[3px] bg-muted rounded-full relative overflow-hidden">
+          <div className="mt-8 mx-auto max-w-xl">
+            <div className="h-[3px] bg-muted relative overflow-hidden rounded-full">
               <div
-                className="absolute top-0 left-0 h-full bg-primary rounded-full transition-all duration-150"
+                className="absolute top-0 h-full bg-primary rounded-full transition-[left] duration-150 ease-out"
                 style={{
-                  width: `${Math.max(20, 100 / Math.max(products.length / 4, 1))}%`,
-                  transform: `translateX(${scrollProgress * (100 / Math.max(20, 100 / Math.max(products.length / 4, 1)) - 1) * 100}%)`,
-                  left: `${scrollProgress * (100 - Math.max(20, 100 / Math.max(products.length / 4, 1)))}%`,
+                  width: `${thumbWidth}%`,
+                  left: `${scrollProgress * (100 - thumbWidth)}%`,
                 }}
               />
             </div>
