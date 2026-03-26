@@ -11,7 +11,7 @@ import SiteFooter from "@/components/SiteFooter";
 import { usePageContent, usePageSections } from "@/hooks/useCms";
 import { useLanguage } from "@/hooks/useLanguage";
 
-const allowedSections = [
+const ALLOWED_SECTIONS = [
   "hero",
   "clients",
   "categories",
@@ -22,27 +22,32 @@ const allowedSections = [
   "certifications",
 ];
 
+const DEFAULT_ORDER = ALLOWED_SECTIONS;
+
 function Index() {
   const { lang } = useLanguage();
+
+  // Fetch content për gjuhën aktive — react-query cache-on automatikisht
   const { data: content } = usePageContent("home", lang);
   const { data: sections } = usePageSections("home");
 
   const orderedSectionKeys = sections
     ? sections
-        .filter((s) => s.visible && allowedSections.includes(s.section_key))
+        .filter((s) => s.visible && ALLOWED_SECTIONS.includes(s.section_key))
         .sort((a, b) => a.sort_order - b.sort_order)
         .map((s) => s.section_key)
-    : allowedSections;
+    : DEFAULT_ORDER;
 
+  // Komponenti për çdo seksion — content është gjithmonë i fresh nga hook
   const sectionComponents: Record<string, JSX.Element> = {
-    hero: <HeroSlider content={content} />,
-    clients: <ClientsCarousel content={content} />,
-    categories: <CategoriesSection content={content} />,
+    hero:              <HeroSlider content={content} />,
+    clients:           <ClientsCarousel content={content} />,
+    categories:        <CategoriesSection content={content} />,
     "custom-textiles": <CustomTextiles content={content} />,
-    suggestions: <SuggestionsSection content={content} />,
-    blog: <BlogSection content={content} />,
-    membership: <MembershipSection content={content} />,
-    certifications: <CertificationsSection content={content} />,
+    suggestions:       <SuggestionsSection content={content} />,
+    blog:              <BlogSection content={content} />,
+    membership:        <MembershipSection content={content} />,
+    certifications:    <CertificationsSection content={content} />,
   };
 
   return (
