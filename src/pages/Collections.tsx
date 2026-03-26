@@ -380,7 +380,8 @@ const Collections = () => {
 
       {/* Main content: sidebar + products */}
       <div className="max-w-7xl mx-auto px-4 py-8 flex-1">
-        {/* Mobile filter button */}
+
+        {/* Mobile filter button — shfaqet gjithmonë */}
         <div className="lg:hidden mb-4">
           <Button
             variant="outline"
@@ -394,76 +395,88 @@ const Collections = () => {
           </Button>
         </div>
 
-        {/* Empty state — pa sidebar, i centruar ndaj gjithë gjerësisë */}
-        {paginatedProducts.length === 0 ? (
+        {/* Nëse koleksioni nuk ka asnjë produkt fare (as pa filtra) → no sidebar */}
+        {products.length === 0 ? (
           <div className="w-full flex flex-col items-center justify-center py-24 text-center">
             <Package className="h-16 w-16 text-muted-foreground/20 mb-4" />
             <h3 className="text-lg font-semibold text-foreground mb-2">{t("Nuk ka produkte", "No products")}</h3>
             <p className="text-sm text-muted-foreground max-w-xs">{t("Kjo koleksion nuk ka produkte të listuara aktualisht.", "This collection has no listed products currently.")}</p>
           </div>
         ) : (
-        <div className="flex gap-8">
-          {/* Desktop sidebar */}
-          <aside className="hidden lg:block w-[220px] flex-shrink-0">
-            {filtersContent}
-          </aside>
+          <div className="flex gap-8">
+            {/* Desktop sidebar — gjithmonë prezent kur ka produkte */}
+            <aside className="hidden lg:block w-[220px] flex-shrink-0">
+              {filtersContent}
+            </aside>
 
-          {/* Products grid */}
-          <div className="flex-1 min-w-0">
-            <>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-10">
-                  {paginatedProducts.map((product) => (
-                    <ProductCard
-                      key={product.id}
-                      product={product}
-                      isAl={isAl}
-                      allColors={allColors}
-                      collectionSlug={slug ?? ""}
-                      t={t}
-                      user={user}
-                      wishlistItems={wishlistItems ?? []}
-                      toggleWishlist={toggleWishlist}
-                    />
-                  ))}
+            {/* Products area */}
+            <div className="flex-1 min-w-0">
+              {paginatedProducts.length === 0 ? (
+                /* Filtrat aktiv por asnjë produkt nuk përputhet */
+                <div className="w-full flex flex-col items-center justify-center py-24 text-center">
+                  <Package className="h-16 w-16 text-muted-foreground/20 mb-4" />
+                  <h3 className="text-lg font-semibold text-foreground mb-2">{t("Nuk ka produkte", "No products")}</h3>
+                  <p className="text-sm text-muted-foreground max-w-xs mb-4">{t("Asnjë produkt nuk përputhet me filtrat e zgjedhura.", "No products match the selected filters.")}</p>
+                  <button onClick={clearAllFilters} className="text-xs text-primary hover:underline">
+                    {t("Pastro filtrat", "Clear filters")}
+                  </button>
                 </div>
-
-                {/* Pagination */}
-                {totalPages > 1 && (
-                  <div className="flex items-center justify-end gap-2 mt-12 pt-6 border-t border-border">
-                    {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-                      <button
-                        key={page}
-                        onClick={() => { setCurrentPage(page); window.scrollTo({ top: 0, behavior: "smooth" }); }}
-                        className={`w-8 h-8 flex items-center justify-center text-sm transition-colors ${
-                          page === currentPage
-                            ? "text-foreground font-semibold underline underline-offset-4"
-                            : "text-muted-foreground hover:text-foreground"
-                        }`}
-                      >
-                        {page}
-                      </button>
+              ) : (
+                <>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-10">
+                    {paginatedProducts.map((product) => (
+                      <ProductCard
+                        key={product.id}
+                        product={product}
+                        isAl={isAl}
+                        allColors={allColors}
+                        collectionSlug={slug ?? ""}
+                        t={t}
+                        user={user}
+                        wishlistItems={wishlistItems ?? []}
+                        toggleWishlist={toggleWishlist}
+                      />
                     ))}
-                    {currentPage < totalPages && (
-                      <>
-                        <button
-                          onClick={() => { setCurrentPage(currentPage + 1); window.scrollTo({ top: 0, behavior: "smooth" }); }}
-                          className="text-muted-foreground hover:text-foreground text-sm"
-                        >
-                          ›
-                        </button>
-                        <button
-                          onClick={() => { setCurrentPage(totalPages); window.scrollTo({ top: 0, behavior: "smooth" }); }}
-                          className="text-muted-foreground hover:text-foreground text-sm"
-                        >
-                          »
-                        </button>
-                      </>
-                    )}
                   </div>
-                )}
-              </>
+
+                  {/* Pagination */}
+                  {totalPages > 1 && (
+                    <div className="flex items-center justify-end gap-2 mt-12 pt-6 border-t border-border">
+                      {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                        <button
+                          key={page}
+                          onClick={() => { setCurrentPage(page); window.scrollTo({ top: 0, behavior: "smooth" }); }}
+                          className={`w-8 h-8 flex items-center justify-center text-sm transition-colors ${
+                            page === currentPage
+                              ? "text-foreground font-semibold underline underline-offset-4"
+                              : "text-muted-foreground hover:text-foreground"
+                          }`}
+                        >
+                          {page}
+                        </button>
+                      ))}
+                      {currentPage < totalPages && (
+                        <>
+                          <button
+                            onClick={() => { setCurrentPage(currentPage + 1); window.scrollTo({ top: 0, behavior: "smooth" }); }}
+                            className="text-muted-foreground hover:text-foreground text-sm"
+                          >
+                            ›
+                          </button>
+                          <button
+                            onClick={() => { setCurrentPage(totalPages); window.scrollTo({ top: 0, behavior: "smooth" }); }}
+                            className="text-muted-foreground hover:text-foreground text-sm"
+                          >
+                            »
+                          </button>
+                        </>
+                      )}
+                    </div>
+                  )}
+                </>
+              )}
             </div>
-        </div>
+          </div>
         )}
       </div>
 
