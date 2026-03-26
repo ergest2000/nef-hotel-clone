@@ -4,7 +4,6 @@ import ClientsCarousel from "@/components/ClientsCarousel";
 import CategoriesSection from "@/components/CategoriesSection";
 import CustomTextiles from "@/components/CustomTextiles";
 import SuggestionsSection from "@/components/SuggestionsSection";
-import NewsletterSection from "@/components/NewsletterSection";
 import BlogSection from "@/components/BlogSection";
 import MembershipSection from "@/components/MembershipSection";
 import CertificationsSection from "@/components/CertificationsSection";
@@ -12,19 +11,24 @@ import SiteFooter from "@/components/SiteFooter";
 import { usePageContent, usePageSections } from "@/hooks/useCms";
 import { useLanguage } from "@/hooks/useLanguage";
 
-const Index = () => {
-  const { lang } = useLanguage();
-  const { data: content } = usePageContent("home", lang);
-  const { data: sections } = usePageSections("home");
+var allowedSections = ["hero", "clients", "categories", "custom-textiles", "suggestions", "blog", "membership", "certifications"];
 
-  const orderedSectionKeys = sections
+function Index() {
+  var langHook = useLanguage();
+  var lang = langHook.lang;
+  var contentData = usePageContent("home", lang);
+  var content = contentData.data;
+  var sectionsData = usePageSections("home");
+  var sections = sectionsData.data;
+
+  var orderedSectionKeys = sections
     ? sections
-        .filter((s) => s.visible)
-        .sort((a, b) => a.sort_order - b.sort_order)
-        .map((s) => s.section_key)
-    : ["hero", "clients", "categories", "custom-textiles", "suggestions", "blog", "membership", "certifications", "newsletter"];
+        .filter(function (s) { return s.visible && allowedSections.includes(s.section_key); })
+        .sort(function (a, b) { return a.sort_order - b.sort_order; })
+        .map(function (s) { return s.section_key; })
+    : ["hero", "clients", "categories", "custom-textiles", "suggestions", "blog", "membership", "certifications"];
 
-  const sectionComponents: Record<string, JSX.Element> = {
+  var sectionComponents: Record<string, JSX.Element> = {
     hero: <HeroSlider content={content} />,
     clients: <ClientsCarousel content={content} />,
     categories: <CategoriesSection content={content} />,
@@ -33,20 +37,19 @@ const Index = () => {
     blog: <BlogSection content={content} />,
     membership: <MembershipSection content={content} />,
     certifications: <CertificationsSection content={content} />,
-    newsletter: <NewsletterSection content={content} />,
   };
 
   return (
-    <div className="min-h-screen bg-background md:overflow-visible md:h-auto overflow-y-auto overflow-x-hidden h-screen overscroll-none">
+    <div className="min-h-screen bg-background flex flex-col">
       <SiteHeader />
-      {orderedSectionKeys.map((key) =>
-        sectionComponents[key] ? (
-          <div key={key}>{sectionComponents[key]}</div>
-        ) : null
-      )}
+      {orderedSectionKeys.map(function (key) {
+        var comp = sectionComponents[key];
+        if (!comp) return null;
+        return <div key={key}>{comp}</div>;
+      })}
       <SiteFooter />
     </div>
   );
-};
+}
 
 export default Index;
