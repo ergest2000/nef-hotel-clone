@@ -103,6 +103,53 @@ const SuggestionsSection = ({ content }: { content?: SiteContent[] }) => {
     el.scrollBy({ left: dir === "left" ? -step : step, behavior: "smooth" });
   };
 
+  /* ── Mouse drag to scroll (desktop) ────────────────────────────── */
+  const isDragging = useRef(false);
+  const dragStartX = useRef(0);
+  const dragScrollLeft = useRef(0);
+  const dragMoved = useRef(false);
+
+  const onMouseDown = useCallback((e: React.MouseEvent) => {
+    const el = trackRef.current;
+    if (!el) return;
+    isDragging.current = true;
+    dragMoved.current = false;
+    dragStartX.current = e.pageX - el.offsetLeft;
+    dragScrollLeft.current = el.scrollLeft;
+    el.style.cursor = "grabbing";
+    el.style.userSelect = "none";
+  }, []);
+
+  const onMouseMove = useCallback((e: React.MouseEvent) => {
+    if (!isDragging.current) return;
+    const el = trackRef.current;
+    if (!el) return;
+    e.preventDefault();
+    const x = e.pageX - el.offsetLeft;
+    const walk = (x - dragStartX.current) * 1.2;
+    if (Math.abs(x - dragStartX.current) > 5) dragMoved.current = true;
+    el.scrollLeft = dragScrollLeft.current - walk;
+  }, []);
+
+  const onMouseUp = useCallback(() => {
+    isDragging.current = false;
+    const el = trackRef.current;
+    if (!el) return;
+    el.style.cursor = "grab";
+    el.style.userSelect = "";
+  }, []);
+
+  const onMouseLeave = useCallback(() => {
+    if (isDragging.current) onMouseUp();
+  }, [onMouseUp]);
+
+  const onClickCapture = useCallback((e: React.MouseEvent) => {
+    if (dragMoved.current) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+  }, []);
+
   /* ── scrollbar thumb ───────────────────────────────────────────── */
   const thumbW = Math.max(15, Math.min(40, 100 / Math.ceil(products.length / 4)));
 
@@ -147,7 +194,12 @@ const SuggestionsSection = ({ content }: { content?: SiteContent[] }) => {
           {/* Product track */}
           <div
             ref={trackRef}
-            className="flex overflow-x-auto overscroll-x-contain snap-x snap-mandatory scroll-smooth"
+            onMouseDown={onMouseDown}
+            onMouseMove={onMouseMove}
+            onMouseUp={onMouseUp}
+            onMouseLeave={onMouseLeave}
+            onClickCapture={onClickCapture}
+            className="flex overflow-x-auto overscroll-x-contain snap-x snap-mandatory scroll-smooth cursor-grab select-none"
             style={{
               gap: `${GAP}px`,
               scrollbarWidth: "none",
