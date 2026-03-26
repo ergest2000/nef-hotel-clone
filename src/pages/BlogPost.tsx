@@ -1,6 +1,3 @@
-Blogpost · TSX
-Copy
-
 import { useParams } from "react-router-dom";
 import SlugLink from "@/components/SlugLink";
 import SiteHeader from "@/components/SiteHeader";
@@ -10,27 +7,29 @@ import { blogPosts as fallbackPosts } from "@/data/blogPosts";
 import { ArrowLeft, Mail, Facebook } from "lucide-react";
 import whatsappIcon from "@/assets/whatsapp-icon.svg";
 import { useLanguage } from "@/hooks/useLanguage";
- 
+
 const BlogPost = () => {
   const { id } = useParams<{ id: string }>();
   const { data: dbPost, isLoading } = useBlogPostBySlug(id || "");
   const { isAl } = useLanguage();
- 
+
   const staticPost = fallbackPosts.find((p) => p.id === id);
- 
+
   const post = dbPost
     ? {
         title: isAl ? dbPost.title_al : dbPost.title_en,
-        image: dbPost.image && !dbPost.image.startsWith("/src/") ? dbPost.image : staticPost?.image || "",
+        image:
+          dbPost.image && !dbPost.image.startsWith("/src/")
+            ? dbPost.image
+            : staticPost?.image || "",
         content: isAl ? dbPost.content_al : dbPost.content_en,
       }
     : staticPost
     ? { title: staticPost.title, image: staticPost.image, content: staticPost.content }
     : null;
- 
+
   const backLabel = isAl ? "Kthehu te Blogu" : "Back to Blog";
- 
-  // ── Render inner content based on state ──────────────────────────
+
   const renderContent = () => {
     if (isLoading) {
       return (
@@ -41,7 +40,7 @@ const BlogPost = () => {
         </div>
       );
     }
- 
+
     if (!post) {
       return (
         <div className="flex-1 flex items-center justify-center">
@@ -53,15 +52,15 @@ const BlogPost = () => {
               to="/blog"
               className="text-sm text-primary hover:underline tracking-brand uppercase"
             >
-              ← {backLabel}
+              {String.fromCharCode(8592)} {backLabel}
             </SlugLink>
           </div>
         </div>
       );
     }
- 
+
     const shareUrl = typeof window !== "undefined" ? window.location.href : "";
- 
+
     const shareLinks = [
       {
         label: "WhatsApp",
@@ -82,7 +81,7 @@ const BlogPost = () => {
         className: "bg-[#1877F2] hover:bg-[#0d65d9] text-white",
       },
     ];
- 
+
     return (
       <article className="py-12 md:py-20 flex-1">
         <div className="container max-w-3xl">
@@ -92,11 +91,11 @@ const BlogPost = () => {
           >
             <ArrowLeft size={14} /> {backLabel}
           </SlugLink>
- 
+
           <h1 className="text-2xl md:text-4xl font-light text-foreground leading-tight normal-case tracking-normal mb-8">
             {post.title}
           </h1>
- 
+
           {post.image && (
             <div className="aspect-[16/9] overflow-hidden mb-10">
               <img
@@ -106,7 +105,7 @@ const BlogPost = () => {
               />
             </div>
           )}
- 
+
           <div className="prose prose-sm max-w-none text-sm md:text-base text-muted-foreground leading-relaxed [&_p]:mb-6 [&_p]:normal-case [&_p]:tracking-normal">
             {post.content.includes("<") ? (
               <div dangerouslySetInnerHTML={{ __html: post.content }} />
@@ -118,7 +117,7 @@ const BlogPost = () => {
               ))
             )}
           </div>
- 
+
           <div className="border-t border-border mt-12 pt-8">
             <p className="text-xs tracking-brand text-muted-foreground uppercase mb-4 text-center">
               {isAl ? "Ndaje postimin" : "Share this post"}
@@ -150,8 +149,7 @@ const BlogPost = () => {
       </article>
     );
   };
- 
-  // ── Single layout wrapper — SiteHeader dhe SiteFooter vetëm një herë ──
+
   return (
     <div className="min-h-screen bg-background md:overflow-visible md:h-auto overflow-y-auto overflow-x-hidden h-screen overscroll-none flex flex-col">
       <SiteHeader />
@@ -160,5 +158,5 @@ const BlogPost = () => {
     </div>
   );
 };
- 
+
 export default BlogPost;
