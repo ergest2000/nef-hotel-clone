@@ -34,7 +34,7 @@ const HeroSlider = ({ content }: { content?: SiteContent[] }) => {
 
   // ── Tekste të përbashkëta nga CMS ──────────────────────────────
   const fallbackTitle = getContentValue(content, "hero", "title", "TEKSTILE HOTELIERE");
-  const heroSubtitle  = getContentValue(content, "hero", "subtitle", "Cilësi dhe elegancë për hotelet tuaja");
+  const fallbackSubtitle = getContentValue(content, "hero", "subtitle", "Cilësi dhe elegancë për hotelet tuaja");
   const heroCtaLabel  = getContentValue(content, "hero", "cta_label", "Zbulo Koleksionet");
   const heroCtaLink   = getContentValue(content, "hero", "cta_link", "/koleksionet");
 
@@ -42,6 +42,11 @@ const HeroSlider = ({ content }: { content?: SiteContent[] }) => {
   const slide1Title = getContentValue(content, "hero", "slide1_title", "");
   const slide2Title = getContentValue(content, "hero", "slide2_title", "");
   const slide3Title = getContentValue(content, "hero", "slide3_title", "");
+
+  // ── Nëntituj për çdo slide nga CMS ─────────────────────────────
+  const slide1Subtitle = getContentValue(content, "hero", "slide1_subtitle", "");
+  const slide2Subtitle = getContentValue(content, "hero", "slide2_subtitle", "");
+  const slide3Subtitle = getContentValue(content, "hero", "slide3_subtitle", "");
 
   // ── Imazhet nga CMS (me fallback lokal) ─────────────────────────
   const resolveImage = (raw: string, fallback: string) =>
@@ -56,17 +61,20 @@ const HeroSlider = ({ content }: { content?: SiteContent[] }) => {
       {
         image: resolveImage(raw1, FALLBACK_SLIDES[0]),
         title: slide1Title || fallbackTitle,
+        subtitle: slide1Subtitle || fallbackSubtitle,
       },
       {
         image: resolveImage(raw2, FALLBACK_SLIDES[1]),
         title: slide2Title || fallbackTitle,
+        subtitle: slide2Subtitle || fallbackSubtitle,
       },
       {
         image: resolveImage(raw3, FALLBACK_SLIDES[2]),
         title: slide3Title || fallbackTitle,
+        subtitle: slide3Subtitle || fallbackSubtitle,
       },
     ],
-    [raw1, raw2, raw3, slide1Title, slide2Title, slide3Title, fallbackTitle]
+    [raw1, raw2, raw3, slide1Title, slide2Title, slide3Title, slide1Subtitle, slide2Subtitle, slide3Subtitle, fallbackTitle, fallbackSubtitle]
   );
 
   // ── Navigim ─────────────────────────────────────────────────────
@@ -111,9 +119,9 @@ const HeroSlider = ({ content }: { content?: SiteContent[] }) => {
         <h1 className="text-3xl md:text-5xl lg:text-6xl font-light tracking-[0.12em] text-white uppercase mb-6 max-w-3xl leading-tight">
           {slides[current].title}
         </h1>
-        {heroSubtitle && (
+        {slides[current].subtitle && (
           <p className="text-sm md:text-base text-white/70 font-light tracking-wide max-w-xl mb-10">
-            {heroSubtitle}
+            {slides[current].subtitle}
           </p>
         )}
         {heroCtaLabel && (
