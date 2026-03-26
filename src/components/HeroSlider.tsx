@@ -1,492 +1,123 @@
-import { useState, useMemo } from "react";
-import { Link, useParams, useNavigate } from "react-router-dom";
-import {
-  useCollections, useProducts,
-  useAllProductColors, useAllProductSizes,
-  useWishlist, useToggleWishlist,
-  type ProductColor, type ProductSize,
-} from "@/hooks/useCollections";
-import { useLanguage } from "@/hooks/useLanguage";
-import { useAuth } from "@/hooks/useAuth";
-import SiteHeader from "@/components/SiteHeader";
-import SiteFooter from "@/components/SiteFooter";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Package, Heart, Filter } from "lucide-react";
+import { useState, useEffect, useCallback } from "react";
+import { getContentValue } from "@/hooks/useCms";
+import type { Tables } from "@/integrations/supabase/types";
+import hero1 from "@/assets/hero-1.jpg";
+import hero2 from "@/assets/hero-2.jpg";
+import hero3 from "@/assets/hero-3.jpg";
 
-const ITEMS_PER_PAGE = 9;
+type SiteContent = Tables<"site_content">;
 
+const defaultSlides = [
+  { src: hero1, alt: "Hero 1" },
+  { src: hero2, alt: "Hero 2" },
+  { src: hero3, alt: "Hero 3" },
+];
 
+const AUTOPLAY_INTERVAL = 5000;
 
+const HeroSlider = ({ content }: { content?: SiteContent[] }) => {
+  const [current, setCurrent] = useState(0);
+  const [isPaused, setIsPaused] = useState(false);
 
-// ─── Product Card ────────────────────────────────────────────────
-const ProductCard = ({ product, isAl, allColors, collectionSlug, t, user, wishlistItems, toggleWishlist }: {
-  product: any; isAl: boolean; allColors?: ProductColor[];
-  collectionSlug: string; t: (al: string, en: string) => string;
-  user: any; wishlistItems: any[]; toggleWishlist: any;
-}) => {
-  const navigate = useNavigate();
-  const productColors = allColors?.filter(c => c.product_id === product.id) ?? [];
-  const isWishlisted = wishlistItems?.some((w: any) => w.product_id === product.id) ?? false;
+  const heroTitle = getContentValue(content, "hero", "title", "TEKSTILE HOTELIERE");
+  const heroSubtitle = getContentValue(content, "hero", "subtitle", "Cilësi dhe elegancë për hotelet tuaja");
+  const heroCtaLabel = getContentValue(content, "hero", "cta_label", "Zbulo Koleksionet");
 
-  const handleWishlistClick = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (!user) {
-      navigate("/login");
-      return;
-    }
-    toggleWishlist.mutate({ userId: user.id, productId: product.id, isWishlisted });
-  };
+  const goTo = useCallback((index: number) => {
+    setCurrent((index + defaultSlides.length) % defaultSlides.length);
+  }, []);
+
+  const goNext = useCallback(() => goTo(current + 1), [current, goTo]);
+  const goPrev = useCallback(() => goTo(current - 1), [current, goTo]);
+
+  useEffect(() => {
+    if (isPaused) return;
+    const timer = setInterval(goNext, AUTOPLAY_INTERVAL);
+    return () => clearInterval(timer);
+  }, [isPaused, goNext]);
 
   return (
-    <div className="group">
-      <Link to={`/koleksionet/${collectionSlug}/${product.id}`} className="relative aspect-[4/5] bg-muted overflow-hidden mb-3 block">
-        {product.image_url ? (
+    <section
+      className="relative w-full h-[60vh] md:h-[88vh] overflow-hidden bg-foreground"
+      onMouseEnter={() => setIsPaused(true)}
+      onMouseLeave={() => setIsPaused(false)}
+    >
+      {/* Slides */}
+      {defaultSlides.map((slide, i) => (
+        <div
+          key={i}
+          className={`absolute inset-0 transition-opacity duration-1000 ${
+            i === current ? "opacity-100" : "opacity-0 pointer-events-none"
+          }`}
+        >
           <img
-            src={product.image_url}
-            alt={isAl ? product.title_al : product.title_en}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+            src={slide.src}
+            alt={slide.alt}
+            className="w-full h-full object-cover"
+            loading={i === 0 ? "eager" : "lazy"}
           />
-        ) : (
-          <div className="flex items-center justify-center h-full">
-            <Package className="h-12 w-12 text-muted-foreground/20" />
-          </div>
-        )}
-        <button className="absolute top-3 right-3 z-10" onClick={handleWishlistClick}>
-          <Heart className={`h-5 w-5 transition-colors ${isWishlisted ? "fill-primary text-primary" : "text-muted-foreground/60 hover:text-primary"}`} />
-        </button>
-        {!product.in_stock && (
-          <div className="absolute inset-0 bg-background/50 flex items-center justify-center">
-            <span className="text-sm font-medium text-foreground">{t("Jo në stok", "Out of stock")}</span>
-          </div>
-        )}
-      </Link>
-      <Link to={`/koleksionet/${collectionSlug}/${product.id}`} className="block">
-        <h4 className="text-sm font-semibold text-foreground leading-tight">
-          {isAl ? product.title_al : product.title_en}
-        </h4>
-        {product.weight_gsm > 0 && (
-          <p className="text-sm font-medium text-foreground mt-0.5">
-            {product.code} {product.weight_gsm}gsm
-          </p>
-        )}
-        <p className="text-xs text-muted-foreground mt-1">
-          {isAl ? product.composition_al : product.composition_en}
-        </p>
-        <p className="text-xs text-muted-foreground">
-          {t("Përmasa:", "Size:")} {isAl ? product.dimensions_al : product.dimensions_en}
-        </p>
-      </Link>
-      {productColors.length > 0 && (
-        <div className="flex items-center gap-1.5 mt-2">
-          {productColors.map(c => (
-            <div
-              key={c.id}
-              className="w-4 h-4 rounded-full border border-border cursor-pointer hover:ring-2 hover:ring-primary/30"
-              style={{ backgroundColor: c.color_hex }}
-              title={isAl ? (c.color_name_al || c.color_name) : (c.color_name_en || c.color_name)}
-            />
-          ))}
         </div>
-      )}
-    </div>
-  );
-};
+      ))}
 
+      {/* Overlay */}
+      <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-black/30 to-black/50" />
 
+      {/* Content */}
+      <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-4">
+        <p className="text-xs md:text-sm tracking-[0.3em] text-white/80 uppercase mb-4 font-light">
+          EGJEU
+        </p>
+        <h1 className="text-3xl md:text-5xl lg:text-6xl font-light tracking-[0.15em] text-white uppercase mb-6 max-w-3xl leading-tight">
+          {heroTitle}
+        </h1>
+        <p className="text-sm md:text-base text-white/75 font-light tracking-wide max-w-xl mb-10">
+          {heroSubtitle}
+        </p>
+        <a
+          href="/koleksionet"
+          className="inline-block border border-white text-white text-xs tracking-[0.25em] uppercase px-8 py-3 hover:bg-white hover:text-foreground transition-colors duration-300"
+        >
+          {heroCtaLabel}
+        </a>
+      </div>
 
+      {/* Prev / Next arrows */}
+      <button
+        onClick={goPrev}
+        aria-label="Slide i mëparshëm"
+        className="absolute left-4 md:left-8 top-1/2 -translate-y-1/2 w-10 h-10 flex items-center justify-center border border-white/50 text-white hover:bg-white/20 transition-colors"
+      >
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+          <polyline points="15 18 9 12 15 6" />
+        </svg>
+      </button>
+      <button
+        onClick={goNext}
+        aria-label="Slide tjetër"
+        className="absolute right-4 md:right-8 top-1/2 -translate-y-1/2 w-10 h-10 flex items-center justify-center border border-white/50 text-white hover:bg-white/20 transition-colors"
+      >
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+          <polyline points="9 18 15 12 9 6" />
+        </svg>
+      </button>
 
-// ─── Sidebar Filter Section ─────────────────────────────────────
-const FilterSection = ({ title, options, selected, onToggle }: {
-  title: string;
-  options: { value: string; label: string; hex?: string }[];
-  selected: string[];
-  onToggle: (value: string) => void;
-}) => {
-  if (!options.length) return null;
-  return (
-    <div className="border-b border-border pb-4 mb-4">
-      <h4 className="text-xs font-bold tracking-wider text-foreground uppercase mb-3">{title}</h4>
-      <div className="space-y-2">
-        {options.map(opt => (
-          <label key={opt.value} className="flex items-center gap-2 cursor-pointer group">
-            <Checkbox
-              checked={selected.includes(opt.value)}
-              onCheckedChange={() => onToggle(opt.value)}
-              className="h-4 w-4"
-            />
-            {opt.hex && (
-              <div className="w-3 h-3 rounded-full border border-border" style={{ backgroundColor: opt.hex }} />
-            )}
-            <span className="text-sm text-muted-foreground group-hover:text-foreground transition-colors">
-              {opt.label}
-            </span>
-          </label>
+      {/* Dot indicators */}
+      <div className="absolute bottom-6 left-0 right-0 flex justify-center gap-2">
+        {defaultSlides.map((_, i) => (
+          <button
+            key={i}
+            onClick={() => goTo(i)}
+            aria-label={`Shko te slide ${i + 1}`}
+            className={`transition-all duration-300 h-[2px] rounded-none ${
+              i === current
+                ? "bg-white w-8"
+                : "bg-white/40 w-4 hover:bg-white/70"
+            }`}
+          />
         ))}
       </div>
-    </div>
+    </section>
   );
 };
 
-// ─── Main Collections Page ───────────────────────────────────────
-const Collections = () => {
-  const { isAl } = useLanguage();
-  const { user } = useAuth();
-  const { slug } = useParams();
-  const { data: collections } = useCollections();
-  const { data: allProducts } = useProducts();
-  const { data: allColors } = useAllProductColors();
-  const { data: allSizes } = useAllProductSizes();
-  const { data: wishlistItems } = useWishlist(user?.id);
-  const toggleWishlist = useToggleWishlist();
-
-  const [colorFilters, setColorFilters] = useState<string[]>([]);
-  const [sizeFilters, setSizeFilters] = useState<string[]>([]);
-  const [compositionFilters, setCompositionFilters] = useState<string[]>([]);
-  const [stockFilter, setStockFilter] = useState<string[]>([]);
-  
-  const [currentPage, setCurrentPage] = useState(1);
-  const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
-
-  const currentCollection = collections?.find((c) => c.slug === slug);
-  const topCollections = collections?.filter((c) => !c.parent_id) ?? [];
-  const subCollections = currentCollection
-    ? collections?.filter((c) => c.parent_id === currentCollection.id) ?? []
-    : [];
-
-  const collectionIds = currentCollection
-    ? [currentCollection.id, ...subCollections.map((s) => s.id)]
-    : [];
-
-  const products = useMemo(() => {
-    if (!allProducts || !collectionIds.length) return allProducts ?? [];
-    return allProducts.filter((p) => collectionIds.includes(p.collection_id));
-  }, [allProducts, collectionIds]);
-
-  const productIds = useMemo(() => products.map(p => p.id), [products]);
-
-  const t = (al: string, en: string) => isAl ? al : en;
-
-  // Build filter options
-  const colorOptions = useMemo(() => {
-    if (!allColors) return [];
-    const relevant = allColors.filter(c => productIds.includes(c.product_id));
-    const unique = new Map<string, ProductColor>();
-    relevant.forEach(c => { if (!unique.has(c.color_name)) unique.set(c.color_name, c); });
-    return Array.from(unique.values()).map(c => ({ value: c.color_name, label: c.color_name, hex: c.color_hex }));
-  }, [allColors, productIds]);
-
-  const sizeOptions = useMemo(() => {
-    if (!allSizes) return [];
-    const relevant = allSizes.filter(s => productIds.includes(s.product_id));
-    const unique = new Set<string>();
-    return relevant.filter(s => { if (unique.has(s.size_label)) return false; unique.add(s.size_label); return true; })
-      .map(s => ({ value: s.size_label, label: s.size_label }));
-  }, [allSizes, productIds]);
-
-  const compositionOptions = useMemo(() => {
-    const comps = products.map((p) => (isAl ? p.composition_al : p.composition_en || "").trim()).filter(Boolean) as string[];
-    return [...new Set(comps)].map(c => ({ value: c, label: c }));
-  }, [products, isAl]);
-
-  const toggleFilter = (arr: string[], setArr: (v: string[]) => void) => (value: string) => {
-    setArr(arr.includes(value) ? arr.filter(v => v !== value) : [...arr, value]);
-    setCurrentPage(1);
-  };
-
-  // Apply filters
-  const filtered = useMemo(() => {
-    let list = products;
-    if (colorFilters.length && allColors) {
-      const ids = new Set(allColors.filter(c => colorFilters.includes(c.color_name)).map(c => c.product_id));
-      list = list.filter(p => ids.has(p.id));
-    }
-    if (sizeFilters.length && allSizes) {
-      const ids = new Set(allSizes.filter(s => sizeFilters.includes(s.size_label)).map(s => s.product_id));
-      list = list.filter(p => ids.has(p.id));
-    }
-    if (compositionFilters.length) {
-      list = list.filter(p => compositionFilters.includes((isAl ? p.composition_al : p.composition_en) ?? ""));
-    }
-    if (stockFilter.includes("in_stock")) list = list.filter(p => p.in_stock);
-    if (stockFilter.includes("out_of_stock")) list = list.filter(p => !p.in_stock);
-    return list;
-  }, [products, colorFilters, sizeFilters, compositionFilters, stockFilter, isAl, allColors, allSizes]);
-
-  // Pagination
-  const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE);
-  const paginatedProducts = filtered.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
-
-  const hasActiveFilters = colorFilters.length || sizeFilters.length || compositionFilters.length || stockFilter.length;
-
-  const clearAllFilters = () => {
-    setColorFilters([]);
-    setSizeFilters([]);
-    setCompositionFilters([]);
-    setStockFilter([]);
-    setCurrentPage(1);
-  };
-
-  // Sidebar filter content (shared between desktop & mobile)
-  const filtersContent = (
-    <>
-      <div className="flex items-center justify-between mb-4">
-        <h3 className="text-base font-semibold text-foreground">{t("Filtra", "Filters")}</h3>
-        {hasActiveFilters ? (
-          <button onClick={clearAllFilters} className="text-xs text-primary hover:underline">
-            {t("Pastro", "Clear")}
-          </button>
-        ) : null}
-      </div>
-      <FilterSection
-        title={t("NGJYRA", "COLOR")}
-        options={colorOptions}
-        selected={colorFilters}
-        onToggle={toggleFilter(colorFilters, setColorFilters)}
-      />
-      <FilterSection
-        title={t("PËRBËRJA", "COMPOSITION")}
-        options={compositionOptions}
-        selected={compositionFilters}
-        onToggle={toggleFilter(compositionFilters, setCompositionFilters)}
-      />
-      <FilterSection
-        title={t("PËRMASA", "SIZE")}
-        options={sizeOptions}
-        selected={sizeFilters}
-        onToggle={toggleFilter(sizeFilters, setSizeFilters)}
-      />
-      <FilterSection
-        title={t("STATUSI", "STATUS")}
-        options={[
-          { value: "in_stock", label: t("Në stok", "In stock") },
-          { value: "out_of_stock", label: t("Jo në stok", "Out of stock") },
-        ]}
-        selected={stockFilter}
-        onToggle={toggleFilter(stockFilter, setStockFilter)}
-      />
-    </>
-  );
-
-  // ─── Collections listing (no slug) ───
-  if (!slug || !currentCollection) {
-    return (
-      <div className="min-h-screen bg-background flex flex-col">
-        <SiteHeader />
-        <div className="max-w-7xl mx-auto px-4 py-12 flex-1">
-          <h1 className="text-3xl font-light tracking-wide text-foreground mb-8">
-            {t("Koleksionet", "Collections")}
-          </h1>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {topCollections.map((col) => (
-              <Link key={col.id} to={`/koleksionet/${col.slug}`} className="group">
-                <div className="aspect-[4/3] bg-muted overflow-hidden mb-3">
-                  {col.image_url ? (
-                    <img src={col.image_url} alt={isAl ? col.title_al : col.title_en} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
-                  ) : (
-                    <div className="flex items-center justify-center h-full">
-                      <Package className="h-16 w-16 text-muted-foreground/20" />
-                    </div>
-                  )}
-                </div>
-                <h3 className="text-lg font-medium text-foreground group-hover:text-primary transition-colors">
-                  {isAl ? col.title_al : col.title_en}
-                </h3>
-                {(isAl ? col.description_al : col.description_en) && (
-                  <p className="text-sm text-muted-foreground mt-1 ">
-                    {isAl ? col.description_al : col.description_en}
-                  </p>
-                )}
-              </Link>
-            ))}
-          </div>
-        </div>
-        <SiteFooter />
-      </div>
-    );
-  }
-
-  // ─── Collection detail page ───
-  return (
-    <div className="min-h-screen bg-background flex flex-col">
-      <SiteHeader />
-
-      {/* Cover Banner */}
-      <div className="relative w-full h-[280px] md:h-[380px] overflow-hidden">
-        {currentCollection.image_url ? (
-          <img
-            src={currentCollection.image_url}
-            alt=""
-            className="w-full h-full object-cover"
-          />
-        ) : (
-          <div className="w-full h-full bg-gradient-to-br from-muted to-muted/60" />
-        )}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
-        <div className="absolute bottom-0 left-0 right-0 p-6 md:p-10">
-          <h1 className="text-3xl md:text-4xl font-light text-white tracking-wide">
-            {isAl ? currentCollection.title_al : currentCollection.title_en}.
-          </h1>
-          {(isAl ? currentCollection.description_al : currentCollection.description_en) && (
-            <p className="text-white/80 mt-2 max-w-xl text-sm md:text-base leading-relaxed">
-              {isAl ? currentCollection.description_al : currentCollection.description_en}
-            </p>
-          )}
-        </div>
-      </div>
-
-      {/* Breadcrumb */}
-      <div className="bg-muted/50 border-b border-border">
-        <div className="max-w-7xl mx-auto px-4 py-3">
-          <div className="flex items-center gap-2 text-xs text-muted-foreground uppercase tracking-wider">
-            <Link to="/" className="hover:text-foreground">{t("KRYESORE", "HOME")}</Link>
-            <span>-</span>
-            {/* Show parent collection in breadcrumb if this is a sub-collection */}
-            {currentCollection.parent_id && (() => {
-              const parent = collections?.find(c => c.id === currentCollection.parent_id);
-              return parent ? (
-                <>
-                  <Link to={`/koleksionet/${parent.slug}`} className="hover:text-foreground">
-                    {(isAl ? parent.title_al : parent.title_en).toUpperCase()}
-                  </Link>
-                  <span>-</span>
-                </>
-              ) : null;
-            })()}
-            <span className="text-foreground">
-              {(isAl ? currentCollection.title_al : currentCollection.title_en).toUpperCase()}
-            </span>
-          </div>
-        </div>
-      </div>
-
-      {/* Sub-collections */}
-      {subCollections.length > 0 && (
-        <div className="max-w-7xl mx-auto px-4 py-4 border-b border-border">
-          <div className="flex flex-wrap gap-2">
-            {subCollections.map((sub) => (
-              <Link key={sub.id} to={`/koleksionet/${sub.slug}`}>
-                <Badge variant="outline" className="px-4 py-2 text-sm cursor-pointer hover:bg-primary hover:text-primary-foreground transition-colors">
-                  {isAl ? sub.title_al : sub.title_en}
-                </Badge>
-              </Link>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Main content: sidebar + products */}
-      <div className="max-w-7xl mx-auto px-4 py-8 flex-1">
-        {/* Mobile filter button */}
-        <div className="lg:hidden mb-4">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setMobileFiltersOpen(true)}
-            className="w-full justify-center gap-2"
-          >
-            <Filter className="h-4 w-4" />
-            {t("Filtra", "Filters")}
-            {hasActiveFilters ? ` (${colorFilters.length + sizeFilters.length + compositionFilters.length + stockFilter.length})` : ""}
-          </Button>
-        </div>
-
-        <div className="flex gap-8">
-          {/* Desktop sidebar */}
-          <aside className="hidden lg:block w-[220px] flex-shrink-0">
-            {filtersContent}
-          </aside>
-
-          {/* Products grid */}
-          <div className="flex-1 min-w-0">
-            {paginatedProducts.length === 0 ? (
-              <div className="flex items-center justify-center py-20 w-full">
-                <div className="text-center">
-                  <Package className="h-16 w-16 mx-auto text-muted-foreground/20 mb-4" />
-                  <h3 className="text-lg font-semibold text-foreground mb-2">{t("Nuk ka produkte", "No products")}</h3>
-                  <p className="text-sm text-muted-foreground max-w-sm">{t("Kjo koleksion nuk ka produkte të listuara aktualisht.", "This collection has no listed products currently.")}</p>
-                </div>
-              </div>
-            ) : (
-              <>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-10">
-                  {paginatedProducts.map((product) => (
-                    <ProductCard
-                      key={product.id}
-                      product={product}
-                      isAl={isAl}
-                      allColors={allColors}
-                      collectionSlug={slug ?? ""}
-                      t={t}
-                      user={user}
-                      wishlistItems={wishlistItems ?? []}
-                      toggleWishlist={toggleWishlist}
-                    />
-                  ))}
-                </div>
-
-                {/* Pagination */}
-                {totalPages > 1 && (
-                  <div className="flex items-center justify-end gap-2 mt-12 pt-6 border-t border-border">
-                    {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-                      <button
-                        key={page}
-                        onClick={() => { setCurrentPage(page); window.scrollTo({ top: 0, behavior: "smooth" }); }}
-                        className={`w-8 h-8 flex items-center justify-center text-sm transition-colors ${
-                          page === currentPage
-                            ? "text-foreground font-semibold underline underline-offset-4"
-                            : "text-muted-foreground hover:text-foreground"
-                        }`}
-                      >
-                        {page}
-                      </button>
-                    ))}
-                    {currentPage < totalPages && (
-                      <>
-                        <button
-                          onClick={() => { setCurrentPage(currentPage + 1); window.scrollTo({ top: 0, behavior: "smooth" }); }}
-                          className="text-muted-foreground hover:text-foreground text-sm"
-                        >
-                          ›
-                        </button>
-                        <button
-                          onClick={() => { setCurrentPage(totalPages); window.scrollTo({ top: 0, behavior: "smooth" }); }}
-                          className="text-muted-foreground hover:text-foreground text-sm"
-                        >
-                          »
-                        </button>
-                      </>
-                    )}
-                  </div>
-                )}
-              </>
-            )}
-          </div>
-        </div>
-      </div>
-
-      {/* Mobile filters drawer */}
-      <Dialog open={mobileFiltersOpen} onOpenChange={setMobileFiltersOpen}>
-        <DialogContent className="max-w-sm max-h-[80vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>{t("Filtra", "Filters")}</DialogTitle>
-          </DialogHeader>
-          <div className="mt-4">{filtersContent}</div>
-          <Button className="w-full mt-4" onClick={() => setMobileFiltersOpen(false)}>
-            {t("Shiko rezultatet", "Show results")} ({filtered.length})
-          </Button>
-        </DialogContent>
-      </Dialog>
-
-
-
-
-      <SiteFooter />
-    </div>
-  );
-};
-
-export default Collections;
+export default HeroSlider;
