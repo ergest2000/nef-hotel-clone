@@ -70,7 +70,7 @@ const ProductCard = ({
 
         {/* Info */}
         <div className="mt-3 space-y-1">
-          <h3 className="text-sm md:text-base text-foreground font-medium leading-snug group-hover:text-primary transition-colors line-clamp-2">
+          <h3 className="text-sm md:text-base text-foreground font-medium leading-snug group-hover:text-primary transition-colors line-clamp-2 normal-case" style={{ letterSpacing: 'normal' }}>
             {title}
           </h3>
           {dimensions && (
