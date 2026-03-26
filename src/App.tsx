@@ -21,9 +21,9 @@ import ScrollToTop from "./components/ScrollToTop";
 import NotFound from "./pages/NotFound";
 import SlugRouter from "./components/SlugRouter";
 import ResetPassword from "./pages/ResetPassword";
- 
+
 const queryClient = new QueryClient();
- 
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <AuthProvider>
@@ -36,21 +36,38 @@ const App = () => (
               <BrowserRouter>
                 <ScrollToTop />
                 <Routes>
+                  {/* ── Faqja kryesore ── */}
                   <Route path="/" element={<Index />} />
+
+                  {/* ── Admin ── */}
                   <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
                   <Route path="/reset-password" element={<ResetPassword />} />
+
+                  {/* ── Koleksionet — EKSPLICITE, para /:slug/:id ── */}
                   <Route path="/koleksionet" element={<Collections />} />
                   <Route path="/koleksionet/:slug" element={<Collections />} />
                   <Route path="/koleksionet/:slug/:productId" element={<ProductDetail />} />
+
+                  {/* ── Faqe të tjera eksplicite ── */}
                   <Route path="/shporta" element={<Cart />} />
                   <Route path="/checkout" element={<Checkout />} />
                   <Route path="/wishlist" element={<Wishlist />} />
                   <Route path="/my-account" element={<MyAccount />} />
-                  {/* Blog post with nested slug */}
+
+                  {/* ── Blog post — EKSPLICITE me /blog/ prefix ──
+                      Kjo route duhet të jetë PARA /:slug/:id
+                      që të mos kapet nga slug i gabuar            */}
+                  <Route path="/blog/:id" element={<BlogPost />} />
+
+                  {/* ── Routing dinamik me slug nga DB ──
+                      /:slug/:id kap VETËM blog posts me slug të ndryshëm nga /blog
+                      (p.sh. nëse slug i blogut ndryshohet në shqip nga admin) */}
                   <Route path="/:slug/:id" element={<BlogPost />} />
-                  {/* Dynamic slug-based routing for all pages */}
+
+                  {/* ── Faqe dinamike me slug nga DB (company, clients, etj.) ── */}
                   <Route path="/:slug" element={<SlugRouter />} />
-                  {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+
+                  {/* ── 404 ── */}
                   <Route path="*" element={<NotFound />} />
                 </Routes>
               </BrowserRouter>
@@ -61,5 +78,5 @@ const App = () => (
     </AuthProvider>
   </QueryClientProvider>
 );
- 
+
 export default App;
