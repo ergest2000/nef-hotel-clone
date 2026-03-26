@@ -572,12 +572,12 @@ const Collections = () => {
   const [showMobileFilters, setShowMobileFilters] = useState(false);
 
   return (
-    <div className="min-h-screen bg-background md:overflow-visible md:h-auto overflow-y-auto overflow-x-hidden h-screen overscroll-none flex flex-col">
+    <div className="min-h-screen bg-background overflow-x-hidden flex flex-col">
       <SiteHeader />
 
       {/* ── Hero Banner with image overlay ── */}
-      <section className="relative bg-secondary overflow-hidden min-h-[220px] md:min-h-[280px]">
-        {/* Background image */}
+      <section className="relative bg-secondary overflow-hidden" style={{ minHeight: '240px' }}>
+        {/* Background image — same on mobile and desktop */}
         {heroImage ? (
           <img
             src={heroImage}
@@ -585,18 +585,19 @@ const Collections = () => {
             className="absolute inset-0 w-full h-full object-cover"
           />
         ) : null}
-        {/* Gradient overlay — always show for text readability */}
+        {/* Gradient overlay */}
         <div className={`absolute inset-0 ${heroImage ? "bg-gradient-to-t from-black/70 via-black/40 to-black/20" : "bg-foreground/5"}`} />
 
-        {/* Content */}
-        <div className="relative z-10 container py-12 md:py-20">
+        {/* Content — visible on all screen sizes */}
+        <div className="relative z-10 container py-10 md:py-20">
           <h1
-            className={`text-2xl md:text-4xl lg:text-5xl font-light leading-tight max-w-xl ${heroImage ? "text-white" : "text-foreground"}`}
+            className={`text-xl md:text-4xl lg:text-5xl font-light leading-tight max-w-xl ${heroImage ? "text-white" : "text-foreground"}`}
+            style={{ textTransform: 'none', letterSpacing: 'normal' }}
           >
             {pageTitle}.
           </h1>
           {pageDescription && (
-            <p className={`mt-3 text-sm md:text-base max-w-lg leading-relaxed ${heroImage ? "text-white/80" : "text-muted-foreground"}`}>
+            <p className={`mt-2 md:mt-3 text-xs md:text-base max-w-lg leading-relaxed ${heroImage ? "text-white/80" : "text-muted-foreground"}`}>
               {pageDescription}
             </p>
           )}
@@ -604,7 +605,7 @@ const Collections = () => {
 
         {/* Breadcrumb bar */}
         <div className={`relative z-10 ${heroImage ? "bg-black/30 backdrop-blur-sm" : "bg-muted/50"}`}>
-          <div className="container py-2.5">
+          <div className="container py-2 md:py-2.5">
             <Breadcrumb
               collection={activeCollection}
               parentCollection={parentCollection}
