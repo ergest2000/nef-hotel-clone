@@ -36,38 +36,27 @@ const App = () => (
               <BrowserRouter>
                 <ScrollToTop />
                 <Routes>
-                  {/* ── Faqja kryesore ── */}
                   <Route path="/" element={<Index />} />
-
-                  {/* ── Admin ── */}
                   <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
                   <Route path="/reset-password" element={<ResetPassword />} />
 
-                  {/* ── Koleksionet — EKSPLICITE, para /:slug/:id ── */}
+                  {/* Koleksionet — eksplicite */}
                   <Route path="/koleksionet" element={<Collections />} />
                   <Route path="/koleksionet/:slug" element={<Collections />} />
                   <Route path="/koleksionet/:slug/:productId" element={<ProductDetail />} />
 
-                  {/* ── Faqe të tjera eksplicite ── */}
+                  {/* Faqe të tjera eksplicite */}
                   <Route path="/shporta" element={<Cart />} />
                   <Route path="/checkout" element={<Checkout />} />
                   <Route path="/wishlist" element={<Wishlist />} />
                   <Route path="/my-account" element={<MyAccount />} />
 
-                  {/* ── Blog post — EKSPLICITE me /blog/ prefix ──
-                      Kjo route duhet të jetë PARA /:slug/:id
-                      që të mos kapet nga slug i gabuar            */}
-                  <Route path="/blog/:id" element={<BlogPost />} />
+                  {/* Blog post — VETËM me /blog/ prefix, pa /:slug/:id */}
+                  <Route path="/blog/:postSlug" element={<BlogPost />} />
 
-                  {/* ── Routing dinamik me slug nga DB ──
-                      /:slug/:id kap VETËM blog posts me slug të ndryshëm nga /blog
-                      (p.sh. nëse slug i blogut ndryshohet në shqip nga admin) */}
-                  <Route path="/:slug/:id" element={<BlogPost />} />
-
-                  {/* ── Faqe dinamike me slug nga DB (company, clients, etj.) ── */}
+                  {/* Faqe dinamike me slug nga DB */}
                   <Route path="/:slug" element={<SlugRouter />} />
 
-                  {/* ── 404 ── */}
                   <Route path="*" element={<NotFound />} />
                 </Routes>
               </BrowserRouter>
