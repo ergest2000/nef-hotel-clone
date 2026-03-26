@@ -89,34 +89,42 @@ const SuggestionsSection = ({ content }: { content?: SiteContent[] }) => {
   return (
     <section className="py-16 md:py-24">
       <div className="container">
-        <h2 className="text-xl md:text-2xl tracking-wide-brand text-foreground font-light text-center mb-12">
-          {title}
-        </h2>
-
-        {/* Slider wrapper */}
-        <div className="relative group/slider">
-          {/* Left arrow */}
-          {canScrollLeft && (
+        {/* Title row with arrows */}
+        <div className="flex items-center justify-between mb-12">
+          <div className="flex-1" />
+          <h2 className="text-xl md:text-2xl tracking-wide-brand text-foreground font-light text-center">
+            {title}
+          </h2>
+          <div className="flex-1 flex justify-end gap-2">
             <button
               onClick={() => scrollBy("left")}
+              disabled={!canScrollLeft}
               aria-label="Scroll left"
-              className="absolute left-0 md:-left-2 top-1/3 -translate-y-1/2 z-10 w-10 h-10 md:w-12 md:h-12 bg-white border border-border shadow-md flex items-center justify-center hover:bg-muted transition-colors"
+              className={`w-10 h-10 md:w-11 md:h-11 border flex items-center justify-center transition-colors ${
+                canScrollLeft
+                  ? "border-foreground/30 text-foreground hover:bg-foreground hover:text-background"
+                  : "border-border text-muted-foreground/30 cursor-default"
+              }`}
             >
-              <ChevronLeft size={20} className="text-foreground" />
+              <ChevronLeft size={18} />
             </button>
-          )}
-
-          {/* Right arrow */}
-          {canScrollRight && (
             <button
               onClick={() => scrollBy("right")}
+              disabled={!canScrollRight}
               aria-label="Scroll right"
-              className="absolute right-0 md:-right-2 top-1/3 -translate-y-1/2 z-10 w-10 h-10 md:w-12 md:h-12 bg-white border border-border shadow-md flex items-center justify-center hover:bg-muted transition-colors"
+              className={`w-10 h-10 md:w-11 md:h-11 border flex items-center justify-center transition-colors ${
+                canScrollRight
+                  ? "border-foreground/30 text-foreground hover:bg-foreground hover:text-background"
+                  : "border-border text-muted-foreground/30 cursor-default"
+              }`}
             >
-              <ChevronRight size={20} className="text-foreground" />
+              <ChevronRight size={18} />
             </button>
-          )}
+          </div>
+        </div>
 
+        {/* Slider wrapper */}
+        <div className="relative">
           {/* Scrollable product row */}
           <div
             ref={scrollRef}
