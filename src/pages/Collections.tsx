@@ -116,20 +116,26 @@ const FilterSidebar = ({
   isAl,
   allColors,
   allSizes,
+  compositions,
   selectedColors,
   selectedSizes,
+  selectedCompositions,
   onToggleColor,
   onToggleSize,
+  onToggleComposition,
 }: {
   collections: Collection[];
   activeSlug: string | undefined;
   isAl: boolean;
   allColors: ProductColor[];
   allSizes: ProductSize[];
+  compositions: string[];
   selectedColors: string[];
   selectedSizes: string[];
+  selectedCompositions: string[];
   onToggleColor: (id: string) => void;
   onToggleSize: (id: string) => void;
+  onToggleComposition: (value: string) => void;
 }) => {
   const navigate = useNavigate();
 
@@ -280,7 +286,7 @@ const FilterSidebar = ({
       {uniqueSizes.length > 0 && (
         <div>
           <h3 className="text-xs font-bold tracking-brand uppercase text-foreground mb-3">
-            {isAl ? "Dimensioni" : "Size"}
+            {isAl ? "Përmasa" : "Size"}
           </h3>
           <div className="space-y-2">
             {uniqueSizes.map((size) => {
@@ -298,6 +304,36 @@ const FilterSidebar = ({
                   />
                   <span className="text-sm text-muted-foreground group-hover/filter:text-foreground transition-colors">
                     {size.size_label}
+                  </span>
+                </label>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* Composition filter */}
+      {compositions.length > 0 && (
+        <div>
+          <h3 className="text-xs font-bold tracking-brand uppercase text-foreground mb-3">
+            {isAl ? "Përbërja" : "Composition"}
+          </h3>
+          <div className="space-y-2">
+            {compositions.map((comp) => {
+              const isChecked = selectedCompositions.includes(comp);
+              return (
+                <label
+                  key={comp}
+                  className="flex items-center gap-2 cursor-pointer group/filter"
+                >
+                  <input
+                    type="checkbox"
+                    checked={isChecked}
+                    onChange={() => onToggleComposition(comp)}
+                    className="w-4 h-4 rounded border-border text-primary focus:ring-primary/30 cursor-pointer"
+                  />
+                  <span className="text-sm text-muted-foreground group-hover/filter:text-foreground transition-colors">
+                    {comp}
                   </span>
                 </label>
               );
@@ -378,6 +414,7 @@ const Collections = () => {
   // Filter state
   const [selectedColors, setSelectedColors] = useState<string[]>([]);
   const [selectedSizes, setSelectedSizes] = useState<string[]>([]);
+  const [selectedCompositions, setSelectedCompositions] = useState<string[]>([]);
 
   const toggleColor = (name: string) =>
     setSelectedColors((prev) =>
@@ -386,6 +423,10 @@ const Collections = () => {
   const toggleSize = (label: string) =>
     setSelectedSizes((prev) =>
       prev.includes(label) ? prev.filter((s) => s !== label) : [...prev, label]
+    );
+  const toggleComposition = (value: string) =>
+    setSelectedCompositions((prev) =>
+      prev.includes(value) ? prev.filter((c) => c !== value) : [...prev, value]
     );
 
   // Active collection
@@ -402,6 +443,26 @@ const Collections = () => {
         : undefined,
     [activeCollection, collections]
   );
+
+  // Extract unique composition values from all products
+  const compositions = useMemo(() => {
+    if (!allProducts) return [];
+    const compSet = new Set<string>();
+    allProducts.forEach((p) => {
+      const comp = isAl
+        ? p.composition_al || p.composition_en
+        : p.composition_en || p.composition_al;
+      if (comp) {
+        // Split by common separators (comma, /, &) to get individual materials
+        comp
+          .split(/[,\/&]/)
+          .map((s) => s.trim())
+          .filter((s) => s.length > 0)
+          .forEach((s) => compSet.add(s));
+      }
+    });
+    return Array.from(compSet).sort();
+  }, [allProducts, isAl]);
 
   // Filter products
   const filteredProducts = useMemo(() => {
@@ -439,6 +500,19 @@ const Collections = () => {
       products = products.filter((p) => matchingProductIds.has(p.id));
     }
 
+    // Filter by composition
+    if (selectedCompositions.length > 0) {
+      products = products.filter((p) => {
+        const comp = isAl
+          ? p.composition_al || p.composition_en
+          : p.composition_en || p.composition_al;
+        if (!comp) return false;
+        return selectedCompositions.some((sc) =>
+          comp.toLowerCase().includes(sc.toLowerCase())
+        );
+      });
+    }
+
     return products;
   }, [
     allProducts,
@@ -446,8 +520,10 @@ const Collections = () => {
     collections,
     selectedColors,
     selectedSizes,
+    selectedCompositions,
     allColors,
     allSizes,
+    isAl,
   ]);
 
   // Collection slug for each product
@@ -550,10 +626,13 @@ const Collections = () => {
                   isAl={isAl}
                   allColors={allColors || []}
                   allSizes={allSizes || []}
+                  compositions={compositions}
                   selectedColors={selectedColors}
                   selectedSizes={selectedSizes}
+                  selectedCompositions={selectedCompositions}
                   onToggleColor={toggleColor}
                   onToggleSize={toggleSize}
+                  onToggleComposition={toggleComposition}
                 />
               </div>
             </aside>
@@ -571,11 +650,12 @@ const Collections = () => {
                       ? "Nuk u gjetën produkte në këtë koleksion."
                       : "No products found in this collection."}
                   </p>
-                  {(selectedColors.length > 0 || selectedSizes.length > 0) && (
+                  {(selectedColors.length > 0 || selectedSizes.length > 0 || selectedCompositions.length > 0) && (
                     <button
                       onClick={() => {
                         setSelectedColors([]);
                         setSelectedSizes([]);
+                        setSelectedCompositions([]);
                       }}
                       className="mt-4 text-xs tracking-brand uppercase text-primary hover:underline"
                     >
