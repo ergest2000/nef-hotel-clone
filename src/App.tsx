@@ -21,9 +21,9 @@ import ScrollToTop from "./components/ScrollToTop";
 import NotFound from "./pages/NotFound";
 import SlugRouter from "./components/SlugRouter";
 import ResetPassword from "./pages/ResetPassword";
-
+ 
 const queryClient = new QueryClient();
-
+ 
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <AuthProvider>
@@ -35,31 +35,31 @@ const App = () => (
               <Sonner />
               <BrowserRouter>
                 <ScrollToTop />
-              <Routes>
-                <Route path="/" element={<Index />} />
-                <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
-                <Route path="/reset-password" element={<ResetPassword />} />
-                <Route path="/koleksionet" element={<Collections />} />
-                <Route path="/koleksionet/:slug" element={<Collections />} />
-                <Route path="/koleksionet/:slug/:productId" element={<ProductDetail />} />
-                <Route path="/shporta" element={<Cart />} />
-                <Route path="/checkout" element={<Checkout />} />
-                <Route path="/wishlist" element={<Wishlist />} />
-                <Route path="/my-account" element={<MyAccount />} />
-                {/* Blog post with nested slug */}
-                <Route path="/:slug/:id" element={<BlogPost />} />
-                {/* Dynamic slug-based routing for all pages */}
-                <Route path="/:slug" element={<SlugRouter />} />
-                {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-            </BrowserRouter>
-          </TooltipProvider>
-        </CartProvider>
-      </DesignProvider>
-    </LanguageProvider>
-  </AuthProvider>
-</QueryClientProvider>
+                <Routes>
+                  <Route path="/" element={<Index />} />
+                  <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
+                  <Route path="/reset-password" element={<ResetPassword />} />
+                  <Route path="/koleksionet" element={<Collections />} />
+                  <Route path="/koleksionet/:slug" element={<Collections />} />
+                  <Route path="/koleksionet/:slug/:productId" element={<ProductDetail />} />
+                  <Route path="/shporta" element={<Cart />} />
+                  <Route path="/checkout" element={<Checkout />} />
+                  <Route path="/wishlist" element={<Wishlist />} />
+                  <Route path="/my-account" element={<MyAccount />} />
+                  {/* Blog post with nested slug */}
+                  <Route path="/:slug/:id" element={<BlogPost />} />
+                  {/* Dynamic slug-based routing for all pages */}
+                  <Route path="/:slug" element={<SlugRouter />} />
+                  {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+              </BrowserRouter>
+            </TooltipProvider>
+          </CartProvider>
+        </DesignProvider>
+      </LanguageProvider>
+    </AuthProvider>
+  </QueryClientProvider>
 );
-
+ 
 export default App;
