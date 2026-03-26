@@ -296,7 +296,7 @@ const Collections = () => {
                   {isAl ? col.title_al : col.title_en}
                 </h3>
                 {(isAl ? col.description_al : col.description_en) && (
-                  <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
+                  <p className="text-sm text-muted-foreground mt-1 ">
                     {isAl ? col.description_al : col.description_en}
                   </p>
                 )}
@@ -403,9 +403,12 @@ const Collections = () => {
           {/* Products grid */}
           <div className="flex-1 min-w-0">
             {paginatedProducts.length === 0 ? (
-              <div className="text-center py-16">
-                <Package className="h-16 w-16 mx-auto text-muted-foreground/20 mb-4" />
-                <p className="text-muted-foreground">{t("Nuk u gjetën produkte", "No products found")}</p>
+              <div className="flex items-center justify-center py-20 w-full">
+                <div className="text-center">
+                  <Package className="h-16 w-16 mx-auto text-muted-foreground/20 mb-4" />
+                  <h3 className="text-lg font-semibold text-foreground mb-2">{t("Nuk ka produkte", "No products")}</h3>
+                  <p className="text-sm text-muted-foreground max-w-sm">{t("Kjo koleksion nuk ka produkte të listuara aktualisht.", "This collection has no listed products currently.")}</p>
+                </div>
               </div>
             ) : (
               <>
