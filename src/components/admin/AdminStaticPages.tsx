@@ -48,13 +48,61 @@ export function AdminStaticPages() {
   }
 
   function handleSave() {
-    upsert.mutate(Object.assign({}, editData, { page_key: editPage }) as any, {
-      onSuccess: function () {
+    var data = Object.assign({}, editData, { page_key: editPage }) as any;
+    upsert.mutate(data, {
+      onSuccess: async function () {
         toast({ title: "U ruajt!" });
         setEdits(function (prev) { var n = Object.assign({}, prev); delete n[editPage]; return n; });
+
+        // Auto-translate empty fields
+        var changed = false;
+        var updates: Partial<StaticPage> = {};
+
+        // Title: AL → EN
+        if (data.title_al && !data.title_en) {
+          var titleEn = await doTranslate(data.title_al, "al", "en");
+          if (titleEn) { updates.title_en = titleEn; changed = true; }
+        }
+        // Title: EN → AL
+        if (data.title_en && !data.title_al) {
+          var titleAl = await doTranslate(data.title_en, "en", "al");
+          if (titleAl) { updates.title_al = titleAl; changed = true; }
+        }
+        // Content: AL → EN
+        if (data.content_al && !data.content_en) {
+          var contentEn = await doTranslate(data.content_al, "al", "en");
+          if (contentEn) { updates.content_en = contentEn; changed = true; }
+        }
+        // Content: EN → AL
+        if (data.content_en && !data.content_al) {
+          var contentAl = await doTranslate(data.content_en, "en", "al");
+          if (contentAl) { updates.content_al = contentAl; changed = true; }
+        }
+
+        if (changed) {
+          upsert.mutate(Object.assign({}, data, updates) as any, {
+            onSuccess: function () {
+              toast({ title: "Përkthimi automatik u ruajt!" });
+            },
+          });
+        }
       },
       onError: function (e: any) { toast({ title: "Gabim", description: e.message, variant: "destructive" }); },
     });
+  }
+
+  async function doTranslate(text: string, from: string, to: string): Promise<string> {
+    if (!text.trim()) return "";
+    try {
+      var response = await fetch(import.meta.env.VITE_SUPABASE_URL + "/functions/v1/translate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text: text, sourceLang: from, targetLang: to }),
+      });
+      if (!response.ok) return "";
+      var data = await response.json();
+      return data.translated || "";
+    } catch { return ""; }
   }
 
   if (isLoading) return <div className="text-sm text-muted-foreground">Duke ngarkuar...</div>;
