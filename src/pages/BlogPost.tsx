@@ -9,7 +9,6 @@ import whatsappIcon from "@/assets/whatsapp-icon.svg";
 import { useLanguage } from "@/hooks/useLanguage";
 
 const BlogPost = () => {
-  // Route: /blog/:postSlug  — param quhet postSlug jo id
   const { postSlug } = useParams<{ postSlug: string }>();
   const { data: dbPost, isLoading } = useBlogPostBySlug(postSlug || "");
   const { isAl } = useLanguage();
@@ -49,10 +48,7 @@ const BlogPost = () => {
             <h1 className="text-2xl tracking-wide-brand text-foreground mb-4">
               {isAl ? "Postimi nuk u gjet" : "Post not found"}
             </h1>
-            <SlugLink
-              to="/blog"
-              className="text-sm text-primary hover:underline tracking-brand uppercase"
-            >
+            <SlugLink to="/blog" className="text-sm text-primary hover:underline tracking-brand uppercase">
               {String.fromCharCode(8592)} {backLabel}
             </SlugLink>
           </div>
@@ -63,46 +59,23 @@ const BlogPost = () => {
     const shareUrl = typeof window !== "undefined" ? window.location.href : "";
 
     const shareLinks = [
-      {
-        label: "WhatsApp",
-        iconSrc: whatsappIcon,
-        href: `https://api.whatsapp.com/send?text=${encodeURIComponent(post.title + " " + shareUrl)}`,
-        className: "bg-[#25D366] hover:bg-[#1da851] text-white",
-      },
-      {
-        label: "Email",
-        icon: Mail,
-        href: `mailto:?subject=${encodeURIComponent(post.title)}&body=${encodeURIComponent(shareUrl)}`,
-        className: "bg-muted hover:bg-muted-foreground/20 text-foreground",
-      },
-      {
-        label: "Facebook",
-        icon: Facebook,
-        href: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`,
-        className: "bg-[#1877F2] hover:bg-[#0d65d9] text-white",
-      },
+      { label: "WhatsApp", iconSrc: whatsappIcon, href: `https://api.whatsapp.com/send?text=${encodeURIComponent(post.title + " " + shareUrl)}`, className: "bg-[#25D366] hover:bg-[#1da851] text-white" },
+      { label: "Email", icon: Mail, href: `mailto:?subject=${encodeURIComponent(post.title)}&body=${encodeURIComponent(shareUrl)}`, className: "bg-muted hover:bg-muted-foreground/20 text-foreground" },
+      { label: "Facebook", icon: Facebook, href: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`, className: "bg-[#1877F2] hover:bg-[#0d65d9] text-white" },
     ];
 
     return (
       <article className="py-12 md:py-20 flex-1">
         <div className="container max-w-3xl">
-          <SlugLink
-            to="/blog"
-            className="inline-flex items-center gap-2 text-xs tracking-brand text-muted-foreground hover:text-primary transition-colors uppercase mb-8"
-          >
+          <SlugLink to="/blog" className="inline-flex items-center gap-2 text-xs tracking-brand text-muted-foreground hover:text-primary transition-colors uppercase mb-8">
             <ArrowLeft size={14} /> {backLabel}
           </SlugLink>
-
-          <h1 className="text-2xl md:text-4xl font-light text-foreground leading-tight normal-case tracking-normal mb-8">
-            {post.title}
-          </h1>
-
+          <h1 className="text-2xl md:text-4xl font-light text-foreground leading-tight normal-case tracking-normal mb-8">{post.title}</h1>
           {post.image && (
             <div className="aspect-[16/9] overflow-hidden mb-10">
               <img src={post.image} alt={post.title} className="w-full h-full object-cover" />
             </div>
           )}
-
           <div className="prose prose-sm max-w-none text-sm md:text-base text-muted-foreground leading-relaxed [&_p]:mb-6 [&_p]:normal-case [&_p]:tracking-normal">
             {post.content.includes("<") ? (
               <div dangerouslySetInnerHTML={{ __html: post.content }} />
@@ -112,25 +85,12 @@ const BlogPost = () => {
               ))
             )}
           </div>
-
           <div className="border-t border-border mt-12 pt-8">
-            <p className="text-xs tracking-brand text-muted-foreground uppercase mb-4 text-center">
-              {isAl ? "Ndaje postimin" : "Share this post"}
-            </p>
+            <p className="text-xs tracking-brand text-muted-foreground uppercase mb-4 text-center">{isAl ? "Ndaje postimin" : "Share this post"}</p>
             <div className="flex flex-wrap justify-center gap-2 md:gap-3">
               {shareLinks.map((item) => (
-                <a
-                  key={item.label}
-                  href={item.href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className={`inline-flex items-center gap-1.5 px-3 py-2 md:px-5 md:py-2.5 rounded-full text-[10px] md:text-xs tracking-brand uppercase transition-colors ${item.className}`}
-                >
-                  {"iconSrc" in item ? (
-                    <img src={item.iconSrc} alt={item.label} className="w-3.5 h-3.5 brightness-0 invert" />
-                  ) : (
-                    <item.icon size={14} />
-                  )}
+                <a key={item.label} href={item.href} target="_blank" rel="noopener noreferrer" className={`inline-flex items-center gap-1.5 px-3 py-2 md:px-5 md:py-2.5 rounded-full text-[10px] md:text-xs tracking-brand uppercase transition-colors ${item.className}`}>
+                  {"iconSrc" in item ? <img src={item.iconSrc} alt={item.label} className="w-3.5 h-3.5 brightness-0 invert" /> : <item.icon size={14} />}
                   {item.label}
                 </a>
               ))}
