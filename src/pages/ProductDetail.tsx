@@ -255,7 +255,7 @@ const ProductDetail = () => {
             )}
             <span>-</span>
             <span className="text-foreground">
-              {(isAl ? product.title_al : product.title_en).toUpperCase()}
+              {isAl ? product.title_al : product.title_en}
             </span>
           </div>
         </div>
@@ -275,7 +275,7 @@ const ProductDetail = () => {
           <div className="space-y-6">
             {/* Title & Code */}
             <div>
-              <h1 className="text-xl md:text-2xl font-light text-foreground leading-tight">
+              <h1 className="text-xl md:text-2xl font-light text-foreground leading-tight" style={{ textTransform: 'none', letterSpacing: 'normal' }}>
                 {isAl ? product.title_al : product.title_en}
               </h1>
               {product.code && (
