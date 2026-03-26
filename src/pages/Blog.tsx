@@ -4,17 +4,12 @@ import SiteFooter from "@/components/SiteFooter";
 import { usePublishedBlogPosts } from "@/hooks/useBlogPosts";
 import { usePageContent, getContentValue } from "@/hooks/useCms";
 import { useLanguage } from "@/hooks/useLanguage";
-import { usePageSlugs, getSlugForPage } from "@/hooks/usePageSlugs";
 import { blogPosts as fallbackPosts } from "@/data/blogPosts";
 
 const Blog = () => {
   const { data: dbPosts } = usePublishedBlogPosts();
   const { lang, isAl } = useLanguage();
   const { data: content } = usePageContent("blog", lang);
-  const { data: slugs } = usePageSlugs();
-
-  // Merr slug-un e saktë të faqes blog (mund të jetë "blog" ose diçka tjetër nga admin)
-  const blogSlug = getSlugForPage(slugs, "blog", lang);
 
   const posts =
     dbPosts && dbPosts.length > 0
@@ -53,12 +48,8 @@ const Blog = () => {
         <div className="container">
           <div className="grid md:grid-cols-3 gap-6 md:gap-8">
             {posts.map((post) => (
-              // Përdor slug-un dinamik nga DB: /[blog-slug]/[post-id]
-              <SlugLink
-                key={post.id}
-                to={`/${blogSlug}/${post.id}`}
-                className="group"
-              >
+              // Gjithmonë /blog/:postSlug — route eksplicite, pa konfuzion me koleksionet
+              <SlugLink key={post.id} to={`/blog/${post.id}`} className="group">
                 <div className="aspect-[4/3] overflow-hidden mb-4">
                   <img
                     src={post.image}
