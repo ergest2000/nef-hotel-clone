@@ -394,6 +394,14 @@ const Collections = () => {
           </Button>
         </div>
 
+        {/* Empty state — pa sidebar, i centruar ndaj gjithë gjerësisë */}
+        {paginatedProducts.length === 0 ? (
+          <div className="w-full flex flex-col items-center justify-center py-24 text-center">
+            <Package className="h-16 w-16 text-muted-foreground/20 mb-4" />
+            <h3 className="text-lg font-semibold text-foreground mb-2">{t("Nuk ka produkte", "No products")}</h3>
+            <p className="text-sm text-muted-foreground max-w-xs">{t("Kjo koleksion nuk ka produkte të listuara aktualisht.", "This collection has no listed products currently.")}</p>
+          </div>
+        ) : (
         <div className="flex gap-8">
           {/* Desktop sidebar */}
           <aside className="hidden lg:block w-[220px] flex-shrink-0">
@@ -401,15 +409,8 @@ const Collections = () => {
           </aside>
 
           {/* Products grid */}
-          <div className="flex-1 min-w-0 w-full">
-            {paginatedProducts.length === 0 ? (
-              <div className="w-full flex flex-col items-center justify-center py-24 text-center">
-                <Package className="h-16 w-16 text-muted-foreground/20 mb-4" />
-                <h3 className="text-lg font-semibold text-foreground mb-2">{t("Nuk ka produkte", "No products")}</h3>
-                <p className="text-sm text-muted-foreground max-w-xs">{t("Kjo koleksion nuk ka produkte të listuara aktualisht.", "This collection has no listed products currently.")}</p>
-              </div>
-            ) : (
-              <>
+          <div className="flex-1 min-w-0">
+            <>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-10">
                   {paginatedProducts.map((product) => (
                     <ProductCard
@@ -461,9 +462,9 @@ const Collections = () => {
                   </div>
                 )}
               </>
-            )}
-          </div>
+            </div>
         </div>
+        )}
       </div>
 
       {/* Mobile filters drawer */}
