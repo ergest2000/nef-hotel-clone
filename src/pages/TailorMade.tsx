@@ -18,11 +18,56 @@ var iconMap: Record<string, any> = {
   star: Star, sparkles: Sparkles,
 };
 
+function ServicesCarousel(props: { services: { icon: any; title: string; desc: string; key: string }[] }) {
+  var services = props.services;
+  var [current, setCurrent] = useState(0);
+  var touchStartX = useRef(0);
+
+  var goTo = useCallback(function (idx: number) {
+    var len = services.length;
+    setCurrent(((idx % len) + len) % len);
+  }, [services.length]);
+
+  if (services.length === 0) return null;
+
+  var Icon = services[current].icon;
+
+  return (
+    <div className="md:hidden">
+      <div
+        className="bg-background border border-border p-8 text-center relative select-none"
+        onTouchStart={function(e) { touchStartX.current = e.touches[0].clientX; }}
+        onTouchEnd={function(e) {
+          var delta = e.changedTouches[0].clientX - touchStartX.current;
+          if (delta < -50) goTo(current + 1);
+          else if (delta > 50) goTo(current - 1);
+        }}
+      >
+        <Icon size={32} className="mx-auto mb-5 text-primary" strokeWidth={1.2} />
+        <h3 className="text-[11px] tracking-wide-brand text-foreground mb-3 uppercase font-semibold">{services[current].title}</h3>
+        <p className="text-sm text-muted-foreground leading-relaxed">{services[current].desc}</p>
+        {/* Dots */}
+        <div className="flex justify-center gap-1.5 mt-6">
+          {services.map(function(_, i) {
+            return <div key={i} className={"w-1.5 h-1.5 rounded-full transition-all " + (i === current ? "bg-primary scale-125" : "bg-border")} />;
+          })}
+        </div>
+        {/* Arrows */}
+        <button onClick={function() { goTo(current - 1); }} className="absolute left-3 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center text-muted-foreground hover:text-foreground">
+          <ChevronLeft size={18} />
+        </button>
+        <button onClick={function() { goTo(current + 1); }} className="absolute right-3 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center text-muted-foreground hover:text-foreground">
+          <ChevronRight size={18} />
+        </button>
+      </div>
+    </div>
+  );
+}
+
 function GalleryCarousel(props: { images: string[] }) {
   var images = props.images;
-  var currentState = useState(0);
-  var current = currentState[0];
-  var setCurrent = currentState[1];
+  var [current, setCurrent] = useState(0);
+  var touchStartX = useRef(0);
 
   var goTo = useCallback(function (idx: number) {
     var len = images.length;
@@ -40,25 +85,56 @@ function GalleryCarousel(props: { images: string[] }) {
   return (
     <section className="py-12 md:py-20 bg-background">
       <div className="container">
-        <div className="relative overflow-hidden">
-          <div className="flex transition-transform duration-500" style={{ transform: "translateX(-" + (current * 100) + "%)" }}>
+        {/* Mobile: 1 image at a time */}
+        <div className="md:hidden relative overflow-hidden rounded"
+          onTouchStart={function(e) { touchStartX.current = e.touches[0].clientX; }}
+          onTouchEnd={function(e) {
+            var delta = e.changedTouches[0].clientX - touchStartX.current;
+            if (delta < -50) goTo(current + 1);
+            else if (delta > 50) goTo(current - 1);
+          }}
+        >
+          <img
+            src={images[current]}
+            alt={"Gallery " + (current + 1)}
+            className="w-full aspect-[4/3] object-cover rounded transition-opacity duration-300"
+          />
+          {images.length > 1 && (
+            <>
+              <button onClick={function () { goTo(current - 1); }} className="absolute left-2 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-background/80 border border-border flex items-center justify-center">
+                <ChevronLeft size={18} />
+              </button>
+              <button onClick={function () { goTo(current + 1); }} className="absolute right-2 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-background/80 border border-border flex items-center justify-center">
+                <ChevronRight size={18} />
+              </button>
+              <div className="absolute bottom-3 left-0 right-0 flex justify-center gap-1.5">
+                {images.map(function(_, i) {
+                  return <div key={i} className={"w-1.5 h-1.5 rounded-full transition-all " + (i === current ? "bg-white scale-125" : "bg-white/50")} />;
+                })}
+              </div>
+            </>
+          )}
+        </div>
+        {/* Desktop: 3 images sliding */}
+        <div className="hidden md:block relative overflow-hidden">
+          <div className="flex transition-transform duration-500" style={{ transform: "translateX(-" + (current * (100 / 3)) + "%)" }}>
             {images.map(function (src, i) {
               return (
-                <div key={i} className="w-full flex-shrink-0 px-1 md:px-2" style={{ minWidth: "33.333%" }}>
+                <div key={i} className="flex-shrink-0 px-2" style={{ width: "33.333%" }}>
                   <img src={src} alt={"Gallery " + (i + 1)} className="w-full aspect-[4/3] object-cover rounded" />
                 </div>
               );
             })}
           </div>
           {images.length > 3 && (
-            <div>
-              <button onClick={function () { goTo(current - 1); }} className="absolute left-2 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full backdrop-blur-md bg-background/80 border border-border flex items-center justify-center text-foreground hover:bg-background transition-all">
+            <>
+              <button onClick={function () { goTo(current - 1); }} className="absolute left-2 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-background/80 border border-border flex items-center justify-center hover:bg-background transition-all">
                 <ChevronLeft size={18} />
               </button>
-              <button onClick={function () { goTo(current + 1); }} className="absolute right-2 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full backdrop-blur-md bg-background/80 border border-border flex items-center justify-center text-foreground hover:bg-background transition-all">
+              <button onClick={function () { goTo(current + 1); }} className="absolute right-2 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-background/80 border border-border flex items-center justify-center hover:bg-background transition-all">
                 <ChevronRight size={18} />
               </button>
-            </div>
+            </>
           )}
         </div>
       </div>
@@ -185,18 +261,21 @@ function TailorMade() {
             <h2 className="text-lg md:text-2xl tracking-wide-brand text-foreground font-light text-center mb-10 md:mb-14">
               {g("services", "title", isAl ? "SHËRBIMET TONA" : "OUR SERVICES")}
             </h2>
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-8">
+            {/* Desktop grid */}
+            <div className="hidden md:grid md:grid-cols-4 gap-8">
               {services.map(function (svc) {
                 var Icon = svc.icon;
                 return (
-                  <div key={svc.key} className="bg-background border border-border p-5 md:p-8 text-center hover:shadow-lg transition-shadow">
-                    <Icon size={28} className="mx-auto mb-3 md:mb-5 text-primary" strokeWidth={1.2} />
-                    <h3 className="text-[10px] md:text-xs tracking-wide-brand text-foreground mb-2 md:mb-3 uppercase font-semibold">{svc.title}</h3>
-                    <p className="text-xs md:text-sm text-muted-foreground leading-relaxed">{svc.desc}</p>
+                  <div key={svc.key} className="bg-background border border-border p-8 text-center hover:shadow-lg transition-shadow">
+                    <Icon size={28} className="mx-auto mb-5 text-primary" strokeWidth={1.2} />
+                    <h3 className="text-xs tracking-wide-brand text-foreground mb-3 uppercase font-semibold">{svc.title}</h3>
+                    <p className="text-sm text-muted-foreground leading-relaxed">{svc.desc}</p>
                   </div>
                 );
               })}
             </div>
+            {/* Mobile carousel */}
+            <ServicesCarousel services={services} />
           </div>
         </section>
       )}
