@@ -53,6 +53,13 @@ function SiteFooter() {
   }
 
   var col1Links = buildLinks("col1");
+
+  // Shto gjithmonë "Tekstile të Personalizuara" si link i fundit te KOMPANIA
+  var tailorLabel = isAl ? "Tekstile të Personalizuara" : "Custom Textiles";
+  var tailorHref = "/tailor-made";
+  if (!col1Links.some((l) => l.href === tailorHref)) {
+    col1Links = [...col1Links, { label: tailorLabel, href: tailorHref }];
+  }
   var col3Links = buildLinks("col3");
 
   // Column 2 links (Products) - lexon nga header categories
