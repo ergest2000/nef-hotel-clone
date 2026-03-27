@@ -25,7 +25,7 @@ const defaultProducts = [
   { key: "prod8", name: "Wellness Robe Classic", image: catSpa },
 ];
 
-/* gap in px — must match the CSS gap below */
+/* gap between cards in px */
 const GAP = 16;
 
 /** Returns the number of visible cards based on window width */
@@ -70,7 +70,7 @@ const SuggestionsSection = ({ content }: { content?: SiteContent[] }) => {
     return () => window.removeEventListener("resize", onResize);
   }, []);
 
-  /* ── sync scroll position ──────────────────────────────────────── */
+  /* ── sync scroll state ─────────────────────────────────────────── */
   const sync = useCallback(() => {
     const el = trackRef.current;
     if (!el) return;
@@ -161,105 +161,106 @@ const SuggestionsSection = ({ content }: { content?: SiteContent[] }) => {
   /* ── card width as CSS calc string (responsive) ────────────────── */
   const cardWidth = `calc((100% - ${(visibleCount - 1) * GAP}px) / ${visibleCount})`;
 
+  /* ── whether there's content to scroll ─────────────────────────── */
+  const hasOverflow = products.length > visibleCount;
+
   return (
     <section className="py-16 md:py-24">
+      <style>{`
+        .suggestions-track::-webkit-scrollbar { display: none; }
+      `}</style>
+
       <div className="container">
         {/* Title */}
         <h2 className="text-xl md:text-2xl tracking-wide-brand text-foreground font-light text-center mb-12">
           {title}
         </h2>
 
-        {/* Carousel wrapper — arrows sit outside on ≥sm, overlap on mobile */}
-        <div className="relative px-0 sm:px-14 md:px-16">
-          {/* ← Arrow */}
-          <button
-            onClick={() => slide("left")}
-            aria-label="Scroll left"
-            className={`
-              absolute top-[35%] -translate-y-1/2 z-20
-              left-1 sm:-left-1 md:-left-2
-              w-9 h-9 sm:w-10 sm:h-10 md:w-12 md:h-12
-              rounded-full bg-white/90 backdrop-blur-sm
-              border border-border shadow-lg
-              flex items-center justify-center
-              transition-all duration-300 ease-out
-              ${canLeft
-                ? "opacity-100 hover:bg-foreground hover:text-white hover:border-foreground hover:shadow-xl hover:scale-110 cursor-pointer active:scale-95"
-                : "opacity-0 pointer-events-none"
-              }
-            `}
-          >
-            <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5" strokeWidth={2.5} />
-          </button>
-
-          {/* → Arrow */}
-          <button
-            onClick={() => slide("right")}
-            aria-label="Scroll right"
-            className={`
-              absolute top-[35%] -translate-y-1/2 z-20
-              right-1 sm:-right-1 md:-right-2
-              w-9 h-9 sm:w-10 sm:h-10 md:w-12 md:h-12
-              rounded-full bg-white/90 backdrop-blur-sm
-              border border-border shadow-lg
-              flex items-center justify-center
-              transition-all duration-300 ease-out
-              ${canRight
-                ? "opacity-100 hover:bg-foreground hover:text-white hover:border-foreground hover:shadow-xl hover:scale-110 cursor-pointer active:scale-95"
-                : "opacity-0 pointer-events-none"
-              }
-            `}
-          >
-            <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5" strokeWidth={2.5} />
-          </button>
-
-          {/* Product track */}
-          <div
-            ref={trackRef}
-            onMouseDown={onMouseDown}
-            onMouseMove={onMouseMove}
-            onMouseUp={onMouseUp}
-            onMouseLeave={onMouseLeave}
-            onClickCapture={onClickCapture}
-            className="suggestions-track flex overflow-x-auto overscroll-x-contain snap-x snap-mandatory scroll-smooth cursor-grab select-none"
-            style={{
-              gap: `${GAP}px`,
-              scrollbarWidth: "none",
-              msOverflowStyle: "none",
-              WebkitOverflowScrolling: "touch",
-            }}
-          >
-            {/* Hide native webkit scrollbar */}
-            <style>{`.suggestions-track::-webkit-scrollbar { display: none; }`}</style>
-
-            {products.map((product) => (
-              <a
-                key={product.id}
-                href={`/koleksionet/${product.collectionSlug}/${product.id}`}
-                draggable={false}
-                className="group shrink-0 snap-start"
-                style={{ width: cardWidth }}
-              >
-                <div className="aspect-square overflow-hidden bg-secondary rounded-lg">
-                  <img
-                    src={product.image}
-                    alt={product.name}
-                    draggable={false}
-                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                    loading="lazy"
-                  />
-                </div>
-                <p
-                  className="mt-3 text-sm text-foreground group-hover:text-primary transition-colors line-clamp-2"
-                  style={{ textTransform: "none", letterSpacing: "normal" }}
-                >
-                  {toTitleCase(product.name)}
-                </p>
-              </a>
-            ))}
+        {/* ── Top row: arrows ─────────────────────────────────────── */}
+        {hasOverflow && (
+          <div className="flex items-center justify-end gap-2 mb-4">
+            <button
+              onClick={() => slide("left")}
+              disabled={!canLeft}
+              aria-label="Scroll left"
+              className={`
+                w-10 h-10 md:w-11 md:h-11 rounded-full
+                border border-border bg-white
+                flex items-center justify-center
+                transition-all duration-200
+                ${canLeft
+                  ? "opacity-100 hover:bg-foreground hover:text-white hover:border-foreground cursor-pointer active:scale-95"
+                  : "opacity-40 cursor-not-allowed"
+                }
+              `}
+            >
+              <ChevronLeft className="w-5 h-5" strokeWidth={2} />
+            </button>
+            <button
+              onClick={() => slide("right")}
+              disabled={!canRight}
+              aria-label="Scroll right"
+              className={`
+                w-10 h-10 md:w-11 md:h-11 rounded-full
+                border border-border bg-white
+                flex items-center justify-center
+                transition-all duration-200
+                ${canRight
+                  ? "opacity-100 hover:bg-foreground hover:text-white hover:border-foreground cursor-pointer active:scale-95"
+                  : "opacity-40 cursor-not-allowed"
+                }
+              `}
+            >
+              <ChevronRight className="w-5 h-5" strokeWidth={2} />
+            </button>
           </div>
+        )}
 
-          {/* Scrollbar indicator */}
+        {/* ── Product track — full width of container ─────────────── */}
+        <div
+          ref={trackRef}
+          onMouseDown={onMouseDown}
+          onMouseMove={onMouseMove}
+          onMouseUp={onMouseUp}
+          onMouseLeave={onMouseLeave}
+          onClickCapture={onClickCapture}
+          className="suggestions-track flex overflow-x-auto overscroll-x-contain snap-x snap-mandatory scroll-smooth cursor-grab select-none"
+          style={{
+            gap: `${GAP}px`,
+            scrollbarWidth: "none",
+            msOverflowStyle: "none",
+            WebkitOverflowScrolling: "touch",
+          }}
+        >
+          {products.map((product) => (
+            <a
+              key={product.id}
+              href={`/koleksionet/${product.collectionSlug}/${product.id}`}
+              draggable={false}
+              className="group shrink-0 snap-start"
+              style={{ width: cardWidth }}
+            >
+              <div className="aspect-square overflow-hidden bg-secondary rounded-lg">
+                <img
+                  src={product.image}
+                  alt={product.name}
+                  draggable={false}
+                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                  loading="lazy"
+                />
+              </div>
+              <p
+                className="mt-3 text-sm text-foreground group-hover:text-primary transition-colors line-clamp-2"
+                style={{ textTransform: "none", letterSpacing: "normal" }}
+              >
+                {toTitleCase(product.name)}
+              </p>
+            </a>
+          ))}
+        </div>
+
+        {/* ── Scrollbar indicator ─────────────────────────────────── */}
+        {hasOverflow && (
           <div className="mt-8 mx-auto max-w-xl">
             <div className="h-[3px] bg-muted relative overflow-hidden rounded-full">
               <div
@@ -271,7 +272,7 @@ const SuggestionsSection = ({ content }: { content?: SiteContent[] }) => {
               />
             </div>
           </div>
-        </div>
+        )}
       </div>
     </section>
   );
