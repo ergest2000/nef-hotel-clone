@@ -309,8 +309,6 @@ const ProductDetail = () => {
   // Use new assignments if available, fall back to legacy product_colors
   const productColorAssignments = allAssignments?.filter((a) => a.product_id === productId) ?? [];
   const productColors = allColors?.filter((c) => c.product_id === productId) ?? [];
-  // DEBUG — remove after fix
-  console.log('[Colors] productId:', productId, 'assignments:', productColorAssignments, 'legacy:', productColors);
   const productSizes = allSizes?.filter((s) => s.product_id === productId) ?? [];
 
   const isWishlisted = wishlistItems?.some((w) => w.product_id === productId) ?? false;
