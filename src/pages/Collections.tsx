@@ -9,11 +9,8 @@ import {
   useToggleWishlist,
   useAllProductColors,
   useAllProductSizes,
-  useAllProductColorAssignments,
-  productSlug,
   type ProductColor,
   type ProductSize,
-  type ProductColorAssignment,
 } from "@/hooks/useCollections";
 import { useLanguage } from "@/hooks/useLanguage";
 import { useAuth } from "@/hooks/useAuth";
@@ -37,13 +34,11 @@ const ProductCard = ({
   collectionSlug,
   isAl,
   productColors,
-  assignments,
 }: {
   product: Product;
   collectionSlug: string;
   isAl: boolean;
   productColors?: ProductColor[];
-  assignments?: ProductColorAssignment[];
 }) => {
   const { user } = useAuth();
   const { data: wishlist } = useWishlist(user?.id);
@@ -64,8 +59,6 @@ const ProductCard = ({
   const image = activeImage || product.image_url || "";
 
   const colors = productColors?.filter((c) => c.product_id === product.id) ?? [];
-  const productAssignments = assignments?.filter((a) => a.product_id === product.id) ?? [];
-  const hasColors = productAssignments.length > 0 || colors.length > 0;
 
   const handleColorClick = (color: ProductColor) => {
     if (activeColorId === color.id) {
@@ -85,7 +78,7 @@ const ProductCard = ({
   return (
     <div className="group relative flex flex-col">
       <Link
-        to={`/koleksionet/${collectionSlug}/${productSlug(product)}`}
+        to={`/koleksionet/${collectionSlug}/${product.id}`}
         className="block"
       >
         {/* Image */}
@@ -118,21 +111,19 @@ const ProductCard = ({
       </Link>
 
       {/* Color swatches */}
-      {hasColors && (
+      {colors.length > 0 && (
         <div className="mt-2" onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}>
           <ProductColorPicker
-            assignments={productAssignments}
-            legacyColors={colors}
+            productColors={colors}
             selectedColorId={activeColorId}
             onSelectColor={(id) => {
               if (id === activeColorId) {
                 setActiveColorId(null);
                 setActiveImage(null);
               } else if (id) {
+                const color = colors.find((c) => c.id === id);
                 setActiveColorId(id);
-                const a = productAssignments.find((x) => x.id === id);
-                const c = colors.find((x) => x.id === id);
-                setActiveImage(a?.image_url || (c as any)?.image_url || null);
+                setActiveImage(color && (color as any).image_url ? (color as any).image_url : null);
               } else {
                 setActiveColorId(null);
                 setActiveImage(null);
@@ -477,7 +468,6 @@ const Collections = () => {
   const { data: collections, isLoading: loadingCols } = useCollections();
   const { data: allProducts, isLoading: loadingProducts } = useProducts();
   const { data: allColors } = useAllProductColors();
-  const { data: allAssignments } = useAllProductColorAssignments();
   const { data: allSizes } = useAllProductSizes();
 
   // CMS content for collections page
@@ -746,8 +736,7 @@ const Collections = () => {
                       product={product}
                       collectionSlug={getCollectionSlug(product)}
                       isAl={isAl}
-                      productColors={allColors}
-                      assignments={allAssignments}
+                      productColors={allColors || []}
                     />
                   ))}
                 </div>
