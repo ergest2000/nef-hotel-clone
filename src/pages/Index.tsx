@@ -28,7 +28,7 @@ function Index() {
   const { lang } = useLanguage();
 
   // Fetch content për gjuhën aktive — react-query cache-on automatikisht
-  const { data: content } = usePageContent("home", lang);
+  const { data: content, isLoading: contentLoading } = usePageContent("home", lang);
   const { data: sections } = usePageSections("home");
 
   const orderedSectionKeys = sections
@@ -40,7 +40,7 @@ function Index() {
 
   // Komponenti për çdo seksion — content është gjithmonë i fresh nga hook
   const sectionComponents: Record<string, JSX.Element> = {
-    hero:              <HeroSlider content={content} />,
+    hero:              <HeroSlider content={content} isLoading={contentLoading} />,
     clients:           <ClientsCarousel content={content} />,
     categories:        <CategoriesSection content={content} />,
     "custom-textiles": <CustomTextiles content={content} />,
