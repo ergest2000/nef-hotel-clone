@@ -10,6 +10,7 @@ import {
   useAllProductColors,
   useAllProductSizes,
   useAllProductColorAssignments,
+  productSlug,
   type ProductColor,
   type ProductSize,
   type ProductColorAssignment,
@@ -84,7 +85,7 @@ const ProductCard = ({
   return (
     <div className="group relative flex flex-col">
       <Link
-        to={`/koleksionet/${collectionSlug}/${product.id}`}
+        to={`/koleksionet/${collectionSlug}/${productSlug(product)}`}
         className="block"
       >
         {/* Image */}
