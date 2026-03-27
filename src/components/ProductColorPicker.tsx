@@ -198,12 +198,6 @@ const ProductColorPicker = ({
         {selectedSwatch && (
           <span className="text-xs text-foreground font-medium">
             — {getLabel(selectedSwatch)}
-            <span
-              className="ml-1.5 font-mono text-muted-foreground"
-              style={{ fontSize: "10px" }}
-            >
-              {selectedSwatch.hex.toUpperCase()}
-            </span>
           </span>
         )}
       </div>
@@ -259,7 +253,7 @@ const ProductColorPicker = ({
       <Tooltip
         text={
           tooltipSwatch
-            ? `${getLabel(tooltipSwatch)} · ${tooltipSwatch.hex.toUpperCase()}`
+            ? getLabel(tooltipSwatch)
             : ""
         }
         visible={!!tooltipId}
