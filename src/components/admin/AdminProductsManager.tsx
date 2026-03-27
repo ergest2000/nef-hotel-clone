@@ -3,7 +3,7 @@ import { useCollections } from "@/hooks/useCollections";
 import {
   useProducts, useUpsertProduct, useDeleteProduct,
   useProductImages, useAddProductImage, useDeleteProductImage,
-  useProductColors, useAddProductColor, useDeleteProductColor,
+  useProductColors, useAddProductColor, useDeleteProductColor, useUpdateProductColor,
   useProductSizes, useAddProductSize, useDeleteProductSize,
   type ProductColor, type ProductSize,
 } from "@/hooks/useCollections";
@@ -34,7 +34,6 @@ const emptyProduct: Partial<Product> = {
   in_stock: true, customizable: false,
   product_info_al: "", product_info_en: "",
   return_policy_al: "", return_policy_en: "",
-  tech_specs_al: "", tech_specs_en: "",
   image_url: "", visible: true, sort_order: 0,
 };
 
@@ -94,6 +93,8 @@ const ProductColorsManager = ({ productId }: { productId: string }) => {
   const { data: colors } = useProductColors(productId);
   const addColor = useAddProductColor();
   const removeColor = useDeleteProductColor();
+  const updateColor = useUpdateProductColor();
+  const { toast } = useToast();
   const [newNameAl, setNewNameAl] = useState("");
   const [newNameEn, setNewNameEn] = useState("");
   const [newHex, setNewHex] = useState("#FFFFFF");
@@ -101,20 +102,55 @@ const ProductColorsManager = ({ productId }: { productId: string }) => {
   const handleAdd = () => {
     if (!newNameAl.trim() && !newNameEn.trim()) return;
     const name = newNameAl || newNameEn;
-    addColor.mutate({ product_id: productId, color_name: name, color_name_al: newNameAl, color_name_en: newNameEn, color_hex: newHex, sort_order: colors?.length ?? 0 });
+    addColor.mutate({ product_id: productId, color_name: name, color_name_al: newNameAl, color_name_en: newNameEn, color_hex: newHex, image_url: "", sort_order: colors?.length ?? 0 });
     setNewNameAl("");
     setNewNameEn("");
     setNewHex("#FFFFFF");
   };
 
+  const handleColorImageUpload = async (colorId: string, file: File) => {
+    try {
+      const path = `products/${productId}/colors/${Date.now()}-${file.name}`;
+      const url = await uploadCmsImage(file, path);
+      updateColor.mutate({ id: colorId, product_id: productId, updates: { image_url: url } });
+      toast({ title: "Imazhi i ngjyrës u ngarkua!" });
+    } catch (e: any) {
+      toast({ title: "Gabim", description: e.message, variant: "destructive" });
+    }
+  };
+
   return (
     <div className="space-y-3">
       <label className="text-xs font-medium text-muted-foreground">Ngjyrat e produktit</label>
-      <div className="flex flex-wrap gap-2">
+      <div className="space-y-2">
         {colors?.map((c) => (
-          <div key={c.id} className="flex items-center gap-1.5 bg-muted px-2 py-1 rounded text-xs">
-            <div className="w-4 h-4 rounded-full border border-border" style={{ backgroundColor: c.color_hex }} />
-            {c.color_name_al || c.color_name} / {c.color_name_en || c.color_name}
+          <div key={c.id} className="flex items-center gap-3 bg-muted px-3 py-2 rounded">
+            <div className="w-8 h-8 rounded-full border border-border shrink-0" style={{ backgroundColor: c.color_hex }} />
+            <div className="flex-1 min-w-0">
+              <span className="text-xs font-medium">{c.color_name_al || c.color_name}</span>
+              <span className="text-xs text-muted-foreground"> / {c.color_name_en || c.color_name}</span>
+            </div>
+            {/* Color image thumbnail or upload */}
+            {(c as any).image_url ? (
+              <div className="relative group w-10 h-10 rounded overflow-hidden bg-secondary shrink-0">
+                <img src={(c as any).image_url} alt="" className="w-full h-full object-cover" />
+                <label className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center cursor-pointer transition-opacity">
+                  <ImageIcon className="h-3 w-3 text-white" />
+                  <input type="file" accept="image/*" className="hidden" onChange={(e) => {
+                    if (e.target.files?.[0]) handleColorImageUpload(c.id, e.target.files[0]);
+                  }} />
+                </label>
+              </div>
+            ) : (
+              <label className="cursor-pointer shrink-0">
+                <div className="flex items-center gap-1 px-2 py-1 bg-secondary rounded text-[10px] hover:bg-secondary/80 text-muted-foreground">
+                  <ImageIcon className="h-3 w-3" /> Foto
+                </div>
+                <input type="file" accept="image/*" className="hidden" onChange={(e) => {
+                  if (e.target.files?.[0]) handleColorImageUpload(c.id, e.target.files[0]);
+                }} />
+              </label>
+            )}
             <button onClick={() => removeColor.mutate({ id: c.id, product_id: productId })}>
               <X className="h-3 w-3 text-muted-foreground hover:text-destructive" />
             </button>
@@ -453,22 +489,6 @@ export const AdminProductsManager = () => {
                       <TranslateButton direction="en_to_al" loading={translating === "p_comp_r"} onClick={() => translateField("p_comp_r", editItem.composition_en ?? "", "en_to_al", (t) => setEditItem((p) => p ? { ...p, composition_al: t } : p))} />
                     </div>
                     <Input value={editItem.composition_en ?? ""} onChange={(e) => setEditItem({ ...editItem, composition_en: e.target.value })} />
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <div className="flex items-center justify-between">
-                      <label className="text-xs font-medium text-muted-foreground">Tech Specs (AL)</label>
-                      <TranslateButton direction="al_to_en" loading={translating === "p_specs"} onClick={() => translateField("p_specs", editItem.tech_specs_al ?? "", "al_to_en", (t) => setEditItem((p) => p ? { ...p, tech_specs_en: t } : p))} />
-                    </div>
-                    <Textarea value={editItem.tech_specs_al ?? ""} onChange={(e) => setEditItem({ ...editItem, tech_specs_al: e.target.value })} rows={3} />
-                  </div>
-                  <div>
-                    <div className="flex items-center justify-between">
-                      <label className="text-xs font-medium text-muted-foreground">Tech Specs (EN)</label>
-                      <TranslateButton direction="en_to_al" loading={translating === "p_specs_r"} onClick={() => translateField("p_specs_r", editItem.tech_specs_en ?? "", "en_to_al", (t) => setEditItem((p) => p ? { ...p, tech_specs_al: t } : p))} />
-                    </div>
-                    <Textarea value={editItem.tech_specs_en ?? ""} onChange={(e) => setEditItem({ ...editItem, tech_specs_en: e.target.value })} rows={3} />
                   </div>
                 </div>
               </TabsContent>
