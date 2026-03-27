@@ -5,7 +5,6 @@ import {
   useCollections, useProducts, useProductImages,
   useAllProductColors, useAllProductSizes,
   useAllProductColorAssignments,
-  productSlug,
   useWishlist, useToggleWishlist,
   type ProductColor, type ProductSize, type ProductColorAssignment,
 } from "@/hooks/useCollections";
@@ -20,6 +19,15 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { Heart, ShoppingBag, Package, Palette, ChevronLeft, ChevronRight, Search, X } from "lucide-react";
 import { useDesign } from "@/hooks/useDesignSettings";
 import ProductColorPicker from "@/components/ProductColorPicker";
+
+// Local slug generator (fallback to id if no slug)
+const toProductSlug = (p: { id: string; title_al?: string; title_en?: string }) => {
+  const s = (p as any).slug;
+  if (s) return s;
+  const title = p.title_al || p.title_en || p.id;
+  return title.toLowerCase().replace(/[ëËçÇ]/g, 'e').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+};
+
 
 // ─── Title Case helper ─────────────────────────────────────────
 const toTitleCase = (str: string) =>
@@ -222,7 +230,7 @@ const RelatedProducts = ({ collectionId, currentProductId, isAl, collectionSlug 
               return (
                 <Link
                   key={p.id}
-                  to={`/koleksionet/${collectionSlug}/${productSlug(p)}`}
+                  to={`/koleksionet/${collectionSlug}/${toProductSlug(p)}`}
                   className="group flex-shrink-0 snap-start"
                   style={{ width: "65vw", maxWidth: "240px" }}
                 >
@@ -254,7 +262,7 @@ const RelatedProducts = ({ collectionId, currentProductId, isAl, collectionSlug 
           {related.map((p) => {
             const productAssignments = allAssignments?.filter((a) => a.product_id === p.id) ?? [];
             return (
-              <Link key={p.id} to={`/koleksionet/${collectionSlug}/${productSlug(p)}`} className="group">
+              <Link key={p.id} to={`/koleksionet/${collectionSlug}/${toProductSlug(p)}`} className="group">
                 <div className="aspect-square bg-muted overflow-hidden mb-3">
                   {p.image_url ? (
                     <img src={p.image_url} alt={isAl ? p.title_al : p.title_en} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" />
