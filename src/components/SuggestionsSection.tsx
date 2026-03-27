@@ -8,6 +8,8 @@ import catBathroom from "@/assets/cat-bathroom.jpg";
 import catPool from "@/assets/cat-pool.jpg";
 import catSpa from "@/assets/cat-spa.jpg";
 import type { Tables } from "@/integrations/supabase/types";
+import { useAllProductColorAssignments } from "@/hooks/useCollections";
+import ProductColorPicker from "@/components/ProductColorPicker";
 
 type SiteContent = Tables<"site_content">;
 
@@ -41,6 +43,7 @@ const SuggestionsSection = ({ content }: { content?: SiteContent[] }) => {
   const title = getContentValue(content, "suggestions", "title", "SUGGESTIONS FOR YOU");
   const { lang } = useLanguage();
   const { data: dynamicProducts } = useSuggestedProductsFull();
+  const { data: allAssignments } = useAllProductColorAssignments();
 
   const products = dynamicProducts?.length
     ? dynamicProducts.map((p: any) => ({
@@ -273,6 +276,18 @@ const SuggestionsSection = ({ content }: { content?: SiteContent[] }) => {
                   >
                     {toTitleCase(product.name)}
                   </p>
+                  {/* Color swatches */}
+                  {allAssignments && allAssignments.filter((a) => a.product_id === product.id).length > 0 && (
+                    <div className="mt-2" onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}>
+                      <ProductColorPicker
+                        assignments={allAssignments.filter((a) => a.product_id === product.id)}
+                        legacyColors={[]}
+                        selectedColorId={null}
+                        onSelectColor={() => {}}
+                        compact
+                      />
+                    </div>
+                  )}
                 </a>
               ))}
             </div>
