@@ -26,12 +26,18 @@ function toSwatches(
   legacy: ProductColor[]
 ): Swatch[] {
   if (assignments.length > 0) {
-    return assignments.map((a) => ({
-      id: a.id,
-      hex: a.color?.hex ?? "#CCCCCC",
-      nameAl: a.color?.name_al ?? "",
-      nameEn: a.color?.name_en ?? "",
-    }));
+    return assignments.map((a) => {
+      // Supabase may return the joined relation as an array or as an object
+      const color = Array.isArray((a as any).color)
+        ? (a as any).color[0]
+        : a.color;
+      return {
+        id: a.id,
+        hex: color?.hex ?? "#CCCCCC",
+        nameAl: color?.name_al ?? "",
+        nameEn: color?.name_en ?? "",
+      };
+    });
   }
   // fall back to old product_colors table
   return legacy.map((c) => ({
