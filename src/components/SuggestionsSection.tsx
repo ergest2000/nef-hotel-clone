@@ -8,7 +8,7 @@ import catBathroom from "@/assets/cat-bathroom.jpg";
 import catPool from "@/assets/cat-pool.jpg";
 import catSpa from "@/assets/cat-spa.jpg";
 import type { Tables } from "@/integrations/supabase/types";
-import { useAllProductColorAssignments } from "@/hooks/useCollections";
+import { useAllProductColorAssignments, productSlug } from "@/hooks/useCollections";
 import ProductColorPicker from "@/components/ProductColorPicker";
 
 type SiteContent = Tables<"site_content">;
@@ -258,7 +258,7 @@ const SuggestionsSection = ({ content }: { content?: SiteContent[] }) => {
               {products.map((product) => (
                 <a
                   key={product.id}
-                  href={`/koleksionet/${product.collectionSlug}/${product.id}`}
+                  href={`/koleksionet/${product.collectionSlug}/${product.slug || product.id}`}
                   draggable={false}
                   className="group shrink-0"
                   style={{
