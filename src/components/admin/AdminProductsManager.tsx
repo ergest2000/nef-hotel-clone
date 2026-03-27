@@ -3,9 +3,6 @@ import { useCollections } from "@/hooks/useCollections";
 import {
   useProducts, useUpsertProduct, useDeleteProduct,
   useProductImages, useAddProductImage, useDeleteProductImage,
-import {
-  useProducts, useUpsertProduct, useDeleteProduct,
-  useProductImages, useAddProductImage, useDeleteProductImage,
   useProductSizes, useAddProductSize, useDeleteProductSize,
   useGlobalColors, useProductColorAssignments,
   useAssignColorToProduct, useUnassignColorFromProduct, useUpdateColorAssignmentImage,
