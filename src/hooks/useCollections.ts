@@ -491,3 +491,19 @@ export const useAllProductColorAssignments = () =>
       return data as unknown as ProductColorAssignment[];
     },
   });
+
+// Generate URL-friendly slug from product title
+export function productSlug(product: { slug?: string; title_al?: string; title_en?: string; id: string }): string {
+  if ((product as any).slug) return (product as any).slug;
+  const title = product.title_al || product.title_en || product.id;
+  return title
+    .toLowerCase()
+    .replace(/[ëËçÇ]/g, (c) => c.toLowerCase() === 'ë' ? 'e' : 'c')
+    .replace(/[àáâãäå]/g, 'a')
+    .replace(/[èéêë]/g, 'e')
+    .replace(/[ìíîï]/g, 'i')
+    .replace(/[òóôõö]/g, 'o')
+    .replace(/[ùúûü]/g, 'u')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+}
