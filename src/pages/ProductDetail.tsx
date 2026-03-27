@@ -445,7 +445,7 @@ const ProductDetail = () => {
               >
                 <Heart className={`h-4 w-4 ${isWishlisted ? "fill-primary text-primary" : ""}`} />
                 {isWishlisted
-                  ? t("HEQUR NGA TË PREFERUARAT", "REMOVE FROM WISHLIST")
+                  ? t("HIQ NGA TË PREFERUARAT", "REMOVE FROM WISHLIST")
                   : t("SHTO TEK TË PREFERUARAT", "ADD TO WISHLIST")}
               </Button>
             </div>
