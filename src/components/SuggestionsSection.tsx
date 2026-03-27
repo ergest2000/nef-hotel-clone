@@ -26,15 +26,15 @@ const defaultProducts = [
 ];
 
 /* gap between cards in px */
-const GAP = 16;
+const GAP = 20;
 
 /** Returns the number of visible cards based on window width */
 const getVisibleCount = (): number => {
   if (typeof window === "undefined") return 4;
   const w = window.innerWidth;
-  if (w < 640) return 2;   // mobile: 2 per row
-  if (w < 1024) return 3;  // tablet: 3 per row
-  return 4;                 // desktop: 4 per row
+  if (w < 640) return 2;
+  if (w < 1024) return 3;
+  return 4;
 };
 
 const SuggestionsSection = ({ content }: { content?: SiteContent[] }) => {
@@ -56,218 +56,239 @@ const SuggestionsSection = ({ content }: { content?: SiteContent[] }) => {
         collectionSlug: "all",
       }));
 
-  /* ── refs & state ──────────────────────────────────────────────── */
-  const trackRef = useRef<HTMLDivElement>(null);
-  const [scrollProgress, setScrollProgress] = useState(0);
-  const [canLeft, setCanLeft] = useState(false);
-  const [canRight, setCanRight] = useState(true);
+  /* ── state ─────────────────────────────────────────────────────── */
+  const [currentIndex, setCurrentIndex] = useState(0);
   const [visibleCount, setVisibleCount] = useState(getVisibleCount);
+  const touchStartX = useRef(0);
+  const touchDeltaX = useRef(0);
+  const [isSwiping, setIsSwiping] = useState(false);
+  const [swipeOffset, setSwipeOffset] = useState(0);
 
-  /* ── update visible count on resize ────────────────────────────── */
+  const maxIndex = Math.max(0, products.length - visibleCount);
+  const canLeft = currentIndex > 0;
+  const canRight = currentIndex < maxIndex;
+
+  /* ── resize ────────────────────────────────────────────────────── */
   useEffect(() => {
-    const onResize = () => setVisibleCount(getVisibleCount());
+    const onResize = () => {
+      const newCount = getVisibleCount();
+      setVisibleCount(newCount);
+      setCurrentIndex((prev) => Math.min(prev, Math.max(0, products.length - newCount)));
+    };
     window.addEventListener("resize", onResize);
     return () => window.removeEventListener("resize", onResize);
+  }, [products.length]);
+
+  /* ── navigate ──────────────────────────────────────────────────── */
+  const slide = useCallback(
+    (dir: "left" | "right") => {
+      setCurrentIndex((prev) => {
+        if (dir === "left") return Math.max(0, prev - 1);
+        return Math.min(maxIndex, prev + 1);
+      });
+    },
+    [maxIndex]
+  );
+
+  /* ── touch / swipe ─────────────────────────────────────────────── */
+  const onTouchStart = useCallback((e: React.TouchEvent) => {
+    touchStartX.current = e.touches[0].clientX;
+    touchDeltaX.current = 0;
+    setIsSwiping(true);
   }, []);
 
-  /* ── sync scroll state ─────────────────────────────────────────── */
-  const sync = useCallback(() => {
-    const el = trackRef.current;
-    if (!el) return;
-    const max = el.scrollWidth - el.clientWidth;
-    if (max <= 0) {
-      setScrollProgress(0);
-      setCanLeft(false);
-      setCanRight(false);
-      return;
+  const onTouchMove = useCallback((e: React.TouchEvent) => {
+    if (!isSwiping) return;
+    const delta = e.touches[0].clientX - touchStartX.current;
+    touchDeltaX.current = delta;
+    setSwipeOffset(delta);
+  }, [isSwiping]);
+
+  const onTouchEnd = useCallback(() => {
+    setIsSwiping(false);
+    setSwipeOffset(0);
+    const threshold = 50;
+    if (touchDeltaX.current < -threshold) {
+      slide("right");
+    } else if (touchDeltaX.current > threshold) {
+      slide("left");
     }
-    setScrollProgress(el.scrollLeft / max);
-    setCanLeft(el.scrollLeft > 2);
-    setCanRight(el.scrollLeft < max - 2);
-  }, []);
+    touchDeltaX.current = 0;
+  }, [slide]);
 
-  useEffect(() => {
-    const el = trackRef.current;
-    if (!el) return;
-    const frame = requestAnimationFrame(sync);
-    el.addEventListener("scroll", sync, { passive: true });
-    window.addEventListener("resize", sync);
-    return () => {
-      cancelAnimationFrame(frame);
-      el.removeEventListener("scroll", sync);
-      window.removeEventListener("resize", sync);
-    };
-  }, [sync, products.length]);
-
-  /* ── slide by one card width ───────────────────────────────────── */
-  const slide = (dir: "left" | "right") => {
-    const el = trackRef.current;
-    if (!el) return;
-    const cardWidth = (el.clientWidth - GAP * (visibleCount - 1)) / visibleCount;
-    const step = cardWidth + GAP;
-    el.scrollBy({ left: dir === "left" ? -step : step, behavior: "smooth" });
-  };
-
-  /* ── Mouse drag to scroll (desktop) ────────────────────────────── */
+  /* ── mouse drag (desktop) ──────────────────────────────────────── */
   const isDragging = useRef(false);
-  const dragStartX = useRef(0);
-  const dragScrollLeft = useRef(0);
-  const dragMoved = useRef(false);
+  const mouseStartX = useRef(0);
+  const mouseDelta = useRef(0);
 
   const onMouseDown = useCallback((e: React.MouseEvent) => {
-    const el = trackRef.current;
-    if (!el) return;
     isDragging.current = true;
-    dragMoved.current = false;
-    dragStartX.current = e.pageX - el.offsetLeft;
-    dragScrollLeft.current = el.scrollLeft;
-    el.style.cursor = "grabbing";
-    el.style.userSelect = "none";
+    mouseStartX.current = e.clientX;
+    mouseDelta.current = 0;
+    setIsSwiping(true);
   }, []);
 
-  const onMouseMove = useCallback((e: React.MouseEvent) => {
-    if (!isDragging.current) return;
-    const el = trackRef.current;
-    if (!el) return;
-    e.preventDefault();
-    const x = e.pageX - el.offsetLeft;
-    const walk = (x - dragStartX.current) * 1.2;
-    if (Math.abs(x - dragStartX.current) > 5) dragMoved.current = true;
-    el.scrollLeft = dragScrollLeft.current - walk;
-  }, []);
+  const onMouseMove = useCallback(
+    (e: React.MouseEvent) => {
+      if (!isDragging.current) return;
+      e.preventDefault();
+      const delta = e.clientX - mouseStartX.current;
+      mouseDelta.current = delta;
+      setSwipeOffset(delta);
+    },
+    []
+  );
 
   const onMouseUp = useCallback(() => {
+    if (!isDragging.current) return;
     isDragging.current = false;
-    const el = trackRef.current;
-    if (!el) return;
-    el.style.cursor = "grab";
-    el.style.userSelect = "";
-  }, []);
+    setIsSwiping(false);
+    setSwipeOffset(0);
+    const threshold = 50;
+    if (mouseDelta.current < -threshold) {
+      slide("right");
+    } else if (mouseDelta.current > threshold) {
+      slide("left");
+    }
+    mouseDelta.current = 0;
+  }, [slide]);
 
   const onMouseLeave = useCallback(() => {
     if (isDragging.current) onMouseUp();
   }, [onMouseUp]);
 
+  /* ── prevent click after drag ──────────────────────────────────── */
   const onClickCapture = useCallback((e: React.MouseEvent) => {
-    if (dragMoved.current) {
+    if (Math.abs(mouseDelta.current) > 5) {
       e.preventDefault();
       e.stopPropagation();
     }
   }, []);
 
-  /* ── scrollbar thumb ───────────────────────────────────────────── */
-  const thumbW = Math.max(15, Math.min(50, (visibleCount / products.length) * 100));
+  /* ── compute translateX ────────────────────────────────────────── */
+  // Each card = (100% / visibleCount) with gap adjustments
+  // translateX = -(currentIndex * (cardWidth + gap)) + swipeOffset
+  const cardPercent = 100 / visibleCount;
+  const gapPerCard = GAP * (visibleCount - 1) / visibleCount;
+  const translatePx = -(currentIndex * gapPerCard + currentIndex * GAP) + swipeOffset;
+  const translatePercent = -(currentIndex * cardPercent);
 
-  /* ── card width as CSS calc string (responsive) ────────────────── */
-  const cardWidth = `calc((100% - ${(visibleCount - 1) * GAP}px) / ${visibleCount})`;
-
-  /* ── whether there's content to scroll ─────────────────────────── */
-  const hasOverflow = products.length > visibleCount;
+  /* ── progress bar ──────────────────────────────────────────────── */
+  const progress = maxIndex > 0 ? currentIndex / maxIndex : 0;
+  const thumbW = Math.max(20, Math.min(50, (visibleCount / products.length) * 100));
 
   return (
     <section className="py-16 md:py-24">
-      <style>{`
-        .suggestions-track::-webkit-scrollbar { display: none; }
-      `}</style>
-
       <div className="container">
         {/* Title */}
         <h2 className="text-xl md:text-2xl tracking-wide-brand text-foreground font-light text-center mb-12">
           {title}
         </h2>
 
-        {/* ── Top row: arrows ─────────────────────────────────────── */}
-        {hasOverflow && (
-          <div className="flex items-center justify-end gap-2 mb-4">
-            <button
-              onClick={() => slide("left")}
-              disabled={!canLeft}
-              aria-label="Scroll left"
-              className={`
-                w-10 h-10 md:w-11 md:h-11 rounded-full
-                border border-border bg-white
-                flex items-center justify-center
-                transition-all duration-200
-                ${canLeft
-                  ? "opacity-100 hover:bg-foreground hover:text-white hover:border-foreground cursor-pointer active:scale-95"
-                  : "opacity-40 cursor-not-allowed"
-                }
-              `}
-            >
-              <ChevronLeft className="w-5 h-5" strokeWidth={2} />
-            </button>
-            <button
-              onClick={() => slide("right")}
-              disabled={!canRight}
-              aria-label="Scroll right"
-              className={`
-                w-10 h-10 md:w-11 md:h-11 rounded-full
-                border border-border bg-white
-                flex items-center justify-center
-                transition-all duration-200
-                ${canRight
-                  ? "opacity-100 hover:bg-foreground hover:text-white hover:border-foreground cursor-pointer active:scale-95"
-                  : "opacity-40 cursor-not-allowed"
-                }
-              `}
-            >
-              <ChevronRight className="w-5 h-5" strokeWidth={2} />
-            </button>
-          </div>
-        )}
+        {/* ── Slider wrapper with overlay arrows ─────────────────── */}
+        <div className="relative group/slider">
+          {/* ← Arrow */}
+          <button
+            onClick={() => slide("left")}
+            disabled={!canLeft}
+            aria-label="Scroll left"
+            className={`
+              absolute top-1/2 -translate-y-[calc(50%+16px)] z-30
+              left-2 md:-left-5 lg:-left-6
+              w-10 h-10 md:w-12 md:h-12
+              rounded-full bg-white shadow-lg border border-gray-200
+              flex items-center justify-center
+              transition-all duration-200
+              ${canLeft
+                ? "opacity-90 hover:opacity-100 hover:bg-foreground hover:text-white hover:border-foreground hover:scale-110 cursor-pointer active:scale-95"
+                : "opacity-30 cursor-not-allowed"
+              }
+            `}
+          >
+            <ChevronLeft className="w-5 h-5 md:w-6 md:h-6" strokeWidth={2} />
+          </button>
 
-        {/* ── Product track — full width of container ─────────────── */}
-        <div
-          ref={trackRef}
-          onMouseDown={onMouseDown}
-          onMouseMove={onMouseMove}
-          onMouseUp={onMouseUp}
-          onMouseLeave={onMouseLeave}
-          onClickCapture={onClickCapture}
-          className="suggestions-track flex overflow-x-auto overscroll-x-contain snap-x snap-mandatory scroll-smooth cursor-grab select-none"
-          style={{
-            gap: `${GAP}px`,
-            scrollbarWidth: "none",
-            msOverflowStyle: "none",
-            WebkitOverflowScrolling: "touch",
-          }}
-        >
-          {products.map((product) => (
-            <a
-              key={product.id}
-              href={`/koleksionet/${product.collectionSlug}/${product.id}`}
-              draggable={false}
-              className="group shrink-0 snap-start"
-              style={{ width: cardWidth }}
+          {/* → Arrow */}
+          <button
+            onClick={() => slide("right")}
+            disabled={!canRight}
+            aria-label="Scroll right"
+            className={`
+              absolute top-1/2 -translate-y-[calc(50%+16px)] z-30
+              right-2 md:-right-5 lg:-right-6
+              w-10 h-10 md:w-12 md:h-12
+              rounded-full bg-white shadow-lg border border-gray-200
+              flex items-center justify-center
+              transition-all duration-200
+              ${canRight
+                ? "opacity-90 hover:opacity-100 hover:bg-foreground hover:text-white hover:border-foreground hover:scale-110 cursor-pointer active:scale-95"
+                : "opacity-30 cursor-not-allowed"
+              }
+            `}
+          >
+            <ChevronRight className="w-5 h-5 md:w-6 md:h-6" strokeWidth={2} />
+          </button>
+
+          {/* ── Track with overflow hidden ────────────────────────── */}
+          <div className="overflow-hidden">
+            <div
+              className="flex select-none"
+              style={{
+                gap: `${GAP}px`,
+                transform: `translateX(calc(${translatePercent}% + ${translatePx}px))`,
+                transition: isSwiping ? "none" : "transform 0.4s cubic-bezier(0.25, 0.1, 0.25, 1)",
+                cursor: isDragging.current ? "grabbing" : "grab",
+              }}
+              onTouchStart={onTouchStart}
+              onTouchMove={onTouchMove}
+              onTouchEnd={onTouchEnd}
+              onMouseDown={onMouseDown}
+              onMouseMove={onMouseMove}
+              onMouseUp={onMouseUp}
+              onMouseLeave={onMouseLeave}
+              onClickCapture={onClickCapture}
             >
-              <div className="aspect-square overflow-hidden bg-secondary rounded-lg">
-                <img
-                  src={product.image}
-                  alt={product.name}
+              {products.map((product) => (
+                <a
+                  key={product.id}
+                  href={`/koleksionet/${product.collectionSlug}/${product.id}`}
                   draggable={false}
-                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                  loading="lazy"
-                />
-              </div>
-              <p
-                className="mt-3 text-sm text-foreground group-hover:text-primary transition-colors line-clamp-2"
-                style={{ textTransform: "none", letterSpacing: "normal" }}
-              >
-                {toTitleCase(product.name)}
-              </p>
-            </a>
-          ))}
+                  className="group shrink-0"
+                  style={{
+                    width: `calc((100% - ${(visibleCount - 1) * GAP}px) / ${visibleCount})`,
+                  }}
+                >
+                  <div className="aspect-square overflow-hidden bg-secondary rounded-lg">
+                    <img
+                      src={product.image}
+                      alt={product.name}
+                      draggable={false}
+                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                      loading="lazy"
+                    />
+                  </div>
+                  <p
+                    className="mt-3 text-sm text-foreground group-hover:text-primary transition-colors line-clamp-2"
+                    style={{ textTransform: "none", letterSpacing: "normal" }}
+                  >
+                    {toTitleCase(product.name)}
+                  </p>
+                </a>
+              ))}
+            </div>
+          </div>
         </div>
 
-        {/* ── Scrollbar indicator ─────────────────────────────────── */}
-        {hasOverflow && (
-          <div className="mt-8 mx-auto max-w-xl">
+        {/* ── Progress bar ────────────────────────────────────────── */}
+        {maxIndex > 0 && (
+          <div className="mt-8 mx-auto max-w-md">
             <div className="h-[3px] bg-muted relative overflow-hidden rounded-full">
               <div
-                className="absolute top-0 h-full bg-primary rounded-full transition-[left] duration-150 ease-out"
+                className="absolute top-0 h-full bg-primary rounded-full"
                 style={{
                   width: `${thumbW}%`,
-                  left: `${scrollProgress * (100 - thumbW)}%`,
+                  left: `${progress * (100 - thumbW)}%`,
+                  transition: "left 0.4s cubic-bezier(0.25, 0.1, 0.25, 1)",
                 }}
               />
             </div>
