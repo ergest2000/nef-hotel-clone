@@ -151,10 +151,36 @@ const RelatedProducts = ({ collectionId, currentProductId, isAl, collectionSlug 
   collectionId: string; currentProductId: string; isAl: boolean; collectionSlug: string;
 }) => {
   const { data: allProducts } = useProducts(collectionId);
+  const { data: allAssignments } = useAllProductColorAssignments();
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const [canLeft, setCanLeft] = useState(false);
+  const [canRight, setCanRight] = useState(true);
+
   const related = useMemo(
-    () => (allProducts ?? []).filter((p) => p.id !== currentProductId && p.visible).slice(0, 4),
+    () => (allProducts ?? []).filter((p) => p.id !== currentProductId && p.visible).slice(0, 6),
     [allProducts, currentProductId]
   );
+
+  const checkScroll = useCallback(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    setCanLeft(el.scrollLeft > 8);
+    setCanRight(el.scrollLeft < el.scrollWidth - el.clientWidth - 8);
+  }, []);
+
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    checkScroll();
+    el.addEventListener("scroll", checkScroll, { passive: true });
+    return () => el.removeEventListener("scroll", checkScroll);
+  }, [checkScroll, related.length]);
+
+  const slide = (dir: "left" | "right") => {
+    const el = scrollRef.current;
+    if (!el) return;
+    el.scrollBy({ left: dir === "right" ? 260 : -260, behavior: "smooth" });
+  };
 
   if (!related.length) return null;
 
@@ -167,51 +193,87 @@ const RelatedProducts = ({ collectionId, currentProductId, isAl, collectionSlug 
           {t("KOMBINOJE ATE ME", "COMBINE IT WITH")}
         </h2>
 
-        {/* Mobile: horizontal scroll carousel */}
-        <div className="md:hidden flex gap-4 overflow-x-auto snap-x snap-mandatory scrollbar-none pb-2"
-          style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
-        >
-          {related.map((p) => (
-            <Link
-              key={p.id}
-              to={`/koleksionet/${collectionSlug}/${p.id}`}
-              className="group flex-shrink-0 snap-start"
-              style={{ width: "70vw", maxWidth: "260px" }}
+        {/* Mobile: scroll carousel with arrows */}
+        <div className="md:hidden relative">
+          {canLeft && (
+            <button
+              onClick={() => slide("left")}
+              className="absolute left-0 top-[38%] -translate-y-1/2 z-10 w-8 h-8 rounded-full bg-background border border-border shadow flex items-center justify-center -ml-2"
             >
-              <div className="aspect-square bg-muted overflow-hidden mb-3">
-                {p.image_url ? (
-                  <img src={p.image_url} alt={isAl ? p.title_al : p.title_en} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" />
-                ) : (
-                  <div className="flex items-center justify-center h-full">
-                    <Package className="h-10 w-10 text-muted-foreground/20" />
+              <ChevronLeft className="h-4 w-4" />
+            </button>
+          )}
+          {canRight && (
+            <button
+              onClick={() => slide("right")}
+              className="absolute right-0 top-[38%] -translate-y-1/2 z-10 w-8 h-8 rounded-full bg-background border border-border shadow flex items-center justify-center -mr-2"
+            >
+              <ChevronRight className="h-4 w-4" />
+            </button>
+          )}
+          <div
+            ref={scrollRef}
+            className="flex gap-4 overflow-x-auto snap-x snap-mandatory pb-2"
+            style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+          >
+            {related.map((p) => {
+              const productAssignments = allAssignments?.filter((a) => a.product_id === p.id) ?? [];
+              return (
+                <Link
+                  key={p.id}
+                  to={`/koleksionet/${collectionSlug}/${p.id}`}
+                  className="group flex-shrink-0 snap-start"
+                  style={{ width: "65vw", maxWidth: "240px" }}
+                >
+                  <div className="aspect-square bg-muted overflow-hidden mb-3">
+                    {p.image_url ? (
+                      <img src={p.image_url} alt={isAl ? p.title_al : p.title_en} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" />
+                    ) : (
+                      <div className="flex items-center justify-center h-full">
+                        <Package className="h-10 w-10 text-muted-foreground/20" />
+                      </div>
+                    )}
                   </div>
-                )}
-              </div>
-              <p className="text-sm font-medium text-foreground group-hover:text-primary transition-colors line-clamp-2">
-                {toTitleCase(isAl ? p.title_al : p.title_en)}
-              </p>
-            </Link>
-          ))}
+                  <p className="text-sm font-medium text-foreground group-hover:text-primary transition-colors line-clamp-2 mb-2">
+                    {toTitleCase(isAl ? p.title_al : p.title_en)}
+                  </p>
+                  {productAssignments.length > 0 && (
+                    <div onClick={(e) => e.preventDefault()}>
+                      <ProductColorPicker assignments={productAssignments} legacyColors={[]} selectedColorId={null} onSelectColor={() => {}} compact />
+                    </div>
+                  )}
+                </Link>
+              );
+            })}
+          </div>
         </div>
 
         {/* Desktop: grid */}
         <div className="hidden md:grid md:grid-cols-4 gap-6">
-          {related.map((p) => (
-            <Link key={p.id} to={`/koleksionet/${collectionSlug}/${p.id}`} className="group">
-              <div className="aspect-square bg-muted overflow-hidden mb-3">
-                {p.image_url ? (
-                  <img src={p.image_url} alt={isAl ? p.title_al : p.title_en} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" />
-                ) : (
-                  <div className="flex items-center justify-center h-full">
-                    <Package className="h-10 w-10 text-muted-foreground/20" />
+          {related.map((p) => {
+            const productAssignments = allAssignments?.filter((a) => a.product_id === p.id) ?? [];
+            return (
+              <Link key={p.id} to={`/koleksionet/${collectionSlug}/${p.id}`} className="group">
+                <div className="aspect-square bg-muted overflow-hidden mb-3">
+                  {p.image_url ? (
+                    <img src={p.image_url} alt={isAl ? p.title_al : p.title_en} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" />
+                  ) : (
+                    <div className="flex items-center justify-center h-full">
+                      <Package className="h-10 w-10 text-muted-foreground/20" />
+                    </div>
+                  )}
+                </div>
+                <p className="text-sm font-medium text-foreground group-hover:text-primary transition-colors line-clamp-2 mb-2">
+                  {toTitleCase(isAl ? p.title_al : p.title_en)}
+                </p>
+                {productAssignments.length > 0 && (
+                  <div onClick={(e) => e.preventDefault()}>
+                    <ProductColorPicker assignments={productAssignments} legacyColors={[]} selectedColorId={null} onSelectColor={() => {}} compact />
                   </div>
                 )}
-              </div>
-              <p className="text-sm font-medium text-foreground group-hover:text-primary transition-colors line-clamp-2">
-                {toTitleCase(isAl ? p.title_al : p.title_en)}
-              </p>
-            </Link>
-          ))}
+              </Link>
+            );
+          })}
         </div>
       </div>
     </section>
