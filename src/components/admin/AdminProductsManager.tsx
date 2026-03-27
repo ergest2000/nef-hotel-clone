@@ -436,14 +436,30 @@ export const AdminProductsManager = () => {
                       <label className="text-xs font-medium text-muted-foreground">Titulli (AL)</label>
                       <TranslateButton direction="al_to_en" loading={translating === "p_title"} onClick={() => translateField("p_title", editItem.title_al ?? "", "al_to_en", (t) => setEditItem((p) => p ? { ...p, title_en: t } : p))} />
                     </div>
-                    <Input value={editItem.title_al ?? ""} onChange={(e) => setEditItem({ ...editItem, title_al: e.target.value })} />
+                    <Input
+                      value={editItem.title_al ?? ""}
+                      onChange={(e) => setEditItem({ ...editItem, title_al: e.target.value })}
+                      onBlur={(e) => {
+                        if (e.target.value.trim() && !editItem.title_en?.trim()) {
+                          translateField("p_title", e.target.value, "al_to_en", (t) => setEditItem((p) => p ? { ...p, title_en: t } : p));
+                        }
+                      }}
+                    />
                   </div>
                   <div>
                     <div className="flex items-center justify-between">
                       <label className="text-xs font-medium text-muted-foreground">Title (EN)</label>
                       <TranslateButton direction="en_to_al" loading={translating === "p_title_r"} onClick={() => translateField("p_title_r", editItem.title_en ?? "", "en_to_al", (t) => setEditItem((p) => p ? { ...p, title_al: t } : p))} />
                     </div>
-                    <Input value={editItem.title_en ?? ""} onChange={(e) => setEditItem({ ...editItem, title_en: e.target.value })} />
+                    <Input
+                      value={editItem.title_en ?? ""}
+                      onChange={(e) => setEditItem({ ...editItem, title_en: e.target.value })}
+                      onBlur={(e) => {
+                        if (e.target.value.trim() && !editItem.title_al?.trim()) {
+                          translateField("p_title_r", e.target.value, "en_to_al", (t) => setEditItem((p) => p ? { ...p, title_al: t } : p));
+                        }
+                      }}
+                    />
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
