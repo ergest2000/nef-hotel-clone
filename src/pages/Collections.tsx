@@ -16,6 +16,7 @@ import { useLanguage } from "@/hooks/useLanguage";
 import { useAuth } from "@/hooks/useAuth";
 import { usePageContent, getContentValue } from "@/hooks/useCms";
 import { Heart, ChevronRight } from "lucide-react";
+import ProductColorPicker from "@/components/ProductColorPicker";
 import type { Tables } from "@/integrations/supabase/types";
 
 type Collection = Tables<"collections">;
@@ -111,24 +112,25 @@ const ProductCard = ({
 
       {/* Color swatches */}
       {colors.length > 0 && (
-        <div className="flex flex-wrap gap-1.5 mt-2">
-          {colors.map((c) => (
-            <button
-              key={c.id}
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                handleColorClick(c);
-              }}
-              title={isAl ? (c.color_name_al || c.color_name) : (c.color_name_en || c.color_name)}
-              className={`w-6 h-6 rounded-full border-2 transition-all ${
-                activeColorId === c.id
-                  ? "border-primary ring-2 ring-primary/30 scale-110"
-                  : "border-border hover:border-foreground/40"
-              }`}
-              style={{ backgroundColor: c.color_hex }}
-            />
-          ))}
+        <div className="mt-2" onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}>
+          <ProductColorPicker
+            productColors={colors}
+            selectedColorId={activeColorId}
+            onSelectColor={(id) => {
+              if (id === activeColorId) {
+                setActiveColorId(null);
+                setActiveImage(null);
+              } else if (id) {
+                const color = colors.find((c) => c.id === id);
+                setActiveColorId(id);
+                setActiveImage(color && (color as any).image_url ? (color as any).image_url : null);
+              } else {
+                setActiveColorId(null);
+                setActiveImage(null);
+              }
+            }}
+            compact
+          />
         </div>
       )}
 
