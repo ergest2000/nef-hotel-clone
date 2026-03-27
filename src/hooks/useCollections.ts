@@ -167,6 +167,7 @@ export interface ProductColor {
   color_name_al: string;
   color_name_en: string;
   color_hex: string;
+  image_url: string;
   sort_order: number;
   created_at: string;
 }
@@ -220,7 +221,7 @@ export const useProductColors = (productId?: string) =>
 export const useAddProductColor = () => {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async (item: { product_id: string; color_name: string; color_name_al: string; color_name_en: string; color_hex: string; sort_order: number }) => {
+    mutationFn: async (item: { product_id: string; color_name: string; color_name_al: string; color_name_en: string; color_hex: string; image_url?: string; sort_order: number }) => {
       const { data, error } = await supabase
         .from("product_colors" as any)
         .insert(item)
@@ -242,6 +243,21 @@ export const useDeleteProductColor = () => {
       return product_id;
     },
     onSuccess: (product_id) => qc.invalidateQueries({ queryKey: ["product_colors", product_id] }),
+  });
+};
+
+export const useUpdateProductColor = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, product_id, updates }: { id: string; product_id: string; updates: Partial<ProductColor> }) => {
+      const { error } = await supabase.from("product_colors" as any).update(updates).eq("id", id);
+      if (error) throw error;
+      return product_id;
+    },
+    onSuccess: (product_id) => {
+      qc.invalidateQueries({ queryKey: ["product_colors", product_id] });
+      qc.invalidateQueries({ queryKey: ["all_product_colors"] });
+    },
   });
 };
 
