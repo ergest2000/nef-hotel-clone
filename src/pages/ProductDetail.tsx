@@ -67,7 +67,7 @@ const ImageLightbox = ({ images, startIndex, onClose }: { images: string[]; star
 };
 
 // ─── Product Image Gallery ──────────────────────────────────────
-const ProductGallery = ({ mainImage, productId, onOpenLightbox }: { mainImage?: string | null; productId: string; onOpenLightbox: (images: string[], index: number) => void }) => {
+const ProductGallery = ({ mainImage, productId, colorImageUrl, onOpenLightbox }: { mainImage?: string | null; productId: string; colorImageUrl?: string | null; onOpenLightbox: (images: string[], index: number) => void }) => {
   const { data: extraImages } = useProductImages(productId);
   const allImages = useMemo(() => {
     const imgs: string[] = [];
@@ -80,7 +80,10 @@ const ProductGallery = ({ mainImage, productId, onOpenLightbox }: { mainImage?: 
 
   const [selected, setSelected] = useState(0);
 
-  if (!allImages.length) {
+  // When a color image is set, show it as the active image
+  const displayImage = colorImageUrl || allImages[selected];
+
+  if (!allImages.length && !colorImageUrl) {
     return (
       <div className="aspect-square bg-muted flex items-center justify-center">
         <Package className="h-24 w-24 text-muted-foreground/20" />
@@ -91,18 +94,27 @@ const ProductGallery = ({ mainImage, productId, onOpenLightbox }: { mainImage?: 
   const goPrev = () => setSelected((s) => (s > 0 ? s - 1 : allImages.length - 1));
   const goNext = () => setSelected((s) => (s < allImages.length - 1 ? s + 1 : 0));
 
+  // Build full image list for lightbox (include color image if present)
+  const lightboxImages = colorImageUrl && !allImages.includes(colorImageUrl)
+    ? [colorImageUrl, ...allImages]
+    : allImages;
+
   return (
     <div className="space-y-4">
       <div className="relative aspect-square bg-muted overflow-hidden group">
-        <img src={allImages[selected]} alt="" className="w-full h-full object-cover" />
+        <img
+          src={displayImage || allImages[0]}
+          alt=""
+          className="w-full h-full object-cover transition-opacity duration-300"
+        />
         {/* Zoom icon */}
         <button
-          onClick={() => onOpenLightbox(allImages, selected)}
+          onClick={() => onOpenLightbox(lightboxImages, colorImageUrl ? 0 : selected)}
           className="absolute top-3 right-3 w-9 h-9 rounded-full bg-background/80 border border-border flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-background"
         >
           <Search className="h-4 w-4 text-foreground" />
         </button>
-        {allImages.length > 1 && (
+        {allImages.length > 1 && !colorImageUrl && (
           <>
             <button onClick={goPrev} className="absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-background/80 border border-border flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
               <ChevronLeft className="h-4 w-4 text-foreground" />
@@ -118,9 +130,9 @@ const ProductGallery = ({ mainImage, productId, onOpenLightbox }: { mainImage?: 
           {allImages.map((img, i) => (
             <button
               key={i}
-              onClick={() => setSelected(i)}
+              onClick={() => { setSelected(i); }}
               className={`flex-shrink-0 w-16 h-16 md:w-20 md:h-20 overflow-hidden border-2 transition-colors snap-start ${
-                i === selected ? "border-primary" : "border-transparent hover:border-border"
+                !colorImageUrl && i === selected ? "border-primary" : "border-transparent hover:border-border"
               }`}
             >
               <img src={img} alt="" className="w-full h-full object-cover" />
@@ -274,6 +286,11 @@ const ProductDetail = () => {
           <ProductGallery
             mainImage={product.image_url}
             productId={product.id}
+            colorImageUrl={
+              selectedColorId
+                ? (productColors.find((c) => c.id === selectedColorId) as any)?.image_url || null
+                : null
+            }
             onOpenLightbox={(images, index) => setLightbox({ images, index })}
           />
 
@@ -498,9 +515,6 @@ const ProductDetail = () => {
                         <span className="font-medium text-foreground">{t("Përmasat:", "Sizes:")}</span>{" "}
                         {productSizes.map((s) => s.size_label).join(", ")}
                       </p>
-                    )}
-                    {(isAl ? product.tech_specs_al : product.tech_specs_en) && (
-                      <p className="whitespace-pre-wrap mt-2">{isAl ? product.tech_specs_al : product.tech_specs_en}</p>
                     )}
                   </div>
                 </AccordionContent>
