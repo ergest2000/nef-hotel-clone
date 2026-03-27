@@ -185,7 +185,11 @@ const SuggestionsSection = ({ content }: { content?: SiteContent[] }) => {
       <div className="container">
         {/* Title */}
         <h2 className="text-xl md:text-2xl tracking-wide-brand text-foreground font-light text-center mb-12">
-          {title}
+          <span className="md:hidden">
+            {title.split(" ")[0]}<br />
+            {title.split(" ").slice(1).join(" ")}
+          </span>
+          <span className="hidden md:inline">{title}</span>
         </h2>
 
         {/* ── Slider wrapper with overlay arrows ─────────────────── */}
