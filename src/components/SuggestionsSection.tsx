@@ -19,10 +19,23 @@ const defaultProducts = [
   { key: "prod2", name: "Luxury Bath Towel Pack", image: catBathroom },
   { key: "prod3", name: "Pool Towel Collection", image: catPool },
   { key: "prod4", name: "Spa Robe Deluxe", image: catSpa },
+  { key: "prod5", name: "Egyptian Cotton Pillowcase", image: catBedroom },
+  { key: "prod6", name: "Deluxe Bath Mat", image: catBathroom },
+  { key: "prod7", name: "Beach Towel Premium", image: catPool },
+  { key: "prod8", name: "Wellness Robe Classic", image: catSpa },
 ];
 
 /* gap in px — must match the CSS gap below */
-const GAP = 24;
+const GAP = 16;
+
+/** Returns the number of visible cards based on window width */
+const getVisibleCount = (): number => {
+  if (typeof window === "undefined") return 4;
+  const w = window.innerWidth;
+  if (w < 640) return 2;   // mobile: 2 per row
+  if (w < 1024) return 3;  // tablet: 3 per row
+  return 4;                 // desktop: 4 per row
+};
 
 const SuggestionsSection = ({ content }: { content?: SiteContent[] }) => {
   const title = getContentValue(content, "suggestions", "title", "SUGGESTIONS FOR YOU");
@@ -48,7 +61,14 @@ const SuggestionsSection = ({ content }: { content?: SiteContent[] }) => {
   const [scrollProgress, setScrollProgress] = useState(0);
   const [canLeft, setCanLeft] = useState(false);
   const [canRight, setCanRight] = useState(true);
-  const [arrowTop, setArrowTop] = useState(0); // px from track top
+  const [visibleCount, setVisibleCount] = useState(getVisibleCount);
+
+  /* ── update visible count on resize ────────────────────────────── */
+  useEffect(() => {
+    const onResize = () => setVisibleCount(getVisibleCount());
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, []);
 
   /* ── sync scroll position ──────────────────────────────────────── */
   const sync = useCallback(() => {
@@ -66,39 +86,24 @@ const SuggestionsSection = ({ content }: { content?: SiteContent[] }) => {
     setCanRight(el.scrollLeft < max - 2);
   }, []);
 
-  /* ── measure arrow vertical position (center of first image) ──── */
-  const measureArrowPos = useCallback(() => {
-    const el = trackRef.current;
-    if (!el) return;
-    const firstCard = el.querySelector("a");
-    if (!firstCard) return;
-    const img = firstCard.querySelector(".aspect-square");
-    if (!img) return;
-    const imgRect = (img as HTMLElement).getBoundingClientRect();
-    const trackRect = el.getBoundingClientRect();
-    setArrowTop(imgRect.top - trackRect.top + imgRect.height / 2);
-  }, []);
-
   useEffect(() => {
     const el = trackRef.current;
     if (!el) return;
-    sync();
-    measureArrowPos();
+    const frame = requestAnimationFrame(sync);
     el.addEventListener("scroll", sync, { passive: true });
-    window.addEventListener("resize", () => { sync(); measureArrowPos(); });
+    window.addEventListener("resize", sync);
     return () => {
+      cancelAnimationFrame(frame);
       el.removeEventListener("scroll", sync);
-      window.removeEventListener("resize", () => { sync(); measureArrowPos(); });
+      window.removeEventListener("resize", sync);
     };
-  }, [sync, measureArrowPos, products.length]);
+  }, [sync, products.length]);
 
-  /* ── slide exactly one card + gap ──────────────────────────────── */
+  /* ── slide by one card width ───────────────────────────────────── */
   const slide = (dir: "left" | "right") => {
     const el = trackRef.current;
     if (!el) return;
-    const firstCard = el.querySelector("a");
-    if (!firstCard) return;
-    const cardWidth = firstCard.getBoundingClientRect().width;
+    const cardWidth = (el.clientWidth - GAP * (visibleCount - 1)) / visibleCount;
     const step = cardWidth + GAP;
     el.scrollBy({ left: dir === "left" ? -step : step, behavior: "smooth" });
   };
@@ -151,7 +156,10 @@ const SuggestionsSection = ({ content }: { content?: SiteContent[] }) => {
   }, []);
 
   /* ── scrollbar thumb ───────────────────────────────────────────── */
-  const thumbW = Math.max(15, Math.min(40, 100 / Math.ceil(products.length / 4)));
+  const thumbW = Math.max(15, Math.min(50, (visibleCount / products.length) * 100));
+
+  /* ── card width as CSS calc string (responsive) ────────────────── */
+  const cardWidth = `calc((100% - ${(visibleCount - 1) * GAP}px) / ${visibleCount})`;
 
   return (
     <section className="py-16 md:py-24">
@@ -161,34 +169,48 @@ const SuggestionsSection = ({ content }: { content?: SiteContent[] }) => {
           {title}
         </h2>
 
-        {/* Carousel wrapper */}
-        <div className="relative px-14 md:px-16">
+        {/* Carousel wrapper — arrows sit outside on ≥sm, overlap on mobile */}
+        <div className="relative px-0 sm:px-14 md:px-16">
           {/* ← Arrow */}
           <button
             onClick={() => slide("left")}
             aria-label="Scroll left"
-            style={{ top: arrowTop || "35%" }}
-            className={`absolute left-0 -translate-y-1/2 z-20 w-10 h-10 md:w-12 md:h-12 rounded-full bg-white border border-border shadow-md flex items-center justify-center transition-all duration-200 ${
-              canLeft
-                ? "opacity-100 hover:bg-foreground hover:text-white hover:border-foreground cursor-pointer"
+            className={`
+              absolute top-[35%] -translate-y-1/2 z-20
+              left-1 sm:-left-1 md:-left-2
+              w-9 h-9 sm:w-10 sm:h-10 md:w-12 md:h-12
+              rounded-full bg-white/90 backdrop-blur-sm
+              border border-border shadow-lg
+              flex items-center justify-center
+              transition-all duration-300 ease-out
+              ${canLeft
+                ? "opacity-100 hover:bg-foreground hover:text-white hover:border-foreground hover:shadow-xl hover:scale-110 cursor-pointer active:scale-95"
                 : "opacity-0 pointer-events-none"
-            }`}
+              }
+            `}
           >
-            <ChevronLeft size={20} />
+            <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5" strokeWidth={2.5} />
           </button>
 
           {/* → Arrow */}
           <button
             onClick={() => slide("right")}
             aria-label="Scroll right"
-            style={{ top: arrowTop || "35%" }}
-            className={`absolute right-0 -translate-y-1/2 z-20 w-10 h-10 md:w-12 md:h-12 rounded-full bg-white border border-border shadow-md flex items-center justify-center transition-all duration-200 ${
-              canRight
-                ? "opacity-100 hover:bg-foreground hover:text-white hover:border-foreground cursor-pointer"
+            className={`
+              absolute top-[35%] -translate-y-1/2 z-20
+              right-1 sm:-right-1 md:-right-2
+              w-9 h-9 sm:w-10 sm:h-10 md:w-12 md:h-12
+              rounded-full bg-white/90 backdrop-blur-sm
+              border border-border shadow-lg
+              flex items-center justify-center
+              transition-all duration-300 ease-out
+              ${canRight
+                ? "opacity-100 hover:bg-foreground hover:text-white hover:border-foreground hover:shadow-xl hover:scale-110 cursor-pointer active:scale-95"
                 : "opacity-0 pointer-events-none"
-            }`}
+              }
+            `}
           >
-            <ChevronRight size={20} />
+            <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5" strokeWidth={2.5} />
           </button>
 
           {/* Product track */}
@@ -199,7 +221,7 @@ const SuggestionsSection = ({ content }: { content?: SiteContent[] }) => {
             onMouseUp={onMouseUp}
             onMouseLeave={onMouseLeave}
             onClickCapture={onClickCapture}
-            className="flex overflow-x-auto overscroll-x-contain snap-x snap-mandatory scroll-smooth cursor-grab select-none"
+            className="suggestions-track flex overflow-x-auto overscroll-x-contain snap-x snap-mandatory scroll-smooth cursor-grab select-none"
             style={{
               gap: `${GAP}px`,
               scrollbarWidth: "none",
@@ -208,24 +230,21 @@ const SuggestionsSection = ({ content }: { content?: SiteContent[] }) => {
             }}
           >
             {/* Hide native webkit scrollbar */}
-            <style>{`
-              .suggestions-track::-webkit-scrollbar { display: none; }
-            `}</style>
+            <style>{`.suggestions-track::-webkit-scrollbar { display: none; }`}</style>
 
             {products.map((product) => (
               <a
                 key={product.id}
                 href={`/koleksionet/${product.collectionSlug}/${product.id}`}
+                draggable={false}
                 className="group shrink-0 snap-start"
-                style={{
-                  width: "calc((100% - 3 * 24px) / 4)",    /* 4 cards desktop */
-                  minWidth: "200px",                         /* mobile fallback */
-                }}
+                style={{ width: cardWidth }}
               >
-                <div className="aspect-square overflow-hidden bg-secondary">
+                <div className="aspect-square overflow-hidden bg-secondary rounded-lg">
                   <img
                     src={product.image}
                     alt={product.name}
+                    draggable={false}
                     className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                     loading="lazy"
                   />
