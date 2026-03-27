@@ -17,6 +17,7 @@ import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Heart, ShoppingBag, Package, Palette, ChevronLeft, ChevronRight, Search, X } from "lucide-react";
 import { useDesign } from "@/hooks/useDesignSettings";
+import ProductColorPicker from "@/components/ProductColorPicker";
 
 // ─── Title Case helper ─────────────────────────────────────────
 const toTitleCase = (str: string) =>
@@ -313,45 +314,13 @@ const ProductDetail = () => {
               {isAl ? product.description_al : product.description_en}
             </p>
 
-            {/* Colors as selectable swatches */}
+            {/* Colors — brand palette picker */}
             {productColors.length > 0 && (
-              <div>
-                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
-                  {t("Ngjyra", "Color")}
-                  {selectedColorId && (
-                    <span className="ml-2 font-normal normal-case text-foreground">
-                      — {(() => {
-                        const c = productColors.find((c) => c.id === selectedColorId);
-                        return c ? (isAl ? (c.color_name_al || c.color_name) : (c.color_name_en || c.color_name)) : "";
-                      })()}
-                    </span>
-                  )}
-                </p>
-                <div className="flex flex-wrap gap-3">
-                  {productColors.map((c) => (
-                    <button
-                      key={c.id}
-                      onClick={() => setSelectedColorId(selectedColorId === c.id ? null : c.id)}
-                      className="flex flex-col items-center gap-1 group"
-                      title={isAl ? (c.color_name_al || c.color_name) : (c.color_name_en || c.color_name)}
-                    >
-                      <div
-                        className={`w-9 h-9 rounded-full border-2 shadow-sm transition-all ${
-                          selectedColorId === c.id
-                            ? "border-primary ring-2 ring-primary/30 scale-110"
-                            : "border-border group-hover:border-foreground/40"
-                        }`}
-                        style={{ backgroundColor: c.color_hex }}
-                      />
-                      <span className={`text-[10px] transition-colors ${
-                        selectedColorId === c.id ? "text-foreground font-medium" : "text-muted-foreground"
-                      }`}>
-                        {isAl ? (c.color_name_al || c.color_name) : (c.color_name_en || c.color_name)}
-                      </span>
-                    </button>
-                  ))}
-                </div>
-              </div>
+              <ProductColorPicker
+                productColors={productColors}
+                selectedColorId={selectedColorId}
+                onSelectColor={setSelectedColorId}
+              />
             )}
 
             {/* Sizes as selectable chips */}
