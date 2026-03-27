@@ -32,10 +32,12 @@ const ProductCard = ({
   product,
   collectionSlug,
   isAl,
+  productColors,
 }: {
   product: Product;
   collectionSlug: string;
   isAl: boolean;
+  productColors?: ProductColor[];
 }) => {
   const { user } = useAuth();
   const { data: wishlist } = useWishlist(user?.id);
@@ -51,7 +53,26 @@ const ProductCard = ({
     ? product.dimensions_al || product.dimensions_en
     : product.dimensions_en || product.dimensions_al;
 
-  const image = product.image_url || "";
+  const [activeImage, setActiveImage] = useState<string | null>(null);
+  const [activeColorId, setActiveColorId] = useState<string | null>(null);
+  const image = activeImage || product.image_url || "";
+
+  const colors = productColors?.filter((c) => c.product_id === product.id) ?? [];
+
+  const handleColorClick = (color: ProductColor) => {
+    if (activeColorId === color.id) {
+      // Deselect
+      setActiveColorId(null);
+      setActiveImage(null);
+    } else {
+      setActiveColorId(color.id);
+      if ((color as any).image_url) {
+        setActiveImage((color as any).image_url);
+      } else {
+        setActiveImage(null);
+      }
+    }
+  };
 
   return (
     <div className="group relative flex flex-col">
@@ -65,7 +86,7 @@ const ProductCard = ({
             <img
               src={image}
               alt={title}
-              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+              className="w-full h-full object-cover transition-all duration-300 group-hover:scale-105"
               loading="lazy"
             />
           ) : (
@@ -87,6 +108,29 @@ const ProductCard = ({
           )}
         </div>
       </Link>
+
+      {/* Color swatches */}
+      {colors.length > 0 && (
+        <div className="flex flex-wrap gap-1.5 mt-2">
+          {colors.map((c) => (
+            <button
+              key={c.id}
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                handleColorClick(c);
+              }}
+              title={isAl ? (c.color_name_al || c.color_name) : (c.color_name_en || c.color_name)}
+              className={`w-6 h-6 rounded-full border-2 transition-all ${
+                activeColorId === c.id
+                  ? "border-primary ring-2 ring-primary/30 scale-110"
+                  : "border-border hover:border-foreground/40"
+              }`}
+              style={{ backgroundColor: c.color_hex }}
+            />
+          ))}
+        </div>
+      )}
 
       {/* Wishlist */}
       <button
@@ -690,6 +734,7 @@ const Collections = () => {
                       product={product}
                       collectionSlug={getCollectionSlug(product)}
                       isAl={isAl}
+                      productColors={allColors}
                     />
                   ))}
                 </div>
