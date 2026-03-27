@@ -5,6 +5,7 @@ import {
   useCollections, useProducts, useProductImages,
   useAllProductColors, useAllProductSizes,
   useAllProductColorAssignments,
+  productSlug,
   useWishlist, useToggleWishlist,
   type ProductColor, type ProductSize, type ProductColorAssignment,
 } from "@/hooks/useCollections";
@@ -221,7 +222,7 @@ const RelatedProducts = ({ collectionId, currentProductId, isAl, collectionSlug 
               return (
                 <Link
                   key={p.id}
-                  to={`/koleksionet/${collectionSlug}/${p.id}`}
+                  to={`/koleksionet/${collectionSlug}/${productSlug(p)}`}
                   className="group flex-shrink-0 snap-start"
                   style={{ width: "65vw", maxWidth: "240px" }}
                 >
@@ -253,7 +254,7 @@ const RelatedProducts = ({ collectionId, currentProductId, isAl, collectionSlug 
           {related.map((p) => {
             const productAssignments = allAssignments?.filter((a) => a.product_id === p.id) ?? [];
             return (
-              <Link key={p.id} to={`/koleksionet/${collectionSlug}/${p.id}`} className="group">
+              <Link key={p.id} to={`/koleksionet/${collectionSlug}/${productSlug(p)}`} className="group">
                 <div className="aspect-square bg-muted overflow-hidden mb-3">
                   {p.image_url ? (
                     <img src={p.image_url} alt={isAl ? p.title_al : p.title_en} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" />
@@ -300,18 +301,22 @@ const ProductDetail = () => {
 
   const t = (al: string, en: string) => (isAl ? al : en);
 
-  const product = allProducts?.find((p) => p.id === productId);
+  // Resolve by slug (new) or UUID (legacy)
+  const product = allProducts?.find((p) =>
+    (p as any).slug === productId || p.id === productId
+  );
+  const resolvedProductId = product?.id ?? productId;
   const collection = collections?.find((c) => c.slug === slug);
   const parentCollection = collection?.parent_id
     ? collections?.find((c) => c.id === collection.parent_id)
     : null;
 
   // Use new assignments if available, fall back to legacy product_colors
-  const productColorAssignments = allAssignments?.filter((a) => a.product_id === productId) ?? [];
-  const productColors = allColors?.filter((c) => c.product_id === productId) ?? [];
-  const productSizes = allSizes?.filter((s) => s.product_id === productId) ?? [];
+  const productColorAssignments = allAssignments?.filter((a) => a.product_id === resolvedProductId) ?? [];
+  const productColors = allColors?.filter((c) => c.product_id === resolvedProductId) ?? [];
+  const productSizes = allSizes?.filter((s) => s.product_id === resolvedProductId) ?? [];
 
-  const isWishlisted = wishlistItems?.some((w) => w.product_id === productId) ?? false;
+  const isWishlisted = wishlistItems?.some((w) => w.product_id === resolvedProductId) ?? false;
 
   const handleWishlistClick = useCallback(() => {
     if (!user) {
@@ -319,7 +324,7 @@ const ProductDetail = () => {
       return;
     }
     if (!productId) return;
-    toggleWishlist.mutate({ userId: user.id, productId, isWishlisted });
+    toggleWishlist.mutate({ userId: user.id, productId: resolvedProductId, isWishlisted });
   }, [user, productId, isWishlisted, navigate, toggleWishlist]);
 
   if (!product) {
