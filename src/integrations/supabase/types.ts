@@ -374,6 +374,7 @@ export type Database = {
           color_name_en: string
           created_at: string
           id: string
+          image_url: string
           product_id: string
           sort_order: number
         }
@@ -384,6 +385,7 @@ export type Database = {
           color_name_en?: string
           created_at?: string
           id?: string
+          image_url?: string
           product_id: string
           sort_order?: number
         }
@@ -394,6 +396,7 @@ export type Database = {
           color_name_en?: string
           created_at?: string
           id?: string
+          image_url?: string
           product_id?: string
           sort_order?: number
         }
