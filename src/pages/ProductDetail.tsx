@@ -194,10 +194,10 @@ const ProductDetail = () => {
   const { isAl } = useLanguage();
   const { user } = useAuth();
   const navigate = useNavigate();
-  const { data: collections } = useCollections();
-  const { data: allProducts } = useProducts();
-  const { data: allColors } = useAllProductColors();
-  const { data: allSizes } = useAllProductSizes();
+  const { data: collections, isLoading: collectionsLoading } = useCollections();
+  const { data: allProducts, isLoading: productsLoading } = useProducts();
+  const { data: allColors, isLoading: colorsLoading } = useAllProductColors();
+  const { data: allSizes, isLoading: sizesLoading } = useAllProductSizes();
   const { data: wishlistItems } = useWishlist(user?.id);
   const toggleWishlist = useToggleWishlist();
   const { addItem } = useCart();
@@ -226,6 +226,19 @@ const ProductDetail = () => {
     if (!productId) return;
     toggleWishlist.mutate({ userId: user.id, productId, isWishlisted });
   }, [user, productId, isWishlisted, navigate, toggleWishlist]);
+
+  // Show loading spinner while data is being fetched
+  if (productsLoading || collectionsLoading || colorsLoading || sizesLoading) {
+    return (
+      <div className="min-h-screen bg-background">
+        <SiteHeader />
+        <div className="flex items-center justify-center py-32">
+          <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+        </div>
+        <SiteFooter />
+      </div>
+    );
+  }
 
   if (!product) {
     return (
