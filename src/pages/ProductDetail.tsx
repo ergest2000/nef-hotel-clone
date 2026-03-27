@@ -4,8 +4,9 @@ import { useCart } from "@/hooks/useCart";
 import {
   useCollections, useProducts, useProductImages,
   useAllProductColors, useAllProductSizes,
+  useAllProductColorAssignments,
   useWishlist, useToggleWishlist,
-  type ProductColor, type ProductSize,
+  type ProductColor, type ProductSize, type ProductColorAssignment,
 } from "@/hooks/useCollections";
 import { useLanguage } from "@/hooks/useLanguage";
 import { useAuth } from "@/hooks/useAuth";
@@ -197,6 +198,7 @@ const ProductDetail = () => {
   const { data: collections } = useCollections();
   const { data: allProducts } = useProducts();
   const { data: allColors } = useAllProductColors();
+  const { data: allAssignments } = useAllProductColorAssignments();
   const { data: allSizes } = useAllProductSizes();
   const { data: wishlistItems } = useWishlist(user?.id);
   const toggleWishlist = useToggleWishlist();
@@ -213,7 +215,11 @@ const ProductDetail = () => {
     ? collections?.find((c) => c.id === collection.parent_id)
     : null;
 
+  // Use new assignments if available, fall back to legacy product_colors
+  const productColorAssignments = allAssignments?.filter((a) => a.product_id === productId) ?? [];
   const productColors = allColors?.filter((c) => c.product_id === productId) ?? [];
+  // DEBUG — remove after fix
+  console.log('[Colors] productId:', productId, 'assignments:', productColorAssignments, 'legacy:', productColors);
   const productSizes = allSizes?.filter((s) => s.product_id === productId) ?? [];
 
   const isWishlisted = wishlistItems?.some((w) => w.product_id === productId) ?? false;
@@ -289,7 +295,9 @@ const ProductDetail = () => {
             productId={product.id}
             colorImageUrl={
               selectedColorId
-                ? (productColors.find((c) => c.id === selectedColorId) as any)?.image_url || null
+                ? (productColorAssignments.find((a) => a.id === selectedColorId)?.image_url
+                  || productColors.find((c) => c.id === selectedColorId)?.image_url
+                  || null)
                 : null
             }
             onOpenLightbox={(images, index) => setLightbox({ images, index })}
@@ -315,9 +323,10 @@ const ProductDetail = () => {
             </p>
 
             {/* Colors — brand palette picker */}
-            {productColors.length > 0 && (
+            {(productColorAssignments.length > 0 || productColors.length > 0) && (
               <ProductColorPicker
-                productColors={productColors}
+                assignments={productColorAssignments}
+                legacyColors={productColors}
                 selectedColorId={selectedColorId}
                 onSelectColor={setSelectedColorId}
               />
