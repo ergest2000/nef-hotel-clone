@@ -508,7 +508,14 @@ const ProductDetail = () => {
               )}
               {product.customizable && (
                 <div className="flex items-center gap-1.5 text-xs font-semibold tracking-wider text-primary bg-primary/5 border border-primary/20 rounded-sm px-3 py-1.5">
-                  <Palette className="h-3.5 w-3.5" />
+                  {settings?.customizable_icon_svg ? (
+                    <span
+                      className="h-3.5 w-3.5 shrink-0 [&>svg]:h-3.5 [&>svg]:w-3.5 [&>svg]:stroke-current"
+                      dangerouslySetInnerHTML={{ __html: settings.customizable_icon_svg }}
+                    />
+                  ) : (
+                    <Palette className="h-3.5 w-3.5" />
+                  )}
                   {t("I PERSONALIZUESHËM", "CUSTOMIZABLE")}
                 </div>
               )}
