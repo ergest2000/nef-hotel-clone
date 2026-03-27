@@ -8,8 +8,6 @@ import catBathroom from "@/assets/cat-bathroom.jpg";
 import catPool from "@/assets/cat-pool.jpg";
 import catSpa from "@/assets/cat-spa.jpg";
 import type { Tables } from "@/integrations/supabase/types";
-import { useAllProductColorAssignments, productSlug } from "@/hooks/useCollections";
-import ProductColorPicker from "@/components/ProductColorPicker";
 
 type SiteContent = Tables<"site_content">;
 
@@ -43,7 +41,6 @@ const SuggestionsSection = ({ content }: { content?: SiteContent[] }) => {
   const title = getContentValue(content, "suggestions", "title", "SUGGESTIONS FOR YOU");
   const { lang } = useLanguage();
   const { data: dynamicProducts } = useSuggestedProductsFull();
-  const { data: allAssignments } = useAllProductColorAssignments();
 
   const products = dynamicProducts?.length
     ? dynamicProducts.map((p: any) => ({
@@ -185,11 +182,7 @@ const SuggestionsSection = ({ content }: { content?: SiteContent[] }) => {
       <div className="container">
         {/* Title */}
         <h2 className="text-xl md:text-2xl tracking-wide-brand text-foreground font-light text-center mb-12">
-          <span className="md:hidden">
-            {title.split(" ")[0]}<br />
-            {title.split(" ").slice(1).join(" ")}
-          </span>
-          <span className="hidden md:inline">{title}</span>
+          {title}
         </h2>
 
         {/* ── Slider wrapper with overlay arrows ─────────────────── */}
@@ -258,7 +251,7 @@ const SuggestionsSection = ({ content }: { content?: SiteContent[] }) => {
               {products.map((product) => (
                 <a
                   key={product.id}
-                  href={`/koleksionet/${product.collectionSlug}/${product.slug || product.id}`}
+                  href={`/koleksionet/${product.collectionSlug}/${product.id}`}
                   draggable={false}
                   className="group shrink-0"
                   style={{
@@ -280,18 +273,6 @@ const SuggestionsSection = ({ content }: { content?: SiteContent[] }) => {
                   >
                     {toTitleCase(product.name)}
                   </p>
-                  {/* Color swatches */}
-                  {allAssignments && allAssignments.filter((a) => a.product_id === product.id).length > 0 && (
-                    <div className="mt-2" onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}>
-                      <ProductColorPicker
-                        assignments={allAssignments.filter((a) => a.product_id === product.id)}
-                        legacyColors={[]}
-                        selectedColorId={null}
-                        onSelectColor={() => {}}
-                        compact
-                      />
-                    </div>
-                  )}
                 </a>
               ))}
             </div>
