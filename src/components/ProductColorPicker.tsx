@@ -1,11 +1,9 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { useLanguage } from "@/hooks/useLanguage";
-import type { ProductColor } from "@/hooks/useCollections";
 import { Check } from "lucide-react";
+import type { ProductColor, ProductColorAssignment } from "@/hooks/useCollections";
 
-/* ─────────────────────────────────────────────────────────────────────
-   Helper: is a color very light? (needs dark border / check icon)
-───────────────────────────────────────────────────────────────────── */
+/* ─── Helpers ─────────────────────────────────────────────────── */
 const isLight = (hex: string): boolean => {
   const c = hex.replace("#", "");
   if (c.length < 6) return true;
@@ -15,16 +13,45 @@ const isLight = (hex: string): boolean => {
   return (r * 299 + g * 587 + b * 114) / 1000 > 200;
 };
 
-/* ─────────────────────────────────────────────────────────────────────
-   Tooltip
-───────────────────────────────────────────────────────────────────── */
-interface TooltipProps {
+/* ─── Normalised swatch shape used internally ─────────────────── */
+interface Swatch {
+  id: string;       // assignment.id or legacy color.id
+  hex: string;
+  nameAl: string;
+  nameEn: string;
+}
+
+function toSwatches(
+  assignments: ProductColorAssignment[],
+  legacy: ProductColor[]
+): Swatch[] {
+  if (assignments.length > 0) {
+    return assignments.map((a) => ({
+      id: a.id,
+      hex: a.color?.hex ?? "#CCCCCC",
+      nameAl: a.color?.name_al ?? "",
+      nameEn: a.color?.name_en ?? "",
+    }));
+  }
+  // fall back to old product_colors table
+  return legacy.map((c) => ({
+    id: c.id,
+    hex: c.color_hex,
+    nameAl: c.color_name_al || c.color_name,
+    nameEn: c.color_name_en || c.color_name,
+  }));
+}
+
+/* ─── Tooltip ─────────────────────────────────────────────────── */
+const Tooltip = ({
+  text,
+  visible,
+  anchor,
+}: {
   text: string;
   visible: boolean;
   anchor: HTMLElement | null;
-}
-
-const Tooltip = ({ text, visible, anchor }: TooltipProps) => {
+}) => {
   const [pos, setPos] = useState({ x: 0, y: 0 });
 
   useEffect(() => {
@@ -62,86 +89,81 @@ const Tooltip = ({ text, visible, anchor }: TooltipProps) => {
   );
 };
 
-/* ─────────────────────────────────────────────────────────────────────
-   Props
-───────────────────────────────────────────────────────────────────── */
+/* ─── Props ───────────────────────────────────────────────────── */
 interface ProductColorPickerProps {
-  productColors: ProductColor[];
+  /** New system: assignments joined with global_colors */
+  assignments?: ProductColorAssignment[];
+  /** Legacy fallback: old product_colors rows */
+  legacyColors?: ProductColor[];
   selectedColorId: string | null;
   onSelectColor: (colorId: string | null) => void;
   compact?: boolean;
 }
 
-/* ─────────────────────────────────────────────────────────────────────
-   Main Component
-───────────────────────────────────────────────────────────────────── */
+/* ─── Component ───────────────────────────────────────────────── */
 const ProductColorPicker = ({
-  productColors,
+  assignments = [],
+  legacyColors = [],
   selectedColorId,
   onSelectColor,
   compact = false,
 }: ProductColorPickerProps) => {
   const { isAl } = useLanguage();
-  const [tooltipColorId, setTooltipColorId] = useState<string | null>(null);
+  const [tooltipId, setTooltipId] = useState<string | null>(null);
   const [tooltipAnchor, setTooltipAnchor] = useState<HTMLElement | null>(null);
   const hideTimer = useRef<ReturnType<typeof setTimeout>>();
 
   const t = (al: string, en: string) => (isAl ? al : en);
 
+  const swatches = toSwatches(assignments, legacyColors);
+
   const getLabel = useCallback(
-    (color: ProductColor) =>
-      isAl
-        ? color.color_name_al || color.color_name
-        : color.color_name_en || color.color_name,
+    (s: Swatch) => (isAl ? s.nameAl : s.nameEn) || s.nameAl || s.nameEn,
     [isAl]
   );
 
-  const handleMouseEnter = (id: string, el: HTMLElement) => {
+  const handleEnter = (id: string, el: HTMLElement) => {
     clearTimeout(hideTimer.current);
-    setTooltipColorId(id);
+    setTooltipId(id);
     setTooltipAnchor(el);
   };
-
-  const handleMouseLeave = () => {
+  const handleLeave = () => {
     hideTimer.current = setTimeout(() => {
-      setTooltipColorId(null);
+      setTooltipId(null);
       setTooltipAnchor(null);
     }, 120);
   };
 
-  const selectedColor = productColors.find((c) => c.id === selectedColorId) ?? null;
-  const tooltipColor = productColors.find((c) => c.id === tooltipColorId);
+  const selectedSwatch = swatches.find((s) => s.id === selectedColorId) ?? null;
+  const tooltipSwatch = swatches.find((s) => s.id === tooltipId);
 
-  if (!productColors.length) return null;
+  if (!swatches.length) return null;
 
-  /* ── Compact mode (product cards) ────────────────────────────── */
+  /* ── Compact (product cards) ──────────────────────────────── */
   if (compact) {
     return (
       <div className="flex flex-wrap gap-1.5">
-        {productColors.map((color) => {
-          const light = isLight(color.color_hex);
-          const isSelected = selectedColorId === color.id;
-
+        {swatches.map((s) => {
+          const light = isLight(s.hex);
+          const isSel = selectedColorId === s.id;
           return (
             <button
-              key={color.id}
+              key={s.id}
               onClick={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
-                onSelectColor(isSelected ? null : color.id);
+                onSelectColor(isSel ? null : s.id);
               }}
-              onMouseEnter={(e) => handleMouseEnter(color.id, e.currentTarget)}
-              onMouseLeave={handleMouseLeave}
-              title={getLabel(color)}
-              className={`
-                relative w-6 h-6 rounded-full transition-all duration-200 ease-out
-                ${isSelected
+              onMouseEnter={(e) => handleEnter(s.id, e.currentTarget)}
+              onMouseLeave={handleLeave}
+              title={getLabel(s)}
+              className={`relative w-6 h-6 rounded-full transition-all duration-200 ease-out
+                ${isSel
                   ? "ring-2 ring-offset-1 ring-primary scale-110"
-                  : `hover:scale-110 ${light ? "border border-gray-200" : ""}`}
-              `}
-              style={{ backgroundColor: color.color_hex }}
+                  : `hover:scale-110 ${light ? "border border-gray-200" : ""}`}`}
+              style={{ backgroundColor: s.hex }}
             >
-              {isSelected && (
+              {isSel && (
                 <Check
                   className={`absolute inset-0 m-auto w-3 h-3 ${light ? "text-gray-700" : "text-white"}`}
                   strokeWidth={3}
@@ -150,29 +172,31 @@ const ProductColorPicker = ({
             </button>
           );
         })}
-
         <Tooltip
-          text={tooltipColor ? getLabel(tooltipColor) : ""}
-          visible={!!tooltipColorId}
+          text={tooltipSwatch ? getLabel(tooltipSwatch) : ""}
+          visible={!!tooltipId}
           anchor={tooltipAnchor}
         />
       </div>
     );
   }
 
-  /* ── Full mode (product detail page) ─────────────────────────── */
+  /* ── Full (product detail) ────────────────────────────────── */
   return (
     <div className="space-y-3">
-      {/* Label row */}
+      {/* Header */}
       <div className="flex items-center gap-2">
         <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
           {t("Ngjyra", "Color")}
         </p>
-        {selectedColor && (
+        {selectedSwatch && (
           <span className="text-xs text-foreground font-medium">
-            — {getLabel(selectedColor)}
-            <span className="ml-1.5 font-mono text-muted-foreground" style={{ fontSize: "10px" }}>
-              {selectedColor.color_hex.toUpperCase()}
+            — {getLabel(selectedSwatch)}
+            <span
+              className="ml-1.5 font-mono text-muted-foreground"
+              style={{ fontSize: "10px" }}
+            >
+              {selectedSwatch.hex.toUpperCase()}
             </span>
           </span>
         )}
@@ -180,69 +204,59 @@ const ProductColorPicker = ({
 
       {/* Swatches */}
       <div className="flex flex-wrap gap-2.5">
-        {productColors.map((color) => {
-          const light = isLight(color.color_hex);
-          const isSelected = selectedColorId === color.id;
-
+        {swatches.map((s) => {
+          const light = isLight(s.hex);
+          const isSel = selectedColorId === s.id;
           return (
             <button
-              key={color.id}
-              onClick={() => onSelectColor(isSelected ? null : color.id)}
-              onMouseEnter={(e) => handleMouseEnter(color.id, e.currentTarget)}
-              onMouseLeave={handleMouseLeave}
+              key={s.id}
+              onClick={() => onSelectColor(isSel ? null : s.id)}
+              onMouseEnter={(e) => handleEnter(s.id, e.currentTarget)}
+              onMouseLeave={handleLeave}
               className="group relative flex flex-col items-center gap-1.5 transition-all duration-200 ease-out"
             >
-              {/* Swatch circle */}
+              {/* Circle swatch */}
               <div
-                className={`
-                  relative w-10 h-10 md:w-11 md:h-11 rounded-full
-                  transition-all duration-200 ease-out
-                  ${isSelected
+                className={`relative w-10 h-10 md:w-11 md:h-11 rounded-full transition-all duration-200 ease-out
+                  ${isSel
                     ? "ring-[2.5px] ring-offset-2 ring-primary scale-105 shadow-md"
                     : `shadow-sm hover:shadow-md hover:scale-105 ${
                         light
                           ? "border border-gray-200 hover:border-gray-300"
                           : "border border-transparent"
-                      }`
-                  }
-                `}
-                style={{ backgroundColor: color.color_hex }}
+                      }`}`}
+                style={{ backgroundColor: s.hex }}
               >
-                {isSelected && (
+                {isSel && (
                   <Check
-                    className={`absolute inset-0 m-auto w-4 h-4 drop-shadow-sm ${
-                      light ? "text-gray-700" : "text-white"
-                    }`}
+                    className={`absolute inset-0 m-auto w-4 h-4 drop-shadow-sm ${light ? "text-gray-700" : "text-white"}`}
                     strokeWidth={3}
                   />
                 )}
               </div>
 
-              {/* Color name */}
+              {/* Name label */}
               <span
-                className={`
-                  text-[10px] leading-tight text-center max-w-[56px] truncate
-                  transition-colors duration-150
-                  ${isSelected
+                className={`text-[10px] leading-tight text-center max-w-[56px] truncate transition-colors duration-150
+                  ${isSel
                     ? "text-foreground font-semibold"
-                    : "text-muted-foreground group-hover:text-foreground"}
-                `}
+                    : "text-muted-foreground group-hover:text-foreground"}`}
               >
-                {getLabel(color)}
+                {getLabel(s)}
               </span>
             </button>
           );
         })}
       </div>
 
-      {/* Tooltip: name + HEX */}
+      {/* Tooltip */}
       <Tooltip
         text={
-          tooltipColor
-            ? `${getLabel(tooltipColor)} · ${tooltipColor.color_hex.toUpperCase()}`
+          tooltipSwatch
+            ? `${getLabel(tooltipSwatch)} · ${tooltipSwatch.hex.toUpperCase()}`
             : ""
         }
-        visible={!!tooltipColorId}
+        visible={!!tooltipId}
         anchor={tooltipAnchor}
       />
     </div>
