@@ -288,7 +288,7 @@ const ProductDetail = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { data: collections } = useCollections();
-  const { data: allProducts } = useProducts();
+  const { data: allProducts, isLoading: loadingProducts } = useProducts();
   const { data: allColors } = useAllProductColors();
   const { data: allAssignments } = useAllProductColorAssignments();
   const { data: allSizes } = useAllProductSizes();
@@ -326,6 +326,18 @@ const ProductDetail = () => {
     if (!productId) return;
     toggleWishlist.mutate({ userId: user.id, productId: resolvedProductId, isWishlisted });
   }, [user, productId, isWishlisted, navigate, toggleWishlist]);
+
+  if (loadingProducts) {
+    return (
+      <div className="min-h-screen bg-background">
+        <SiteHeader />
+        <div className="flex items-center justify-center py-32">
+          <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+        </div>
+        <SiteFooter />
+      </div>
+    );
+  }
 
   if (!product) {
     return (
