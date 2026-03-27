@@ -166,7 +166,36 @@ const RelatedProducts = ({ collectionId, currentProductId, isAl, collectionSlug 
         <h2 className="text-xl md:text-2xl tracking-wide-brand text-foreground font-light text-center mb-10">
           {t("KOMBINOJE ATE ME", "COMBINE IT WITH")}
         </h2>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
+
+        {/* Mobile: horizontal scroll carousel */}
+        <div className="md:hidden flex gap-4 overflow-x-auto snap-x snap-mandatory scrollbar-none pb-2"
+          style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+        >
+          {related.map((p) => (
+            <Link
+              key={p.id}
+              to={`/koleksionet/${collectionSlug}/${p.id}`}
+              className="group flex-shrink-0 snap-start"
+              style={{ width: "70vw", maxWidth: "260px" }}
+            >
+              <div className="aspect-square bg-muted overflow-hidden mb-3">
+                {p.image_url ? (
+                  <img src={p.image_url} alt={isAl ? p.title_al : p.title_en} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" />
+                ) : (
+                  <div className="flex items-center justify-center h-full">
+                    <Package className="h-10 w-10 text-muted-foreground/20" />
+                  </div>
+                )}
+              </div>
+              <p className="text-sm font-medium text-foreground group-hover:text-primary transition-colors line-clamp-2">
+                {toTitleCase(isAl ? p.title_al : p.title_en)}
+              </p>
+            </Link>
+          ))}
+        </div>
+
+        {/* Desktop: grid */}
+        <div className="hidden md:grid md:grid-cols-4 gap-6">
           {related.map((p) => (
             <Link key={p.id} to={`/koleksionet/${collectionSlug}/${p.id}`} className="group">
               <div className="aspect-square bg-muted overflow-hidden mb-3">
