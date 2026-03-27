@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback, useRef, useEffect } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { useCart } from "@/hooks/useCart";
 import {
@@ -18,15 +18,6 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { Heart, ShoppingBag, Package, Palette, ChevronLeft, ChevronRight, Search, X } from "lucide-react";
 import { useDesign } from "@/hooks/useDesignSettings";
 import ProductColorPicker from "@/components/ProductColorPicker";
-
-// Local slug generator (fallback to id if no slug)
-const toProductSlug = (p: { id: string; title_al?: string; title_en?: string }) => {
-  const s = (p as any).slug;
-  if (s) return s;
-  const title = p.title_al || p.title_en || p.id;
-  return title.toLowerCase().replace(/[ëËçÇ]/g, 'e').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
-};
-
 
 // ─── Title Case helper ─────────────────────────────────────────
 const toTitleCase = (str: string) =>
@@ -159,37 +150,10 @@ const RelatedProducts = ({ collectionId, currentProductId, isAl, collectionSlug 
   collectionId: string; currentProductId: string; isAl: boolean; collectionSlug: string;
 }) => {
   const { data: allProducts } = useProducts(collectionId);
-  // Color assignments - safe fallback if hook not available
-  const allAssignments: any[] = [];
-  const scrollRef = useRef<HTMLDivElement>(null);
-  const [canLeft, setCanLeft] = useState(false);
-  const [canRight, setCanRight] = useState(true);
-
   const related = useMemo(
-    () => (allProducts ?? []).filter((p) => p.id !== currentProductId && p.visible).slice(0, 6),
+    () => (allProducts ?? []).filter((p) => p.id !== currentProductId && p.visible).slice(0, 4),
     [allProducts, currentProductId]
   );
-
-  const checkScroll = useCallback(() => {
-    const el = scrollRef.current;
-    if (!el) return;
-    setCanLeft(el.scrollLeft > 8);
-    setCanRight(el.scrollLeft < el.scrollWidth - el.clientWidth - 8);
-  }, []);
-
-  useEffect(() => {
-    const el = scrollRef.current;
-    if (!el) return;
-    checkScroll();
-    el.addEventListener("scroll", checkScroll, { passive: true });
-    return () => el.removeEventListener("scroll", checkScroll);
-  }, [checkScroll, related.length]);
-
-  const slide = (dir: "left" | "right") => {
-    const el = scrollRef.current;
-    if (!el) return;
-    el.scrollBy({ left: dir === "right" ? 260 : -260, behavior: "smooth" });
-  };
 
   if (!related.length) return null;
 
@@ -201,88 +165,23 @@ const RelatedProducts = ({ collectionId, currentProductId, isAl, collectionSlug 
         <h2 className="text-xl md:text-2xl tracking-wide-brand text-foreground font-light text-center mb-10">
           {t("KOMBINOJE ATE ME", "COMBINE IT WITH")}
         </h2>
-
-        {/* Mobile: scroll carousel with arrows */}
-        <div className="md:hidden relative">
-          {canLeft && (
-            <button
-              onClick={() => slide("left")}
-              className="absolute left-0 top-[38%] -translate-y-1/2 z-10 w-8 h-8 rounded-full bg-background border border-border shadow flex items-center justify-center -ml-2"
-            >
-              <ChevronLeft className="h-4 w-4" />
-            </button>
-          )}
-          {canRight && (
-            <button
-              onClick={() => slide("right")}
-              className="absolute right-0 top-[38%] -translate-y-1/2 z-10 w-8 h-8 rounded-full bg-background border border-border shadow flex items-center justify-center -mr-2"
-            >
-              <ChevronRight className="h-4 w-4" />
-            </button>
-          )}
-          <div
-            ref={scrollRef}
-            className="flex gap-4 overflow-x-auto snap-x snap-mandatory pb-2"
-            style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
-          >
-            {related.map((p) => {
-              const productAssignments = allAssignments?.filter((a) => a.product_id === p.id) ?? [];
-              return (
-                <Link
-                  key={p.id}
-                  to={`/koleksionet/${collectionSlug}/${toProductSlug(p)}`}
-                  className="group flex-shrink-0 snap-start"
-                  style={{ width: "65vw", maxWidth: "240px" }}
-                >
-                  <div className="aspect-square bg-muted overflow-hidden mb-3">
-                    {p.image_url ? (
-                      <img src={p.image_url} alt={isAl ? p.title_al : p.title_en} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" />
-                    ) : (
-                      <div className="flex items-center justify-center h-full">
-                        <Package className="h-10 w-10 text-muted-foreground/20" />
-                      </div>
-                    )}
-                  </div>
-                  <p className="text-sm font-medium text-foreground group-hover:text-primary transition-colors line-clamp-2 mb-2">
-                    {toTitleCase(isAl ? p.title_al : p.title_en)}
-                  </p>
-                  {productAssignments.length > 0 && (
-                    <div onClick={(e) => e.preventDefault()}>
-                      <ProductColorPicker assignments={productAssignments} legacyColors={[]} selectedColorId={null} onSelectColor={() => {}} compact />
-                    </div>
-                  )}
-                </Link>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* Desktop: grid */}
-        <div className="hidden md:grid md:grid-cols-4 gap-6">
-          {related.map((p) => {
-            const productAssignments = allAssignments?.filter((a) => a.product_id === p.id) ?? [];
-            return (
-              <Link key={p.id} to={`/koleksionet/${collectionSlug}/${toProductSlug(p)}`} className="group">
-                <div className="aspect-square bg-muted overflow-hidden mb-3">
-                  {p.image_url ? (
-                    <img src={p.image_url} alt={isAl ? p.title_al : p.title_en} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" />
-                  ) : (
-                    <div className="flex items-center justify-center h-full">
-                      <Package className="h-10 w-10 text-muted-foreground/20" />
-                    </div>
-                  )}
-                </div>
-                <p className="text-sm font-medium text-foreground group-hover:text-primary transition-colors line-clamp-2 mb-2">
-                  {toTitleCase(isAl ? p.title_al : p.title_en)}
-                </p>
-                {productAssignments.length > 0 && (
-                  <div onClick={(e) => e.preventDefault()}>
-                    <ProductColorPicker assignments={productAssignments} legacyColors={[]} selectedColorId={null} onSelectColor={() => {}} compact />
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
+          {related.map((p) => (
+            <Link key={p.id} to={`/koleksionet/${collectionSlug}/${p.id}`} className="group">
+              <div className="aspect-square bg-muted overflow-hidden mb-3">
+                {p.image_url ? (
+                  <img src={p.image_url} alt={isAl ? p.title_al : p.title_en} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" />
+                ) : (
+                  <div className="flex items-center justify-center h-full">
+                    <Package className="h-10 w-10 text-muted-foreground/20" />
                   </div>
                 )}
-              </Link>
-            );
-          })}
+              </div>
+              <p className="text-sm font-medium text-foreground group-hover:text-primary transition-colors line-clamp-2">
+                {toTitleCase(isAl ? p.title_al : p.title_en)}
+              </p>
+            </Link>
+          ))}
         </div>
       </div>
     </section>
@@ -296,10 +195,8 @@ const ProductDetail = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { data: collections } = useCollections();
-  const { data: allProducts, isLoading: loadingProducts } = useProducts();
+  const { data: allProducts } = useProducts();
   const { data: allColors } = useAllProductColors();
-  // Color assignments - safe fallback if hook not available
-  const allAssignments: any[] = [];
   const { data: allSizes } = useAllProductSizes();
   const { data: wishlistItems } = useWishlist(user?.id);
   const toggleWishlist = useToggleWishlist();
@@ -310,22 +207,16 @@ const ProductDetail = () => {
 
   const t = (al: string, en: string) => (isAl ? al : en);
 
-  // Resolve by slug (new) or UUID (legacy)
-  const product = allProducts?.find((p) =>
-    (p as any).slug === productId || p.id === productId
-  );
-  const resolvedProductId = product?.id ?? productId;
+  const product = allProducts?.find((p) => p.id === productId);
   const collection = collections?.find((c) => c.slug === slug);
   const parentCollection = collection?.parent_id
     ? collections?.find((c) => c.id === collection.parent_id)
     : null;
 
-  // Use new assignments if available, fall back to legacy product_colors
-  const productColorAssignments = allAssignments?.filter((a) => a.product_id === resolvedProductId) ?? [];
-  const productColors = allColors?.filter((c) => c.product_id === resolvedProductId) ?? [];
-  const productSizes = allSizes?.filter((s) => s.product_id === resolvedProductId) ?? [];
+  const productColors = allColors?.filter((c) => c.product_id === productId) ?? [];
+  const productSizes = allSizes?.filter((s) => s.product_id === productId) ?? [];
 
-  const isWishlisted = wishlistItems?.some((w) => w.product_id === resolvedProductId) ?? false;
+  const isWishlisted = wishlistItems?.some((w) => w.product_id === productId) ?? false;
 
   const handleWishlistClick = useCallback(() => {
     if (!user) {
@@ -333,19 +224,8 @@ const ProductDetail = () => {
       return;
     }
     if (!productId) return;
-    toggleWishlist.mutate({ userId: user.id, productId: resolvedProductId, isWishlisted });
+    toggleWishlist.mutate({ userId: user.id, productId, isWishlisted });
   }, [user, productId, isWishlisted, navigate, toggleWishlist]);
-
-  // Still loading — show nothing yet (avoids flash of "not found")
-  if (!product && loadingProducts) {
-    return (
-      <div className="min-h-screen bg-background flex flex-col">
-        <SiteHeader />
-        <div className="flex-1" />
-        <SiteFooter />
-      </div>
-    );
-  }
 
   if (!product) {
     return (
@@ -409,9 +289,7 @@ const ProductDetail = () => {
             productId={product.id}
             colorImageUrl={
               selectedColorId
-                ? (productColorAssignments.find((a) => a.id === selectedColorId)?.image_url
-                  || productColors.find((c) => c.id === selectedColorId)?.image_url
-                  || null)
+                ? (productColors.find((c) => c.id === selectedColorId) as any)?.image_url || null
                 : null
             }
             onOpenLightbox={(images, index) => setLightbox({ images, index })}
@@ -437,10 +315,9 @@ const ProductDetail = () => {
             </p>
 
             {/* Colors — brand palette picker */}
-            {(productColorAssignments.length > 0 || productColors.length > 0) && (
+            {productColors.length > 0 && (
               <ProductColorPicker
-                assignments={productColorAssignments}
-                legacyColors={productColors}
+                productColors={productColors}
                 selectedColorId={selectedColorId}
                 onSelectColor={setSelectedColorId}
               />
@@ -516,14 +393,7 @@ const ProductDetail = () => {
               )}
               {product.customizable && (
                 <div className="flex items-center gap-1.5 text-xs font-semibold tracking-wider text-primary bg-primary/5 border border-primary/20 rounded-sm px-3 py-1.5">
-                  {settings?.customizable_icon_svg ? (
-                    <span
-                      className="h-3.5 w-3.5 shrink-0 [&>svg]:h-3.5 [&>svg]:w-3.5 [&>svg]:stroke-current"
-                      dangerouslySetInnerHTML={{ __html: settings.customizable_icon_svg }}
-                    />
-                  ) : (
-                    <Palette className="h-3.5 w-3.5" />
-                  )}
+                  <Palette className="h-3.5 w-3.5" />
                   {t("I PERSONALIZUESHËM", "CUSTOMIZABLE")}
                 </div>
               )}
