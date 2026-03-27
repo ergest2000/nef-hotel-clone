@@ -3,10 +3,9 @@ import { useCollections } from "@/hooks/useCollections";
 import {
   useProducts, useUpsertProduct, useDeleteProduct,
   useProductImages, useAddProductImage, useDeleteProductImage,
+  useProductColors, useAddProductColor, useDeleteProductColor, useUpdateProductColor,
   useProductSizes, useAddProductSize, useDeleteProductSize,
-  useGlobalColors, useProductColorAssignments,
-  useAssignColorToProduct, useUnassignColorFromProduct, useUpdateColorAssignmentImage,
-  type ProductSize,
+  type ProductColor, type ProductSize,
 } from "@/hooks/useCollections";
 import { useToast } from "@/hooks/use-toast";
 import { useAutoTranslate } from "@/hooks/useAutoTranslate";
@@ -91,127 +90,81 @@ const ProductImagesManager = ({ productId }: { productId: string }) => {
 };
 
 const ProductColorsManager = ({ productId }: { productId: string }) => {
-  const { data: globalColors } = useGlobalColors();
-  const { data: assignments } = useProductColorAssignments(productId);
-  const assign = useAssignColorToProduct();
-  const unassign = useUnassignColorFromProduct();
-  const updateImage = useUpdateColorAssignmentImage();
+  const { data: colors } = useProductColors(productId);
+  const addColor = useAddProductColor();
+  const removeColor = useDeleteProductColor();
+  const updateColor = useUpdateProductColor();
   const { toast } = useToast();
+  const [newNameAl, setNewNameAl] = useState("");
+  const [newNameEn, setNewNameEn] = useState("");
+  const [newHex, setNewHex] = useState("#FFFFFF");
 
-  const assignedColorIds = new Set(assignments?.map((a) => a.color_id) ?? []);
-
-  const toggleColor = (colorId: string) => {
-    if (assignedColorIds.has(colorId)) {
-      unassign.mutate({ product_id: productId, color_id: colorId });
-    } else {
-      assign.mutate({ product_id: productId, color_id: colorId, sort_order: assignments?.length ?? 0 });
-    }
+  const handleAdd = () => {
+    if (!newNameAl.trim() && !newNameEn.trim()) return;
+    const name = newNameAl || newNameEn;
+    addColor.mutate({ product_id: productId, color_name: name, color_name_al: newNameAl, color_name_en: newNameEn, color_hex: newHex, image_url: "", sort_order: colors?.length ?? 0 });
+    setNewNameAl("");
+    setNewNameEn("");
+    setNewHex("#FFFFFF");
   };
 
-  const handleImageUpload = async (assignmentId: string, file: File) => {
+  const handleColorImageUpload = async (colorId: string, file: File) => {
     try {
       const path = `products/${productId}/colors/${Date.now()}-${file.name}`;
       const url = await uploadCmsImage(file, path);
-      updateImage.mutate({ id: assignmentId, product_id: productId, image_url: url });
-      toast({ title: "Imazhi u ngarkua!" });
+      updateColor.mutate({ id: colorId, product_id: productId, updates: { image_url: url } });
+      toast({ title: "Imazhi i ngjyrës u ngarkua!" });
     } catch (e: any) {
       toast({ title: "Gabim", description: e.message, variant: "destructive" });
     }
   };
 
-  if (!globalColors?.length) {
-    return (
-      <div className="text-xs text-muted-foreground p-3 bg-muted rounded">
-        Nuk ka ngjyra në paletë. Shko te <strong>Ngjyrat e Produktit</strong> në menu për të shtuar.
-      </div>
-    );
-  }
-
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
       <label className="text-xs font-medium text-muted-foreground">Ngjyrat e produktit</label>
-
-      {/* Global palette — checkbox multi-select */}
-      <div className="grid grid-cols-2 gap-2">
-        {globalColors.map((color) => {
-          const isChecked = assignedColorIds.has(color.id);
-          const assignment = assignments?.find((a) => a.color_id === color.id);
-          return (
-            <div
-              key={color.id}
-              className={`flex items-center gap-2 px-3 py-2 rounded border cursor-pointer transition-colors ${
-                isChecked
-                  ? "border-primary bg-primary/5"
-                  : "border-border hover:border-muted-foreground/40"
-              }`}
-              onClick={() => toggleColor(color.id)}
-            >
-              {/* Checkbox */}
-              <div
-                className={`w-4 h-4 rounded border-2 flex items-center justify-center shrink-0 transition-colors ${
-                  isChecked ? "border-primary bg-primary" : "border-muted-foreground/40"
-                }`}
-              >
-                {isChecked && (
-                  <svg viewBox="0 0 12 12" className="w-2.5 h-2.5 text-white" fill="none" stroke="currentColor" strokeWidth="2">
-                    <polyline points="1,6 4,10 11,2" />
-                  </svg>
-                )}
+      <div className="space-y-2">
+        {colors?.map((c) => (
+          <div key={c.id} className="flex items-center gap-3 bg-muted px-3 py-2 rounded">
+            <div className="w-8 h-8 rounded-full border border-border shrink-0" style={{ backgroundColor: c.color_hex }} />
+            <div className="flex-1 min-w-0">
+              <span className="text-xs font-medium">{c.color_name_al || c.color_name}</span>
+              <span className="text-xs text-muted-foreground"> / {c.color_name_en || c.color_name}</span>
+            </div>
+            {/* Color image thumbnail or upload */}
+            {(c as any).image_url ? (
+              <div className="relative group w-10 h-10 rounded overflow-hidden bg-secondary shrink-0">
+                <img src={(c as any).image_url} alt="" className="w-full h-full object-cover" />
+                <label className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center cursor-pointer transition-opacity">
+                  <ImageIcon className="h-3 w-3 text-white" />
+                  <input type="file" accept="image/*" className="hidden" onChange={(e) => {
+                    if (e.target.files?.[0]) handleColorImageUpload(c.id, e.target.files[0]);
+                  }} />
+                </label>
               </div>
-
-              {/* Color swatch */}
-              <div
-                className="w-6 h-6 rounded-full border border-border shrink-0"
-                style={{ backgroundColor: color.hex }}
-              />
-
-              {/* Names */}
-              <div className="flex-1 min-w-0">
-                <p className="text-xs font-medium leading-tight truncate">{color.name_al}</p>
-                <p className="text-[10px] text-muted-foreground leading-tight truncate">{color.name_en}</p>
-              </div>
-
-              {/* Image upload (only if assigned) */}
-              {isChecked && assignment && (
-                <div onClick={(e) => e.stopPropagation()}>
-                  {assignment.image_url ? (
-                    <div className="relative group w-8 h-8 rounded overflow-hidden bg-secondary shrink-0">
-                      <img src={assignment.image_url} alt="" className="w-full h-full object-cover" />
-                      <label className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center cursor-pointer transition-opacity">
-                        <ImageIcon className="h-3 w-3 text-white" />
-                        <input type="file" accept="image/*" className="hidden" onChange={(e) => {
-                          if (e.target.files?.[0]) handleImageUpload(assignment.id, e.target.files[0]);
-                        }} />
-                      </label>
-                    </div>
-                  ) : (
-                    <label className="cursor-pointer shrink-0" onClick={(e) => e.stopPropagation()}>
-                      <div className="flex items-center gap-1 px-1.5 py-1 bg-secondary rounded text-[10px] hover:bg-secondary/80 text-muted-foreground whitespace-nowrap">
-                        <ImageIcon className="h-3 w-3" /> Foto
-                      </div>
-                      <input type="file" accept="image/*" className="hidden" onChange={(e) => {
-                        if (e.target.files?.[0]) handleImageUpload(assignment.id, e.target.files[0]);
-                      }} />
-                    </label>
-                  )}
+            ) : (
+              <label className="cursor-pointer shrink-0">
+                <div className="flex items-center gap-1 px-2 py-1 bg-secondary rounded text-[10px] hover:bg-secondary/80 text-muted-foreground">
+                  <ImageIcon className="h-3 w-3" /> Foto
                 </div>
-              )}
-            </div>
-          );
-        })}
+                <input type="file" accept="image/*" className="hidden" onChange={(e) => {
+                  if (e.target.files?.[0]) handleColorImageUpload(c.id, e.target.files[0]);
+                }} />
+              </label>
+            )}
+            <button onClick={() => removeColor.mutate({ id: c.id, product_id: productId })}>
+              <X className="h-3 w-3 text-muted-foreground hover:text-destructive" />
+            </button>
+          </div>
+        ))}
       </div>
-
-      {/* Summary of selected */}
-      {assignments && assignments.length > 0 && (
-        <div className="flex flex-wrap gap-1.5 pt-1">
-          {assignments.map((a) => (
-            <div key={a.id} className="flex items-center gap-1 bg-primary/10 text-primary px-2 py-0.5 rounded-full text-[10px] font-medium">
-              <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: a.color?.hex }} />
-              {a.color?.name_al}
-            </div>
-          ))}
-        </div>
-      )}
+      <div className="flex items-center gap-2 flex-wrap">
+        <Input type="color" value={newHex} onChange={(e) => setNewHex(e.target.value)} className="w-10 h-8 p-0.5" />
+        <Input value={newNameAl} onChange={(e) => setNewNameAl(e.target.value)} placeholder="Emri AL" className="h-8 text-xs flex-1 min-w-[100px]" />
+        <Input value={newNameEn} onChange={(e) => setNewNameEn(e.target.value)} placeholder="Name EN" className="h-8 text-xs flex-1 min-w-[100px]" />
+        <Button size="sm" variant="outline" className="h-8 text-xs" onClick={handleAdd}>
+          <Plus className="h-3 w-3 mr-1" /> Shto
+        </Button>
+      </div>
     </div>
   );
 };
@@ -436,30 +389,14 @@ export const AdminProductsManager = () => {
                       <label className="text-xs font-medium text-muted-foreground">Titulli (AL)</label>
                       <TranslateButton direction="al_to_en" loading={translating === "p_title"} onClick={() => translateField("p_title", editItem.title_al ?? "", "al_to_en", (t) => setEditItem((p) => p ? { ...p, title_en: t } : p))} />
                     </div>
-                    <Input
-                      value={editItem.title_al ?? ""}
-                      onChange={(e) => setEditItem({ ...editItem, title_al: e.target.value })}
-                      onBlur={(e) => {
-                        if (e.target.value.trim() && !editItem.title_en?.trim()) {
-                          translateField("p_title", e.target.value, "al_to_en", (t) => setEditItem((p) => p ? { ...p, title_en: t } : p));
-                        }
-                      }}
-                    />
+                    <Input value={editItem.title_al ?? ""} onChange={(e) => setEditItem({ ...editItem, title_al: e.target.value })} />
                   </div>
                   <div>
                     <div className="flex items-center justify-between">
                       <label className="text-xs font-medium text-muted-foreground">Title (EN)</label>
                       <TranslateButton direction="en_to_al" loading={translating === "p_title_r"} onClick={() => translateField("p_title_r", editItem.title_en ?? "", "en_to_al", (t) => setEditItem((p) => p ? { ...p, title_al: t } : p))} />
                     </div>
-                    <Input
-                      value={editItem.title_en ?? ""}
-                      onChange={(e) => setEditItem({ ...editItem, title_en: e.target.value })}
-                      onBlur={(e) => {
-                        if (e.target.value.trim() && !editItem.title_al?.trim()) {
-                          translateField("p_title_r", e.target.value, "en_to_al", (t) => setEditItem((p) => p ? { ...p, title_al: t } : p));
-                        }
-                      }}
-                    />
+                    <Input value={editItem.title_en ?? ""} onChange={(e) => setEditItem({ ...editItem, title_en: e.target.value })} />
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
