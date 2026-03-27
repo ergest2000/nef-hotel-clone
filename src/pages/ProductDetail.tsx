@@ -327,22 +327,12 @@ const ProductDetail = () => {
     toggleWishlist.mutate({ userId: user.id, productId: resolvedProductId, isWishlisted });
   }, [user, productId, isWishlisted, navigate, toggleWishlist]);
 
-  // Show skeleton only briefly while data loads — never block indefinitely
-  if (loadingProducts && !product) {
+  // Still loading — show nothing yet (avoids flash of "not found")
+  if (!product && loadingProducts) {
     return (
-      <div className="min-h-screen bg-background">
+      <div className="min-h-screen bg-background flex flex-col">
         <SiteHeader />
-        <div className="max-w-7xl mx-auto px-4 py-8 md:py-12">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12">
-            <div className="aspect-square bg-muted animate-pulse rounded" />
-            <div className="space-y-4">
-              <div className="h-8 bg-muted animate-pulse rounded w-3/4" />
-              <div className="h-4 bg-muted animate-pulse rounded w-1/2" />
-              <div className="h-4 bg-muted animate-pulse rounded w-2/3" />
-              <div className="h-12 bg-muted animate-pulse rounded mt-8" />
-            </div>
-          </div>
-        </div>
+        <div className="flex-1" />
         <SiteFooter />
       </div>
     );
