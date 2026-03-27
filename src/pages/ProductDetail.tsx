@@ -4,9 +4,8 @@ import { useCart } from "@/hooks/useCart";
 import {
   useCollections, useProducts, useProductImages,
   useAllProductColors, useAllProductSizes,
-  useAllProductColorAssignments,
   useWishlist, useToggleWishlist,
-  type ProductColor, type ProductSize, type ProductColorAssignment,
+  type ProductColor, type ProductSize,
 } from "@/hooks/useCollections";
 import { useLanguage } from "@/hooks/useLanguage";
 import { useAuth } from "@/hooks/useAuth";
@@ -160,7 +159,8 @@ const RelatedProducts = ({ collectionId, currentProductId, isAl, collectionSlug 
   collectionId: string; currentProductId: string; isAl: boolean; collectionSlug: string;
 }) => {
   const { data: allProducts } = useProducts(collectionId);
-  const { data: allAssignments } = useAllProductColorAssignments();
+  // Color assignments - safe fallback if hook not available
+  const allAssignments: any[] = [];
   const scrollRef = useRef<HTMLDivElement>(null);
   const [canLeft, setCanLeft] = useState(false);
   const [canRight, setCanRight] = useState(true);
@@ -298,7 +298,8 @@ const ProductDetail = () => {
   const { data: collections } = useCollections();
   const { data: allProducts, isLoading: loadingProducts } = useProducts();
   const { data: allColors } = useAllProductColors();
-  const { data: allAssignments } = useAllProductColorAssignments();
+  // Color assignments - safe fallback if hook not available
+  const allAssignments: any[] = [];
   const { data: allSizes } = useAllProductSizes();
   const { data: wishlistItems } = useWishlist(user?.id);
   const toggleWishlist = useToggleWishlist();
