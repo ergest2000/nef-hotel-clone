@@ -27,6 +27,7 @@ import { AdminAuthLogs } from "@/components/admin/AdminAuthLogs";
 import { AdminAuthTexts } from "@/components/admin/AdminAuthTexts";
 import { AdminCollectionsManager } from "@/components/admin/AdminCollectionsManager";
 import { AdminProductsManager } from "@/components/admin/AdminProductsManager";
+import { AdminColorsManager } from "@/components/admin/AdminColorsManager";
 import { AdminSuggestedProducts } from "@/components/admin/AdminSuggestedProducts";
 import { AdminHomepageCategories } from "@/components/admin/AdminHomepageCategories";
 import { AdminStaticPages } from "@/components/admin/AdminStaticPages";
@@ -59,6 +60,7 @@ var pageTitles: Record<string, string> = {
   slugs: "URL Slugs",
   collections: "Koleksionet",
   products: "Produktet",
+  colors: "Ngjyrat e Produktit",
   "suggested-products": "Sugjerime Homepage",
   "homepage-categories": "Kategoritë Homepage",
   "static-pages": "Faqet Statike",
@@ -290,6 +292,8 @@ function AdminDashboard() {
         return <AdminCollectionsManager />;
       case "products":
         return <AdminProductsManager />;
+      case "colors":
+        return <AdminColorsManager />;
       case "suggested-products":
         return <AdminSuggestedProducts />;
       case "homepage-categories":
