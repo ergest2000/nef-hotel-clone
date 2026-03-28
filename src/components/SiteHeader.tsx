@@ -384,7 +384,7 @@ function SiteHeader() {
                 <button className="text-foreground hover:text-primary transition-colors" onClick={function () { setDesktopMenuOpen(false); }}><X size={22} /></button>
               </div>
               <div className="px-6 py-4 flex flex-col">
-                {mainLinks.map(function (item: any) { return <SlugLink key={item.label} to={item.href} onClick={function () { setDesktopMenuOpen(false); }} className="block text-sm tracking-brand text-foreground hover:text-primary transition-colors py-3.5 border-b border-border/30 w-full">{item.label}</SlugLink>; })}
+                {mainLinks.map(function (item: any) { return <SlugLink key={item.label} to={item.href} onClick={function () { setDesktopMenuOpen(false); }} className="block text-sm tracking-brand text-foreground hover:text-primary transition-colors py-3.5 border-b border-border/30 w-full uppercase">{item.label}</SlugLink>; })}
               </div>
               <div className="px-6 pb-6 flex items-center gap-3 text-xs text-muted-foreground">
                 <button onClick={function () { setLang("al"); setDesktopMenuOpen(false); }} className={"px-3 py-1.5 border rounded-sm transition-colors " + (isAl ? "border-foreground text-foreground font-semibold" : "border-border")}>AL</button>
@@ -436,7 +436,7 @@ function SiteHeader() {
                 <button className="text-foreground hover:text-primary transition-colors" onClick={function () { setMobileMenuOpen(false); }}><X size={20} /></button>
               </div>
               <div className="px-5 py-4 flex flex-col">
-                {mainLinks.map(function (item: any) { return <SlugLink key={item.label} to={item.href} onClick={function () { setMobileMenuOpen(false); }} className="block text-sm tracking-brand text-foreground hover:text-primary transition-colors py-3.5 border-b border-border/30 w-full">{item.label}</SlugLink>; })}
+                {mainLinks.map(function (item: any) { return <SlugLink key={item.label} to={item.href} onClick={function () { setMobileMenuOpen(false); }} className="block text-sm tracking-brand text-foreground hover:text-primary transition-colors py-3.5 border-b border-border/30 w-full uppercase">{item.label}</SlugLink>; })}
               </div>
               <div className="px-5 pb-6 flex items-center gap-3 text-xs text-muted-foreground">
                 <button onClick={function () { setLang("al"); setMobileMenuOpen(false); }} className={"px-3 py-1.5 border rounded-sm transition-colors " + (isAl ? "border-foreground text-foreground font-semibold" : "border-border")}>AL</button>
