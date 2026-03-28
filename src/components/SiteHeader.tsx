@@ -282,8 +282,10 @@ function SiteHeader() {
   var catCount = Math.min(10, Math.max(0, parseInt(catCountVal) || 7));
   var productLinks: { label: string; href: string }[] = [];
   for (var ci = 1; ci <= catCount; ci++) {
-    var catLabel = h("cat" + ci + "_label", "");
+    var catLabelAl = h("cat" + ci + "_label", "");
+    var catLabelEn = h("cat" + ci + "_label_en", "");
     var catHref = h("cat" + ci + "_href", "#");
+    var catLabel = isAl ? catLabelAl : (catLabelEn || catLabelAl);
     if (catLabel) {
       productLinks.push({ label: catLabel, href: catHref });
     }
@@ -376,8 +378,8 @@ function SiteHeader() {
         {desktopMenuOpen && (
           <div className="border-b border-border bg-background shadow-sm">
             <div className="container py-6">
-              <div className="flex flex-col gap-1">
-                {mainLinks.map(function (item: any) { return <SlugLink key={item.label} to={item.href} onClick={function () { setDesktopMenuOpen(false); }} className="text-xs tracking-brand text-muted-foreground hover:text-primary transition-colors uppercase py-2">{item.label}</SlugLink>; })}
+              <div className="flex flex-col">
+                {mainLinks.map(function (item: any) { return <SlugLink key={item.label} to={item.href} onClick={function () { setDesktopMenuOpen(false); }} className="block text-xs tracking-brand text-muted-foreground hover:text-primary transition-colors uppercase py-3 border-b border-border/50 last:border-b-0 w-full">{item.label}</SlugLink>; })}
               </div>
             </div>
           </div>
@@ -418,18 +420,18 @@ function SiteHeader() {
         </div>
         {mobileMenuOpen && (
           <div className="border-b border-border bg-background">
-            <div className="container py-3 flex flex-col gap-1">
-              <button onClick={function () { setMobileProductsOpen(!mobileProductsOpen); }} className="flex items-center justify-between text-sm tracking-brand text-muted-foreground hover:text-primary transition-colors uppercase py-2.5 border-b border-border">
+            <div className="container py-4 flex flex-col">
+              <button onClick={function () { setMobileProductsOpen(!mobileProductsOpen); }} className="flex items-center justify-between text-sm tracking-brand text-muted-foreground hover:text-primary transition-colors uppercase py-3 border-b border-border w-full">
                 <span>{mobileProductsLabel}</span>
                 {mobileProductsOpen ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
               </button>
               {mobileProductsOpen && (
-                <div className="flex flex-col gap-1 pl-4">
-                  {productLinks.map(function (item) { return <SlugLink key={item.label} to={item.href} onClick={function () { setMobileMenuOpen(false); setMobileProductsOpen(false); }} className="text-sm tracking-brand text-muted-foreground/80 hover:text-primary transition-colors uppercase py-2 border-b border-border/50 last:border-b-0">{item.label}</SlugLink>; })}
+                <div className="flex flex-col pl-4">
+                  {productLinks.map(function (item) { return <SlugLink key={item.label} to={item.href} onClick={function () { setMobileMenuOpen(false); setMobileProductsOpen(false); }} className="block text-sm tracking-brand text-muted-foreground/80 hover:text-primary transition-colors uppercase py-3 border-b border-border/50 last:border-b-0 w-full">{item.label}</SlugLink>; })}
                 </div>
               )}
-              {mainLinks.map(function (item: any) { return <SlugLink key={item.label} to={item.href} onClick={function () { setMobileMenuOpen(false); }} className="text-sm tracking-brand text-muted-foreground hover:text-primary transition-colors uppercase py-2.5 border-b border-border last:border-b-0">{item.label}</SlugLink>; })}
-              <div className="flex items-center gap-2 pt-3 text-xs text-muted-foreground">
+              {mainLinks.map(function (item: any) { return <SlugLink key={item.label} to={item.href} onClick={function () { setMobileMenuOpen(false); }} className="block text-sm tracking-brand text-muted-foreground hover:text-primary transition-colors uppercase py-3 border-b border-border last:border-b-0 w-full">{item.label}</SlugLink>; })}
+              <div className="flex items-center gap-2 pt-4 text-xs text-muted-foreground">
                 <button onClick={function () { setLang("al"); }} className={isAl ? "font-semibold text-foreground" : ""}>AL</button>
                 <span>|</span>
                 <button onClick={function () { setLang("en"); }} className={!isAl ? "font-semibold text-foreground" : ""}>EN</button>
