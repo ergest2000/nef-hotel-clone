@@ -3,6 +3,7 @@ import SlugLink from "@/components/SlugLink";
 import logo from "@/assets/egjeu-logo.png";
 import { useLanguage } from "@/hooks/useLanguage";
 import { usePageContent, getContentValue } from "@/hooks/useCms";
+import { useNavMenusByLocation } from "@/hooks/useNavMenus";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Mail, Phone, MapPin } from "lucide-react";
@@ -52,7 +53,12 @@ function SiteFooter() {
     return links;
   }
 
-  var col1Links = buildLinks("col1");
+  // Column 1 links (Company) — from nav_menus
+  var footerCol1Data = useNavMenusByLocation("footer_col1");
+  var footerCol1Menus = footerCol1Data.data;
+  var col1Links: { label: string; href: string }[] = footerCol1Menus
+    ? footerCol1Menus.map(function (m: any) { return { label: isAl ? m.label : (m.label_en || m.label), href: m.href }; })
+    : buildLinks("col1");
 
   // Shto gjithmonë "Tekstile të Personalizuara" si link i fundit te KOMPANIA
   var tailorLabel = isAl ? "Tekstile të Personalizuara" : "Custom Textiles";
@@ -60,7 +66,13 @@ function SiteFooter() {
   if (!col1Links.some((l) => l.href === tailorHref)) {
     col1Links = [...col1Links, { label: tailorLabel, href: tailorHref }];
   }
-  var col3Links = buildLinks("col3");
+
+  // Column 3 links (Support) — from nav_menus
+  var footerCol2Data = useNavMenusByLocation("footer_col2");
+  var footerCol2Menus = footerCol2Data.data;
+  var col3Links: { label: string; href: string }[] = footerCol2Menus
+    ? footerCol2Menus.map(function (m: any) { return { label: isAl ? m.label : (m.label_en || m.label), href: m.href }; })
+    : buildLinks("col3");
 
   // Column 2 links (Products) - lexon nga header categories
   var catCountVal = h("cat_count", "7");
