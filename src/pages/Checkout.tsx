@@ -115,7 +115,7 @@ const Checkout = () => {
 
       <div className="max-w-7xl mx-auto px-4 py-8 md:py-12 flex-1 w-full">
         <h1 className="text-2xl md:text-3xl font-bold tracking-wide-brand text-foreground mb-8">
-          {t("checkout_title", "PËRFUNDIMI I BLERJES", "CHECKOUT")}
+          {t("checkout_title", "KËRKESË PËR OFERTË", "REQUEST A QUOTE")}
         </h1>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -127,7 +127,8 @@ const Checkout = () => {
                   {t("checkout_logged_as", "Jeni identifikuar si", "Logged in as")} <strong>{user.email}</strong>
                 </p>
                 <Button
-                  className="mt-4 h-12 px-8 text-xs tracking-wider uppercase rounded-none"
+                  className="mt-4 h-12 px-8 text-xs tracking-wider uppercase rounded-none text-white hover:opacity-90"
+                  style={{ backgroundColor: "#163058" }}
                   disabled={requestLoading}
                   onClick={handleRequestQuote}
                 >
@@ -136,8 +137,8 @@ const Checkout = () => {
               </div>
             ) : (
               <>
-                <div className="bg-muted/60 px-6 py-3 mb-0">
-                  <h2 className="text-lg text-background font-medium" style={{ color: "white" }}>
+                <div className="px-6 py-3 mb-0" style={{ backgroundColor: "#163058" }}>
+                  <h2 className="text-lg font-medium text-white">
                     {t("checkout_auth_header", "Kyçu ose Regjistrohu", "Log in or Register")}
                   </h2>
                 </div>
@@ -159,7 +160,7 @@ const Checkout = () => {
                           </Link>
                         </div>
                       </div>
-                      <Button type="submit" disabled={loginLoading} className="h-12 px-10 text-xs tracking-wider uppercase rounded-none bg-foreground/80 hover:bg-foreground text-background">
+                      <Button type="submit" disabled={loginLoading} className="h-12 px-10 text-xs tracking-wider uppercase rounded-none text-white hover:opacity-90" style={{ backgroundColor: "#163058" }}>
                         {loginLoading ? "..." : t("checkout_login_btn", "HYRJE", "LOGIN")}
                       </Button>
                     </form>
@@ -168,7 +169,7 @@ const Checkout = () => {
                   {/* New client - Register */}
                   <div className="p-6">
                     <h3 className="font-semibold text-foreground mb-1">{t("checkout_new_client", "Unë jam një klient i ri.", "I am a new client.")}</h3>
-                    <p className="text-sm text-muted-foreground">{t("checkout_new_desc", "dhe dua të dërgoj një kërkesë për kuotim", "and want to send a quote request")}</p>
+                    <p className="text-sm text-muted-foreground">{t("checkout_new_desc", "dhe dua të dërgoj një kërkesë për ofertë.", "and want to send a quote request.")}</p>
                     <form onSubmit={handleRegister} className="mt-6 space-y-4">
                       <div>
                         <label className="text-xs tracking-wider text-muted-foreground uppercase">{t("checkout_fullname", "EMRI I PLOTË", "FULL NAME")}</label>
@@ -198,7 +199,7 @@ const Checkout = () => {
                         <label className="text-xs tracking-wider text-muted-foreground uppercase">{t("checkout_pw", "FJALËKALIMI", "PASSWORD")}</label>
                         <Input value={newPassword} onChange={(e) => setNewPassword(e.target.value)} className="border-0 border-b border-border rounded-none px-0 h-10 focus-visible:ring-0" type="password" required />
                       </div>
-                      <Button type="submit" disabled={registerLoading} className="h-12 px-10 text-xs tracking-wider uppercase rounded-none bg-foreground/80 hover:bg-foreground text-background">
+                      <Button type="submit" disabled={registerLoading} className="h-12 px-10 text-xs tracking-wider uppercase rounded-none text-white hover:opacity-90" style={{ backgroundColor: "#163058" }}>
                         {registerLoading ? "..." : t("checkout_register_btn", "REGJISTROHU", "REGISTER")}
                       </Button>
                     </form>
