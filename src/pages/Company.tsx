@@ -1,173 +1,108 @@
 import SiteHeader from "@/components/SiteHeader";
 import SiteFooter from "@/components/SiteFooter";
-import CategoriesSection from "@/components/CategoriesSection";
 import ClientsCarousel from "@/components/ClientsCarousel";
 import CertificationsSection from "@/components/CertificationsSection";
-import { usePageContent, usePageSections, getContentValue } from "@/hooks/useCms";
+import { usePageContent, getContentValue } from "@/hooks/useCms";
 import { useLanguage } from "@/hooks/useLanguage";
+import { useDesign } from "@/hooks/useDesignSettings";
+import { useGalleryImages } from "@/hooks/useGalleryImages";
 import { Link } from "react-router-dom";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, ChevronLeft, ChevronRight } from "lucide-react";
+import { useState } from "react";
 
 import heroImg from "@/assets/company-hero.jpg";
 import philosophyImg from "@/assets/company-philosophy.jpg";
 import valuesImg from "@/assets/company-values.jpg";
 import researchImg from "@/assets/company-research.jpg";
-import materialsImg from "@/assets/company-materials.jpg";
-import equipmentImg from "@/assets/company-equipment.jpg";
-import flexibilityImg from "@/assets/company-flexibility.jpg";
 
-/* ── Alternating text+image section ────────────────────────────── */
-const AlternatingSection = ({
-  title,
-  text,
-  image,
-  imageLeft = false,
-}: {
-  title: string;
-  text: string;
-  image: string;
-  imageLeft?: boolean;
-}) => (
-  <section className="py-16 md:py-24">
-    <div className="container">
-      <div
-        className={`grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-16 items-center ${
-          imageLeft ? "" : "md:[&>*:first-child]:order-2"
-        }`}
-      >
-        <div className="overflow-hidden">
-          <img
-            src={image}
-            alt={title}
-            className="w-full h-[300px] md:h-[420px] object-cover"
-            loading="lazy"
-          />
-        </div>
-        <div>
-          <h2 className="text-2xl md:text-3xl font-light tracking-brand text-foreground mb-6">
-            {title}
-          </h2>
-          <p className="text-muted-foreground leading-relaxed text-sm md:text-base whitespace-pre-wrap">
-            {text}
-          </p>
-        </div>
+/* ── Image Carousel ────────────────────────────────────────────── */
+const ImageCarousel = ({ images }: { images: string[] }) => {
+  const [idx, setIdx] = useState(0);
+  if (!images.length) return null;
+  const prev = () => setIdx((i) => (i > 0 ? i - 1 : images.length - 1));
+  const next = () => setIdx((i) => (i < images.length - 1 ? i + 1 : 0));
+
+  return (
+    <div className="relative">
+      <div className="overflow-hidden">
+        <img
+          src={images[idx]}
+          alt=""
+          className="w-full h-[300px] md:h-[450px] object-cover transition-opacity duration-500"
+        />
       </div>
+      {images.length > 1 && (
+        <>
+          <button
+            onClick={prev}
+            className="absolute left-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full border border-border bg-background/80 flex items-center justify-center hover:bg-background transition-colors"
+          >
+            <ChevronLeft className="h-5 w-5 text-foreground" />
+          </button>
+          <button
+            onClick={next}
+            className="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full border border-border bg-background/80 flex items-center justify-center hover:bg-background transition-colors"
+          >
+            <ChevronRight className="h-5 w-5 text-foreground" />
+          </button>
+          <div className="flex items-center justify-center gap-2 mt-4">
+            {images.map((_, i) => (
+              <button
+                key={i}
+                onClick={() => setIdx(i)}
+                className={`w-2.5 h-2.5 rounded-full transition-colors ${
+                  i === idx ? "bg-foreground" : "bg-foreground/20"
+                }`}
+              />
+            ))}
+          </div>
+        </>
+      )}
     </div>
-  </section>
-);
+  );
+};
 
-/* ── Main page ─────────────────────────────────────────────────── */
+/* ── Main Company / About Us page ──────────────────────────────── */
 const Company = () => {
   const { lang, isAl } = useLanguage();
   const { data: content } = usePageContent("company", lang);
   const { data: homeContent } = usePageContent("home", lang);
-  const { data: sections } = usePageSections("company");
+  const { settings } = useDesign();
 
   const t = (al: string, en: string) => (isAl ? al : en);
-
-  const isSectionVisible = (key: string) => {
-    if (!sections) return true;
-    const s = sections.find((sec) => sec.section_key === key);
-    return s ? s.visible : true;
-  };
 
   const g = (sectionKey: string, fieldKey: string, fallback: string) =>
     getContentValue(content, sectionKey, fieldKey, fallback);
 
-  const getImg = (sectionKey: string, fieldKey: string, fallback: string) => {
-    const val = g(sectionKey, fieldKey, "");
-    return val && !val.startsWith("/src/") ? val : fallback;
+  const ds = (key: string, fallback: string) => {
+    const alKey = `${key}_al`;
+    const enKey = `${key}_en`;
+    return isAl ? (settings[alKey] || fallback) : (settings[enKey] || fallback);
   };
 
-  /* Content sections — all CMS-editable */
-  const storySections = [
-    {
-      key: "philosophy",
-      fallbackTitle: t("Filozofia Jonë", "Our Philosophy"),
-      fallbackText: t(
-        "Prodhimi i produkteve me estetikë dhe cilësi të lartë, të bëra posaçërisht për përdorim profesional, me kriterin e plotësimit të nevojave moderne.",
-        "The production of high aesthetic and quality products made specifically for professional use, with the criterion of meeting the modern needs of high demands."
-      ),
-      fallbackImg: philosophyImg,
-      imageLeft: false,
-    },
-    {
-      key: "values",
-      fallbackTitle: t("Vlerat Tona", "Our Values"),
-      fallbackText: t(
-        "Etika, qëndrueshmëria dhe besueshmëria kanë qenë gjithmonë vlerat themelore të biznesit tonë.",
-        "Ethics, consistency and reliability have always been the fundamental values of our business."
-      ),
-      fallbackImg: valuesImg,
-      imageLeft: true,
-    },
-    {
-      key: "research",
-      fallbackTitle: t("Kërkimi dhe Zhvillimi", "Our Research"),
-      fallbackText: t(
-        "Departamenti i kërkimit dhe zhvillimit është gjithmonë në kërkim të lëndëve të para të reja, me kriter mjedisin dhe njeriun.",
-        "The research and development department is constantly alert for new raw materials, with criterion always the environment and human."
-      ),
-      fallbackImg: researchImg,
-      imageLeft: false,
-    },
-    {
-      key: "materials",
-      fallbackTitle: t("Lëndët e Para", "Our Raw Materials"),
-      fallbackText: t(
-        "Zgjedhim pambukë të gjatë dhe ngjyrosje të teknologjisë së fundit, për prodhimin e produkteve me rezistencë të lartë.",
-        "We choose long cottons and state-of-the-art dyes, for production of high strength products."
-      ),
-      fallbackImg: materialsImg,
-      imageLeft: true,
-    },
-    {
-      key: "equipment",
-      fallbackTitle: t("Pajisjet Tona", "Our Equipment"),
-      fallbackText: t(
-        "Rinovimi i vazhdueshëm i pajisjeve teknologjike garanton trajtimin e menjëhershëm të çdo sfide teknike.",
-        "The continuous renewal of our technological equipment guarantees immediate dealing with every technical challenge."
-      ),
-      fallbackImg: equipmentImg,
-      imageLeft: false,
-    },
-    {
-      key: "flexibility",
-      fallbackTitle: t("Fleksibiliteti Ynë", "Our Flexibility"),
-      fallbackText: t(
-        "Kemi aftësinë të prodhojmë produkte bazuar në specifikimet e klientit, duke ruajtur kombinimin më të mirë të cilësisë dhe çmimit.",
-        "We have the ability to manufacture products based on specific customer specifications, while maintaining the best combination of quality and price."
-      ),
-      fallbackImg: flexibilityImg,
-      imageLeft: true,
-    },
-  ];
+  /* Gallery images — fallback to local assets */
+  const { data: galleryImages } = useGalleryImages("company");
+  const carouselImages = galleryImages?.length
+    ? galleryImages.map((img) => img.image_url)
+    : [philosophyImg, valuesImg, researchImg];
 
   /* Stats */
   const stats = [
     {
-      valueKey: "stat1_value",
-      labelKey: "stat1_label",
-      fallbackValue: "50+",
-      fallbackLabel: t("Vite Eksperiencë", "Years of Experience"),
+      value: ds("company_stat1_value", t("50+", "50+")),
+      label: ds("company_stat1_label", t("Vite Eksperiencë", "Years of Experience")),
     },
     {
-      valueKey: "stat2_value",
-      labelKey: "stat2_label",
-      fallbackValue: "1500+",
-      fallbackLabel: t("Klientë", "Clients"),
+      value: ds("company_stat2_value", t("1500+", "1500+")),
+      label: ds("company_stat2_label", t("Klientë", "Clients")),
     },
     {
-      valueKey: "stat3_value",
-      labelKey: "stat3_label",
-      fallbackValue: "500+",
-      fallbackLabel: t("Produkte", "Products"),
+      value: ds("company_stat3_value", t("500+", "500+")),
+      label: ds("company_stat3_label", t("Produkte", "Products")),
     },
     {
-      valueKey: "stat4_value",
-      labelKey: "stat4_label",
-      fallbackValue: "12+",
-      fallbackLabel: t("Vende", "Countries"),
+      value: ds("company_stat4_value", t("12+", "12+")),
+      label: ds("company_stat4_label", t("Vende", "Countries")),
     },
   ];
 
@@ -175,138 +110,126 @@ const Company = () => {
     <div className="min-h-screen bg-background">
       <SiteHeader />
 
-      {/* ─── 1. Hero Section ─────────────────────────────────────── */}
-      {isSectionVisible("hero") && (
-        <section className="relative h-[50vh] md:h-[65vh] overflow-hidden">
-          <img
-            src={getImg("hero", "image", heroImg)}
-            alt="Company"
-            className="w-full h-full object-cover"
-          />
-          <div className="absolute inset-0 bg-foreground/50" />
-          <div className="absolute inset-0 flex items-center justify-center text-center px-4">
-            <div className="max-w-2xl">
-              <h1 className="text-3xl md:text-5xl lg:text-6xl font-light tracking-brand text-white mb-5">
-                {g("hero", "title", t("Rreth Nesh", "About Us"))}
-              </h1>
-              <p className="text-sm md:text-base tracking-wide text-white/80 max-w-xl mx-auto leading-relaxed">
-                {g(
-                  "hero",
-                  "subtitle",
-                  t(
-                    "Tekstile premium hotelerie, të punuara me pasion dhe precizion.",
-                    "Premium hotel textiles crafted with passion and precision."
-                  )
-                )}
-              </p>
-            </div>
-          </div>
-        </section>
-      )}
+      {/* ── 1. Hero ──────────────────────────────────────────────── */}
+      <section className="relative h-[40vh] md:h-[55vh] overflow-hidden">
+        <img
+          src={g("hero", "image", heroImg)}
+          alt="Company"
+          className="w-full h-full object-cover"
+        />
+        <div className="absolute inset-0 bg-foreground/40" />
+        <div className="absolute inset-0 flex items-center justify-center text-center px-4">
+          <h1 className="text-3xl md:text-5xl lg:text-6xl font-light tracking-brand text-white">
+            {g("hero", "title", t("Rreth Nesh", "About Us"))}
+          </h1>
+        </div>
+      </section>
 
-      {/* ─── 2. Story sections (alternating text + image) ─────── */}
-      {storySections.map((sec, i) =>
-        isSectionVisible(sec.key) ? (
-          <div key={sec.key}>
-            {i > 0 && (
-              <div className="container">
-                <div className="border-t border-border" />
+      {/* ── 2. Main Story (Beltrami-style centered text) ─────────── */}
+      <section className="py-16 md:py-24">
+        <div className="max-w-2xl mx-auto px-6">
+          <h2 className="text-2xl md:text-3xl font-light text-foreground mb-2">
+            {g("story", "title", "EGJEU")}
+          </h2>
+          <div className="w-12 h-[2px] bg-foreground mb-8" />
+
+          <div className="space-y-5 text-sm md:text-[15px] text-muted-foreground leading-relaxed">
+            <p>
+              {g(
+                "story",
+                "paragraph1",
+                t(
+                  "E themeluar me pasionin për tekstile cilësore, EGJEU ka ndërtuar një traditë dekadash në prodhimin e produkteve premium për industrinë e hotelerisë. Duke kombinuar artizanatin tradicional me teknologjinë moderne, kemi krijuar një emër sinonim me cilësinë.",
+                  "Founded with a passion for quality textiles, EGJEU has built a decades-long tradition in producing premium products for the hospitality industry. By combining traditional craftsmanship with modern technology, we have created a name synonymous with quality."
+                )
+              )}
+            </p>
+            <p>
+              {g(
+                "story",
+                "paragraph2",
+                t(
+                  "EGJEU ka prodhuar pëlhura si dhe mbulesa shtrati, banje dhe tavoline për mbi 50 vjet, duke u bërë lider në sektorin e hoteleve luksoze, spa, jahte, banketeve dhe pronave ekskluzive.",
+                  "EGJEU has been producing fabrics as well as bed, bath and table linens for over 50 years, becoming leader in the luxury hotel, spa, yachting, banqueting and exclusive property sector."
+                )
+              )}
+            </p>
+            <p>
+              {g(
+                "story",
+                "paragraph3",
+                t(
+                  "Kënaqësia e klientit dhe shërbimi i personalizuar i pakrahasueshëm kanë qenë gjithmonë garancia e markës sonë. Produktet tona dallohen për një zinxhir prodhimi plotësisht të kontrolluar, nga fija deri te paketimi.",
+                  "Customer satisfaction and unparalleled bespoke service have always been our brand guarantee. Our products distinguish themselves for a fully-controlled production chain, from the yarn to the packaging."
+                )
+              )}
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* ── 3. Image Carousel ────────────────────────────────────── */}
+      <section className="pb-16 md:pb-24">
+        <div className="max-w-3xl mx-auto px-6">
+          <ImageCarousel images={carouselImages} />
+        </div>
+      </section>
+
+      {/* ── 4. Statistics ────────────────────────────────────────── */}
+      <section className="py-14 md:py-20 border-t border-b border-border">
+        <div className="container">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-4">
+            {stats.map((stat, i) => (
+              <div key={i} className="text-center">
+                <span className="text-3xl md:text-4xl font-light tracking-brand text-foreground block mb-1">
+                  {stat.value}
+                </span>
+                <span className="text-[10px] md:text-xs tracking-wider uppercase text-muted-foreground">
+                  {stat.label}
+                </span>
               </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── 5. Brands / Clients ──────────────────────────────────── */}
+      <ClientsCarousel content={homeContent} />
+
+      {/* ── 6. Certifications ────────────────────────────────────── */}
+      <CertificationsSection content={homeContent} />
+
+      {/* ── 7. Call To Action ────────────────────────────────────── */}
+      <section className="py-16 md:py-24 border-t border-border">
+        <div className="container text-center">
+          <h2 className="text-2xl md:text-3xl font-light tracking-brand text-foreground mb-4">
+            {ds(
+              "company_cta_title",
+              t("Na Kontaktoni për Ofertë", "Contact Us for a Quote")
             )}
-            <AlternatingSection
-              title={g(sec.key, "title", sec.fallbackTitle)}
-              text={g(sec.key, "text", sec.fallbackText)}
-              image={getImg(sec.key, "image", sec.fallbackImg)}
-              imageLeft={sec.imageLeft}
-            />
-          </div>
-        ) : null
-      )}
-
-      {/* ─── 3. Statistics / Highlights ──────────────────────────── */}
-      {isSectionVisible("network") && (
-        <section className="py-16 md:py-24 bg-primary text-primary-foreground">
-          <div className="container text-center">
-            <h2 className="text-2xl md:text-3xl font-light tracking-brand mb-4">
-              {g("network", "title", t("Rrjeti Ynë", "Our Network"))}
-            </h2>
-            <p className="text-sm md:text-base opacity-80 max-w-2xl mx-auto mb-14 leading-relaxed">
-              {g(
-                "network",
-                "text",
-                t(
-                  "Besimi në produktin tonë rezulton sot në eksporte në mbi 12 vende, si dhe bashkëpunim aktiv me mbi 1500 njësi akomodimi.",
-                  "Confidence in our product results today in exports to 12 countries, as well as active cooperation with more than 1500 accommodation units."
-                )
-              )}
-            </p>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-8 max-w-4xl mx-auto">
-              {stats.map((stat) => (
-                <div key={stat.labelKey} className="flex flex-col items-center gap-2">
-                  <span className="text-4xl md:text-5xl font-light tracking-brand">
-                    {g("network", stat.valueKey, stat.fallbackValue)}
-                  </span>
-                  <span className="text-xs tracking-wide uppercase opacity-70">
-                    {g("network", stat.labelKey, stat.fallbackLabel)}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-      )}
-
-      {/* ─── 4. Categories ───────────────────────────────────────── */}
-      {isSectionVisible("categories") && (
-        <CategoriesSection content={homeContent} />
-      )}
-
-      {/* ─── 5. Brands / Clients carousel ────────────────────────── */}
-      {isSectionVisible("clients") && (
-        <ClientsCarousel content={homeContent} />
-      )}
-
-      {/* ─── 6. Certifications ───────────────────────────────────── */}
-      {isSectionVisible("certifications") && (
-        <CertificationsSection content={homeContent} />
-      )}
-
-      {/* ─── 7. Call To Action ───────────────────────────────────── */}
-      {isSectionVisible("cta") && (
-        <section className="py-16 md:py-24 border-t border-border">
-          <div className="container text-center">
-            <h2 className="text-2xl md:text-3xl font-light tracking-brand text-foreground mb-4">
-              {g(
-                "cta",
-                "title",
-                t("Na Kontaktoni për Ofertë", "Contact Us for a Quote")
-              )}
-            </h2>
-            <p className="text-sm text-muted-foreground max-w-lg mx-auto mb-8 leading-relaxed">
-              {g(
-                "cta",
-                "text",
-                t(
-                  "Jemi të gatshëm t'ju ndihmojmë me zgjidhje të personalizuara për biznesin tuaj.",
-                  "We are ready to help you with customized solutions for your business."
-                )
-              )}
-            </p>
-            <Link
-              to="/checkout"
-              className="inline-flex items-center gap-2 px-8 py-3.5 text-xs tracking-wider uppercase text-white hover:opacity-90 transition-opacity"
-              style={{ backgroundColor: "#163058" }}
-            >
-              {g(
-                "cta",
-                "button",
-                t("KËRKO NJË OFERTË", "REQUEST A QUOTE")
-              )}
-              <ArrowRight className="h-4 w-4" />
-            </Link>
-          </div>
-        </section>
-      )}
+          </h2>
+          <p className="text-sm text-muted-foreground max-w-lg mx-auto mb-8 leading-relaxed">
+            {ds(
+              "company_cta_text",
+              t(
+                "Jemi të gatshëm t'ju ndihmojmë me zgjidhje të personalizuara për biznesin tuaj.",
+                "We are ready to help you with customized solutions for your business."
+              )
+            )}
+          </p>
+          <Link
+            to="/checkout"
+            className="inline-flex items-center gap-2 px-8 py-3.5 text-xs tracking-wider uppercase text-white hover:opacity-90 transition-opacity"
+            style={{ backgroundColor: "#163058" }}
+          >
+            {ds(
+              "company_cta_button",
+              t("KËRKO NJË OFERTË", "REQUEST A QUOTE")
+            )}
+            <ArrowRight className="h-4 w-4" />
+          </Link>
+        </div>
+      </section>
 
       <SiteFooter />
     </div>
