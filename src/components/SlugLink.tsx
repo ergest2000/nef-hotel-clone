@@ -11,6 +11,7 @@ const pathToPageKey: Record<string, string> = {
   "/contact": "contact",
   "/blog": "blog",
   "/certifications": "certifications",
+  "/catalogue": "catalogue",
   "/shipping": "shipping",
   "/payment-terms": "payment-terms",
   "/terms-of-use": "terms-of-use",
