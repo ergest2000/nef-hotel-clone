@@ -85,21 +85,32 @@ const ImageLightbox = ({ images, startIndex, onClose }: { images: string[]; star
 };
 
 // ─── Product Image Gallery ──────────────────────────────────────
-const ProductGallery = ({ mainImage, productId, colorImageUrl, onOpenLightbox }: { mainImage?: string | null; productId: string; colorImageUrl?: string | null; onOpenLightbox: (images: string[], index: number) => void }) => {
+const ProductGallery = ({ mainImage, productId, selectedColorId, colorImageUrl, onOpenLightbox }: { mainImage?: string | null; productId: string; selectedColorId?: string | null; colorImageUrl?: string | null; onOpenLightbox: (images: string[], index: number) => void }) => {
   const { data: extraImages } = useProductImages(productId);
+
+  // Build image list: if a color is selected, show only that color's images + general images
   const allImages = useMemo(() => {
     const imgs: string[] = [];
     if (mainImage) imgs.push(mainImage);
     extraImages?.forEach((img) => {
-      if (img.image_url && !imgs.includes(img.image_url)) imgs.push(img.image_url);
+      if (!img.image_url || imgs.includes(img.image_url)) return;
+      // If a color is selected, show only images for that color or images with no color (general)
+      if (selectedColorId) {
+        const imgColorId = (img as any).color_id;
+        if (imgColorId && imgColorId !== selectedColorId) return;
+      }
+      imgs.push(img.image_url);
     });
     return imgs;
-  }, [mainImage, extraImages]);
+  }, [mainImage, extraImages, selectedColorId]);
 
   const [selected, setSelected] = useState(0);
 
-  // When a color image is set, show it as the active image
-  const displayImage = colorImageUrl || allImages[selected];
+  // Reset selection when color changes
+  useMemo(() => { setSelected(0); }, [selectedColorId]);
+
+  // When a color image is set (from color swatch), show it as the active image
+  const displayImage = colorImageUrl || allImages[selected] || allImages[0];
 
   if (!allImages.length && !colorImageUrl) {
     return (
@@ -112,7 +123,6 @@ const ProductGallery = ({ mainImage, productId, colorImageUrl, onOpenLightbox }:
   const goPrev = () => setSelected((s) => (s > 0 ? s - 1 : allImages.length - 1));
   const goNext = () => setSelected((s) => (s < allImages.length - 1 ? s + 1 : 0));
 
-  // Build full image list for lightbox (include color image if present)
   const lightboxImages = colorImageUrl && !allImages.includes(colorImageUrl)
     ? [colorImageUrl, ...allImages]
     : allImages;
@@ -341,6 +351,7 @@ const ProductDetail = () => {
           <ProductGallery
             mainImage={product.image_url}
             productId={product.id}
+            selectedColorId={selectedColorId}
             colorImageUrl={
               selectedColorId
                 ? (productColors.find((c) => c.id === selectedColorId) as any)?.image_url || null
