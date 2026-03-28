@@ -18,6 +18,7 @@ const menuItems: { key: string; label: string; icon: any; group: string; roles?:
   { key: "company", label: "Company", icon: Building2, group: "pages", roles: ["admin"] },
   { key: "clients", label: "Clients", icon: Users, group: "pages", roles: ["admin"] },
   { key: "tailor-made", label: "Tailor Made", icon: Scissors, group: "pages", roles: ["admin"] },
+  { key: "certifications", label: "Certifikimet", icon: Award, group: "pages", roles: ["admin"] },
   { key: "contact", label: "Contact", icon: Phone, group: "pages", roles: ["admin"] },
   { key: "blog", label: "Blog CMS", icon: FileText, group: "pages", roles: ["admin"] },
   { key: "blog-posts", label: "Blog Posts", icon: PenSquare, group: "content", roles: ["admin", "editor"] },
