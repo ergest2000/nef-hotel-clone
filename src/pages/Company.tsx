@@ -29,15 +29,11 @@ const ImageCarousel = ({ images }: { images: { image_url: string; alt_text: stri
         <img src={images[current].image_url} alt={images[current].alt_text || ""} className="w-full h-full object-cover transition-opacity duration-500" key={current} />
       </div>
       {total > 1 && (
-        <div className="flex items-center justify-center gap-6 mt-6">
+        <div className="flex items-center justify-center mt-6">
           <div className="flex gap-2">
             {images.map((_, i) => (
               <button key={i} onClick={() => setCurrent(i)} className={`w-2.5 h-2.5 rounded-full transition-colors ${i === current ? "bg-foreground" : "bg-foreground/20 hover:bg-foreground/40"}`} />
             ))}
-          </div>
-          <div className="flex gap-2">
-            <button onClick={prev} className="w-10 h-10 rounded-full border border-border flex items-center justify-center hover:bg-muted transition-colors"><ChevronLeft className="h-4 w-4" /></button>
-            <button onClick={next} className="w-10 h-10 rounded-full border border-border flex items-center justify-center hover:bg-muted transition-colors"><ChevronRight className="h-4 w-4" /></button>
           </div>
         </div>
       )}
