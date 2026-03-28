@@ -18,6 +18,7 @@ import { AdminDashboardOverview } from "@/components/admin/AdminDashboardOvervie
 import { AdminSeoEditor } from "@/components/admin/AdminSeoEditor";
 import { AdminMenuManager } from "@/components/admin/AdminMenuManager";
 import { AdminLogoManager } from "@/components/admin/AdminLogoManager";
+import { AdminGalleryManager } from "@/components/admin/AdminGalleryManager";
 import { AdminRegistrations } from "@/components/admin/AdminRegistrations";
 import { AdminFormBuilder } from "@/components/admin/AdminFormBuilder";
 import { AdminSlugManager } from "@/components/admin/AdminSlugManager";
@@ -348,6 +349,7 @@ function AdminDashboard() {
             />
             {activePage === "company" && (
               <>
+                <AdminGalleryManager galleryKey="company" title="Foto Carousel (Rreth Nesh)" />
                 <AdminLogoManager category="clients" title="Brandet Tona" />
                 <AdminLogoManager category="certifications" title="Certifikimet" />
               </>
