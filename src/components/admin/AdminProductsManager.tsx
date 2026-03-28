@@ -316,6 +316,9 @@ export const AdminProductsManager = () => {
               <CardContent className="p-3">
                 <h4 className="font-medium text-sm truncate">{product.title_al || product.code || "Pa titull"}</h4>
                 <p className="text-xs text-muted-foreground mt-0.5">{product.code}</p>
+                {product.slug && (
+                  <p className="text-[10px] text-muted-foreground/60 mt-0.5 truncate font-mono">/{product.slug}</p>
+                )}
                 <div className="flex items-center justify-between mt-3">
                   <Badge variant={product.visible ? "default" : "secondary"} className="text-[10px]">
                     {product.visible ? "Aktiv" : "Fshehur"}
@@ -324,7 +327,7 @@ export const AdminProductsManager = () => {
                     {getCollectionSlug(product.collection_id) && (
                       <Button
                         variant="ghost" size="icon" className="h-7 w-7"
-                        onClick={() => window.open(`/koleksionet/${getCollectionSlug(product.collection_id)}`, '_blank')}
+                        onClick={() => window.open(`/koleksionet/${getCollectionSlug(product.collection_id)}/${product.slug || product.id}`, '_blank')}
                         title="Shiko në faqe"
                       >
                         <ExternalLink className="h-3.5 w-3.5" />
@@ -352,7 +355,7 @@ export const AdminProductsManager = () => {
               {editItem?.id && getCollectionSlug(editItem.collection_id ?? "") && (
                 <Button
                   variant="outline" size="sm"
-                  onClick={() => window.open(`/koleksionet/${getCollectionSlug(editItem.collection_id ?? "")}`, '_blank')}
+                  onClick={() => window.open(`/koleksionet/${getCollectionSlug(editItem.collection_id ?? "")}/${editItem.slug || editItem.id}`, '_blank')}
                 >
                   <ExternalLink className="h-3.5 w-3.5 mr-1" /> Shiko live
                 </Button>
@@ -418,6 +421,18 @@ export const AdminProductsManager = () => {
                 <div>
                   <label className="text-xs font-medium text-muted-foreground">Kodi</label>
                   <Input value={editItem.code ?? ""} onChange={(e) => setEditItem({ ...editItem, code: e.target.value })} />
+                </div>
+                <div>
+                  <label className="text-xs font-medium text-muted-foreground">Slug (URL)</label>
+                  <Input
+                    value={editItem.slug ?? ""}
+                    onChange={(e) => setEditItem({ ...editItem, slug: e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '') })}
+                    placeholder="Gjenerohet automatikisht nga titulli"
+                    className="font-mono text-xs"
+                  />
+                  <p className="text-[10px] text-muted-foreground mt-1">
+                    Lëre bosh për gjenerim automatik. Ndrysho vetëm nëse ke arsye specifike.
+                  </p>
                 </div>
                 <div className="flex items-center gap-6">
                   <div className="flex items-center gap-2">
