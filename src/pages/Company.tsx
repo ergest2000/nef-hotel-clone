@@ -6,9 +6,10 @@ import { usePageContent, getContentValue } from "@/hooks/useCms";
 import { useLanguage } from "@/hooks/useLanguage";
 import { useDesign } from "@/hooks/useDesignSettings";
 import { useGalleryImages } from "@/hooks/useGalleryImages";
+import { useManagedLogos } from "@/hooks/useManagedLogos";
 import { Link } from "react-router-dom";
 import { ArrowRight, ChevronLeft, ChevronRight } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 
 import heroImg from "@/assets/company-hero.jpg";
 import philosophyImg from "@/assets/company-philosophy.jpg";
@@ -59,6 +60,74 @@ const ImageCarousel = ({ images }: { images: string[] }) => {
         </>
       )}
     </div>
+  );
+};
+
+/* ── Brands Carousel (auto-scroll loop) ────────────────────────── */
+const BrandsCarousel = ({ title }: { title: string }) => {
+  const { data: logos } = useManagedLogos("clients");
+  const brands = logos?.filter((l) => l.visible) ?? [];
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (!el || brands.length < 2) return;
+    let animId: number;
+    let pos = 0;
+    const speed = 0.5;
+    const step = () => {
+      pos += speed;
+      if (pos >= el.scrollWidth / 2) pos = 0;
+      el.scrollLeft = pos;
+      animId = requestAnimationFrame(step);
+    };
+    animId = requestAnimationFrame(step);
+    const pause = () => cancelAnimationFrame(animId);
+    const resume = () => { animId = requestAnimationFrame(step); };
+    el.addEventListener("mouseenter", pause);
+    el.addEventListener("mouseleave", resume);
+    return () => {
+      cancelAnimationFrame(animId);
+      el.removeEventListener("mouseenter", pause);
+      el.removeEventListener("mouseleave", resume);
+    };
+  }, [brands.length]);
+
+  if (!brands.length) return null;
+  const doubled = [...brands, ...brands];
+
+  return (
+    <section className="py-14 md:py-20 border-t border-border">
+      <div className="container">
+        <h2 className="text-lg tracking-wide-brand text-foreground font-light text-center mb-10">
+          {title}
+        </h2>
+        <div
+          ref={scrollRef}
+          className="flex gap-8 md:gap-12 overflow-hidden"
+          style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+        >
+          {doubled.map((brand, i) => (
+            <div
+              key={`brand-${i}`}
+              className="flex items-center justify-center shrink-0 px-6 py-4 min-w-[160px] md:min-w-[200px]"
+            >
+              {brand.logo_url ? (
+                <img
+                  src={brand.logo_url}
+                  alt={brand.name}
+                  className="max-h-12 max-w-[140px] object-contain grayscale hover:grayscale-0 transition-all duration-300"
+                />
+              ) : (
+                <span className="text-sm tracking-wide text-muted-foreground font-medium uppercase">
+                  {brand.name}
+                </span>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
   );
 };
 
@@ -193,16 +262,21 @@ const Company = () => {
         </div>
       </section>
 
-      {/* ── 5. Brands / Clients ──────────────────────────────────── */}
+      {/* ── 5. Brands Carousel ───────────────────────────────────── */}
+      <BrandsCarousel
+        title={ds("company_brands_title", t("BRANDET TONA", "OUR BRANDS"))}
+      />
+
+      {/* ── 6. Clients ───────────────────────────────────────────── */}
       <ClientsCarousel content={homeContent} />
 
-      {/* ── 6. Certifications ────────────────────────────────────── */}
+      {/* ── 7. Certifications ────────────────────────────────────── */}
       <CertificationsSection content={homeContent} />
 
-      {/* ── 7. Call To Action ────────────────────────────────────── */}
+      {/* ── 8. Call To Action ────────────────────────────────────── */}
       <section className="py-16 md:py-24 border-t border-border">
         <div className="container text-center">
-          <h2 className="text-2xl md:text-3xl font-light tracking-brand text-foreground mb-4">
+          <h2 className="text-lg tracking-wide-brand text-foreground font-light mb-4">
             {ds(
               "company_cta_title",
               t("Na Kontaktoni për Ofertë", "Contact Us for a Quote")
