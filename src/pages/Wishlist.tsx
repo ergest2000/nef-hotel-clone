@@ -90,7 +90,7 @@ const Wishlist = () => {
                 const collectionSlug = collection?.slug || "";
                 return (
                   <div key={product.id} className="group border border-border bg-background hover:shadow-lg transition-all duration-300">
-                    <Link to={`/koleksionet/${collectionSlug}/${product.id}`} className="block">
+                    <Link to={`/koleksionet/${collectionSlug}/${(product as any).slug || product.id}`} className="block">
                       <div className="aspect-square bg-muted overflow-hidden">
                         {product.image_url ? (
                           <img
@@ -106,7 +106,7 @@ const Wishlist = () => {
                       </div>
                     </Link>
                     <div className="p-4">
-                      <Link to={`/koleksionet/${collectionSlug}/${product.id}`}>
+                      <Link to={`/koleksionet/${collectionSlug}/${(product as any).slug || product.id}`}>
                         <p className="text-xs text-muted-foreground mb-1">
                           {isAl ? collection?.title_al : collection?.title_en || collection?.title_al}
                         </p>
