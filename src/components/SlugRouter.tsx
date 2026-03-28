@@ -9,6 +9,7 @@ import Clients from "@/pages/Clients";
 import TailorMade from "@/pages/TailorMade";
 import Contact from "@/pages/Contact";
 import Blog from "@/pages/Blog";
+import Certifications from "@/pages/Certifications";
 import Shipping from "@/pages/Shipping";
 import PaymentTerms from "@/pages/PaymentTerms";
 import TermsOfUse from "@/pages/TermsOfUse";
@@ -22,6 +23,7 @@ const pageComponents: Record<string, React.ComponentType> = {
   "tailor-made": TailorMade,
   contact: Contact,
   blog: Blog,
+  certifications: Certifications,
   shipping: Shipping,
   "payment-terms": PaymentTerms,
   "terms-of-use": TermsOfUse,
@@ -42,6 +44,8 @@ const fallbackSlugs: Record<string, string> = {
   "tekstile-te-personalizuara": "tailor-made",
   "contact": "contact",
   "kontakt": "contact",
+  "certifications": "certifications",
+  "certifikimet": "certifications",
   "blog": "blog",
   "shipping": "shipping",
   "transporti": "shipping",
