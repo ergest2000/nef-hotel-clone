@@ -345,20 +345,16 @@ function SiteHeader() {
               <Link to="/shporta" className="flex items-center gap-1.5 text-muted-foreground hover:text-foreground transition-colors"><ShoppingCart size={15} /><span>{totalItems}</span></Link>
               {user ? (
                 <div className="relative" ref={profileRef}>
-                  <button onClick={function () { setProfileOpen(!profileOpen); setLoginOpen(false); }} className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors px-3">
-                    <span className="relative w-7 h-7 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-semibold">
-                      {userInitial}
-                      {unseenOffersCount > 0 && <span className="absolute -top-1 -right-1 bg-destructive text-destructive-foreground text-[8px] w-4 h-4 rounded-full flex items-center justify-center font-bold">{unseenOffersCount}</span>}
-                    </span>
-                    <span className="whitespace-nowrap text-sm">{profile ? profile.full_name : (user.email ? user.email.split("@")[0] : "")}</span>
+                  <button onClick={function () { setProfileOpen(!profileOpen); setLoginOpen(false); }} className="relative text-muted-foreground hover:text-foreground transition-colors">
+                    <User size={18} />
+                    {unseenOffersCount > 0 && <span className="absolute -top-1.5 -right-1.5 bg-destructive text-destructive-foreground text-[8px] w-4 h-4 rounded-full flex items-center justify-center font-bold">{unseenOffersCount}</span>}
                   </button>
                   {profileOpen && <ProfileDropdown onClose={function () { setProfileOpen(false); }} />}
                 </div>
               ) : (
                 <div className="relative" ref={loginRef}>
-                  <button onClick={function () { setLoginOpen(!loginOpen); setProfileOpen(false); }} className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors px-3">
-                    <UserPlus size={15} />
-                    <span className="whitespace-nowrap">{registerBtnText}</span>
+                  <button onClick={function () { setLoginOpen(!loginOpen); setProfileOpen(false); }} className="text-muted-foreground hover:text-foreground transition-colors">
+                    <User size={18} />
                   </button>
                   {loginOpen && <LoginModal onClose={function () { setLoginOpen(false); }} isAl={isAl} content={cmsContent} />}
                 </div>
@@ -405,18 +401,18 @@ function SiteHeader() {
                 <Heart size={18} className={wishlistCount > 0 ? "fill-primary text-primary" : ""} />
                 {wishlistCount > 0 && <span className="absolute -top-1.5 -right-1.5 bg-destructive text-destructive-foreground text-[9px] w-4 h-4 rounded-full flex items-center justify-center font-bold">{wishlistCount}</span>}
               </Link>
-              {user ? (
-                <Link to="/my-account" className="relative text-muted-foreground hover:text-foreground">
-                  <span className="w-7 h-7 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-semibold">{userInitial}</span>
-                  {unseenOffersCount > 0 && <span className="absolute -top-1 -right-1 bg-destructive text-destructive-foreground text-[8px] w-4 h-4 rounded-full flex items-center justify-center font-bold">{unseenOffersCount}</span>}
-                </Link>
-              ) : (
-                <SlugLink to="/login" className="text-muted-foreground hover:text-foreground"><UserPlus size={18} /></SlugLink>
-              )}
               <Link to="/shporta" className="relative text-muted-foreground hover:text-foreground">
                 <ShoppingCart size={18} />
                 {totalItems > 0 && <span className="absolute -top-1.5 -right-1.5 bg-destructive text-destructive-foreground text-[9px] w-4 h-4 rounded-full flex items-center justify-center font-bold">{totalItems}</span>}
               </Link>
+              {user ? (
+                <Link to="/my-account" className="relative text-muted-foreground hover:text-foreground">
+                  <User size={18} />
+                  {unseenOffersCount > 0 && <span className="absolute -top-1.5 -right-1.5 bg-destructive text-destructive-foreground text-[8px] w-4 h-4 rounded-full flex items-center justify-center font-bold">{unseenOffersCount}</span>}
+                </Link>
+              ) : (
+                <SlugLink to="/login" className="text-muted-foreground hover:text-foreground"><User size={18} /></SlugLink>
+              )}
             </div>
           </div>
         </div>
