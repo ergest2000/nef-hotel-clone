@@ -498,6 +498,7 @@ export type Database = {
           return_policy_al: string | null
           return_policy_en: string | null
           sort_order: number
+          slug: string
           tech_specs_al: string | null
           tech_specs_en: string | null
           title_al: string
@@ -529,6 +530,7 @@ export type Database = {
           return_policy_al?: string | null
           return_policy_en?: string | null
           sort_order?: number
+          slug?: string
           tech_specs_al?: string | null
           tech_specs_en?: string | null
           title_al?: string
@@ -560,6 +562,7 @@ export type Database = {
           return_policy_al?: string | null
           return_policy_en?: string | null
           sort_order?: number
+          slug?: string
           tech_specs_al?: string | null
           tech_specs_en?: string | null
           title_al?: string
