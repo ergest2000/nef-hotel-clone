@@ -43,7 +43,7 @@ const App = () => (
                   {/* Koleksionet — eksplicite */}
                   <Route path="/koleksionet" element={<Collections />} />
                   <Route path="/koleksionet/:slug" element={<Collections />} />
-                  <Route path="/koleksionet/:slug/:productId" element={<ProductDetail />} />
+                  <Route path="/koleksionet/:slug/:productSlug" element={<ProductDetail />} />
 
                   {/* Faqe të tjera eksplicite */}
                   <Route path="/shporta" element={<Cart />} />
