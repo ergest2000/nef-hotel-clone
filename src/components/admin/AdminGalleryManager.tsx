@@ -6,8 +6,14 @@ import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { Trash2, Plus, Eye, EyeOff, Edit2, Check, X } from "lucide-react";
 
-export function AdminGalleryManager() {
-  var imagesData = useAllGalleryImages("tailor-made");
+interface GalleryManagerProps {
+  galleryKey?: string;
+  title?: string;
+}
+
+export function AdminGalleryManager({ galleryKey = "tailor-made", title }: GalleryManagerProps = {}) {
+  var displayTitle = title || (galleryKey === "tailor-made" ? "Galeria - Tekstile të Personalizuara" : "Foto Carousel");
+  var imagesData = useAllGalleryImages(galleryKey);
   var images = imagesData.data;
   var isLoading = imagesData.isLoading;
   var upsert = useUpsertGalleryImage();
@@ -27,10 +33,10 @@ export function AdminGalleryManager() {
 
   async function handleUpload(file: File) {
     try {
-      var path = "gallery/" + Date.now() + "-" + file.name;
+      var path = "gallery/" + galleryKey + "/" + Date.now() + "-" + file.name;
       var url = await uploadCmsImage(file, path);
       upsert.mutate(
-        { gallery_key: "tailor-made", image_url: url, alt_text: file.name.replace(/\.[^.]+$/, ""), sort_order: (images ? images.length : 0), visible: true },
+        { gallery_key: galleryKey, image_url: url, alt_text: file.name.replace(/\.[^.]+$/, ""), sort_order: (images ? images.length : 0), visible: true },
         { onSuccess: function () { toast({ title: "Imazhi u shtua!" }); } }
       );
     } catch (e: any) {
@@ -45,7 +51,7 @@ export function AdminGalleryManager() {
 
   function saveEdit(id: string) {
     upsert.mutate(
-      { id: id, gallery_key: "tailor-made", alt_text: editText },
+      { id: id, gallery_key: galleryKey, alt_text: editText },
       { onSuccess: function () { toast({ title: "U ruajt!" }); setEditingId(null); } }
     );
   }
@@ -71,7 +77,7 @@ export function AdminGalleryManager() {
 
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h2 className="text-lg font-semibold text-foreground">Galeria - Tekstile të Personalizuara</h2>
+          <h2 className="text-lg font-semibold text-foreground">{displayTitle}</h2>
           <p className="text-xs text-muted-foreground mt-1">{images ? images.length : 0} imazhe (max 10)</p>
         </div>
         <div>
@@ -88,7 +94,7 @@ export function AdminGalleryManager() {
             <div key={img.id} className="border border-border rounded overflow-hidden group relative">
               <img src={img.image_url} alt={img.alt_text} className="w-full aspect-[4/3] object-cover" />
               <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                <Button variant="secondary" size="icon" className="h-7 w-7" onClick={function () { upsert.mutate({ id: img.id, gallery_key: "tailor-made", visible: !img.visible }, { onSuccess: function () { toast({ title: img.visible ? "U fsheh!" : "U aktivizua!" }); } }); }}>
+                <Button variant="secondary" size="icon" className="h-7 w-7" onClick={function () { upsert.mutate({ id: img.id, gallery_key: galleryKey, visible: !img.visible }, { onSuccess: function () { toast({ title: img.visible ? "U fsheh!" : "U aktivizua!" }); } }); }}>
                   {img.visible ? <Eye size={12} /> : <EyeOff size={12} />}
                 </Button>
                 <Button variant="secondary" size="icon" className="h-7 w-7" onClick={function () { startEdit(img.id, img.alt_text); }}>
