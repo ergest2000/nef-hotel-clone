@@ -312,6 +312,7 @@ export type Database = {
           href: string
           id: string
           label: string
+          label_en: string
           location: string
           sort_order: number
           updated_at: string
@@ -322,6 +323,7 @@ export type Database = {
           href?: string
           id?: string
           label: string
+          label_en?: string
           location: string
           sort_order?: number
           updated_at?: string
@@ -332,6 +334,7 @@ export type Database = {
           href?: string
           id?: string
           label?: string
+          label_en?: string
           location?: string
           sort_order?: number
           updated_at?: string
