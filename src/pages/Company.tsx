@@ -265,14 +265,9 @@ const Company = () => {
       />
 
       {/* ── 6. Certifications ────────────────────────────────────── */}
-      <section className="py-16 md:py-24 bg-muted/30">
-        <div className="container">
-          <SectionHeading>
-            {ds("company_cert_title", t("CERTIFIKIMET", "CERTIFICATIONS"))}
-          </SectionHeading>
-          <CertificationsSection content={homeContent} />
-        </div>
-      </section>
+      <div className="bg-muted/30">
+        <CertificationsSection content={homeContent} />
+      </div>
 
       {/* ── 7. Call To Action ────────────────────────────────────── */}
       <section className="py-20 md:py-28">
