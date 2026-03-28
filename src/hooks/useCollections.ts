@@ -147,7 +147,7 @@ export const useProductImages = (productId?: string) =>
 export const useAddProductImage = () => {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async (item: { product_id: string; image_url: string; sort_order: number }) => {
+    mutationFn: async (item: { product_id: string; image_url: string; sort_order: number; color_id?: string | null }) => {
       const { data, error } = await supabase
         .from("product_images")
         .insert(item)
@@ -157,6 +157,21 @@ export const useAddProductImage = () => {
       return data;
     },
     onSuccess: (_, vars) => qc.invalidateQueries({ queryKey: ["product_images", vars.product_id] }),
+  });
+};
+
+export const useUpdateProductImage = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, product_id, updates }: { id: string; product_id: string; updates: { color_id?: string | null } }) => {
+      const { error } = await supabase
+        .from("product_images")
+        .update(updates)
+        .eq("id", id);
+      if (error) throw error;
+      return product_id;
+    },
+    onSuccess: (product_id) => qc.invalidateQueries({ queryKey: ["product_images", product_id] }),
   });
 };
 
