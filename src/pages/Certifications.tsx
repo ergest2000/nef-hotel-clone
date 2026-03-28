@@ -1,6 +1,6 @@
 import SiteHeader from "@/components/SiteHeader";
 import SiteFooter from "@/components/SiteFooter";
-import { usePageContent, getContentValue } from "@/hooks/useCms";
+import { usePageContent, usePageSections, getContentValue } from "@/hooks/useCms";
 import { useLanguage } from "@/hooks/useLanguage";
 import { useDesign } from "@/hooks/useDesignSettings";
 import { Link } from "react-router-dom";
@@ -8,6 +8,7 @@ import { Link } from "react-router-dom";
 const Certifications = () => {
   const { lang, isAl } = useLanguage();
   const { data: content } = usePageContent("certifications", lang);
+  const { data: sections } = usePageSections("certifications");
   const { settings } = useDesign();
 
   const t = (al: string, en: string) => (isAl ? al : en);
@@ -15,15 +16,16 @@ const Certifications = () => {
   const g = (sectionKey: string, fieldKey: string, fallback: string) =>
     getContentValue(content, sectionKey, fieldKey, fallback);
 
-  const ds = (key: string, fallback: string) => {
-    const alKey = `${key}_al`;
-    const enKey = `${key}_en`;
-    return isAl ? (settings[alKey] || fallback) : (settings[enKey] || fallback);
+  const isSectionVisible = (key: string) => {
+    if (!sections) return true;
+    const s = sections.find((sec) => sec.section_key === key);
+    return s ? s.visible : true;
   };
 
   // Up to 6 certification items — each has image, title, text from CMS
   const certItems = [];
   for (let i = 1; i <= 6; i++) {
+    if (!isSectionVisible("cert" + i)) continue;
     const image = g("cert" + i, "image", "");
     const title = g("cert" + i, "title", "");
     const text = g("cert" + i, "text", "");
@@ -61,8 +63,8 @@ const Certifications = () => {
         <div className="space-y-12 md:space-y-16">
           {certItems.length > 0 ? (
             certItems.map((cert) => (
-              <div key={cert.key} className="grid grid-cols-1 md:grid-cols-[280px_1fr] gap-6 md:gap-10 items-start">
-                {cert.image && (
+              <div key={cert.key} className="grid grid-cols-1 md:grid-cols-[280px_1fr] gap-6 md:gap-10 items-center">
+                {cert.image ? (
                   <div className="w-full max-w-[280px]">
                     <img
                       src={cert.image}
@@ -70,10 +72,12 @@ const Certifications = () => {
                       className="w-full h-auto object-contain"
                     />
                   </div>
+                ) : (
+                  <div />
                 )}
-                <div className={cert.image ? "" : "md:col-span-2"}>
+                <div>
                   {cert.title && (
-                    <h2 className="text-lg font-medium text-foreground mb-3">{cert.title}</h2>
+                    <h2 className="text-base md:text-lg font-medium tracking-[0.1em] text-foreground uppercase mb-3">{cert.title}</h2>
                   )}
                   <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-wrap">
                     {cert.text}
