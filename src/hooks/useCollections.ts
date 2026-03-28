@@ -78,15 +78,24 @@ export const useUpsertProduct = () => {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (item: Partial<Product> & { collection_id: string }) => {
+      // If slug is empty string, remove it so the DB trigger generates one
+      const payload = { ...item };
+      if (payload.slug === '') {
+        delete payload.slug;
+      }
       const { data, error } = await supabase
         .from("products")
-        .upsert(item)
+        .upsert(payload)
         .select()
         .single();
       if (error) throw error;
       return data;
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["products"] }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["products"] });
+      qc.invalidateQueries({ queryKey: ["products-search"] });
+      qc.invalidateQueries({ queryKey: ["homepage_suggested_products_full"] });
+    },
   });
 };
 
@@ -97,7 +106,11 @@ export const useDeleteProduct = () => {
       const { error } = await supabase.from("products").delete().eq("id", id);
       if (error) throw error;
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["products"] }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["products"] });
+      qc.invalidateQueries({ queryKey: ["products-search"] });
+      qc.invalidateQueries({ queryKey: ["homepage_suggested_products_full"] });
+    },
   });
 };
 
