@@ -289,7 +289,7 @@ function SiteHeader() {
     }
   }
 
-  var mainLinks = headerMenus ? headerMenus.map(function (m: any) { return { label: m.label, href: m.href }; }) : [
+  var mainLinks = headerMenus ? headerMenus.map(function (m: any) { return { label: isAl ? m.label : (m.label_en || m.label), href: m.href }; }) : [
     { label: "About Us", href: "/company" },
     { label: "Our Clients", href: "/clients" },
     { label: "Certifications", href: "/#certifications" },
