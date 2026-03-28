@@ -32,7 +32,7 @@ function SearchDropdown(props: { query: string; isAl: boolean; onSelect: () => v
         <div>
           {results.map(function (product: any) {
             return (
-              <button key={product.id} className="w-full flex items-center gap-4 px-4 py-3 hover:bg-muted/40 transition-colors text-left border-b border-border/50 last:border-b-0" onClick={function () { navigate("/koleksionet/" + product.collectionSlug + "/" + product.id); onSelect(); }}>
+              <button key={product.id} className="w-full flex items-center gap-4 px-4 py-3 hover:bg-muted/40 transition-colors text-left border-b border-border/50 last:border-b-0" onClick={function () { navigate("/koleksionet/" + product.collectionSlug + "/" + (product.slug || product.id)); onSelect(); }}>
                 <div className="w-16 h-16 bg-muted overflow-hidden flex-shrink-0 border border-border/30">
                   {product.image_url ? <img src={product.image_url} alt="" className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center bg-muted"><Package className="w-6 h-6 text-muted-foreground/20" /></div>}
                 </div>
@@ -178,7 +178,7 @@ function ProfileDropdown(props: { onClose: () => void }) {
           <div className="max-h-[160px] overflow-y-auto">
             {offers.slice(0, 5).map(function (offer: any) {
               return (
-                <button key={offer.id} onClick={function () { if (offer.product_id) navigate("/koleksionet/all/" + offer.product_id); onClose(); }} className="w-full flex items-start gap-3 px-4 py-2.5 hover:bg-muted/50 transition-colors text-left">
+                <button key={offer.id} onClick={function () { if (offer.product_id) navigate("/koleksionet/all/" + (offer.product_slug || offer.product_id)); onClose(); }} className="w-full flex items-start gap-3 px-4 py-2.5 hover:bg-muted/50 transition-colors text-left">
                   <Tag size={14} className="text-primary mt-0.5 shrink-0" />
                   <div className="min-w-0">
                     <p className="text-xs font-medium text-foreground truncate">
