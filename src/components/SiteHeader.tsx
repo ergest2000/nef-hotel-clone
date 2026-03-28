@@ -1,4 +1,4 @@
-import { Search, Heart, ShoppingCart, UserPlus, Menu, X, ChevronDown, ChevronUp, Package, User, LogOut, Lock, Settings, Tag, Gift } from "lucide-react";
+import { Search, Heart, ShoppingCart, UserPlus, Menu, X, ChevronDown, ChevronUp, ChevronRight, Package, User, LogOut, Lock, Settings, Tag, Gift } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import SlugLink from "@/components/SlugLink";
@@ -376,10 +376,23 @@ function SiteHeader() {
           </div>
         </div>
         {desktopMenuOpen && (
-          <div className="border-b border-border bg-background shadow-sm">
+          <div className="fixed inset-0 z-50 bg-background overflow-y-auto">
+            <div className="container">
+              <div className="flex items-center h-20 gap-4">
+                <Link to="/" className="flex items-center gap-3 shrink-0" onClick={function () { setDesktopMenuOpen(false); }}><img src={logo} alt="EGJEU" className="h-14 w-auto" /></Link>
+                <button className="text-foreground hover:text-primary transition-colors shrink-0" onClick={function () { setDesktopMenuOpen(false); }}><X size={24} /></button>
+              </div>
+            </div>
+            <div className="border-t border-border" />
             <div className="container py-6">
               <div className="flex flex-col">
-                {mainLinks.map(function (item: any) { return <SlugLink key={item.label} to={item.href} onClick={function () { setDesktopMenuOpen(false); }} className="block text-xs tracking-brand text-muted-foreground hover:text-primary transition-colors uppercase py-3 border-b border-border/50 last:border-b-0 w-full">{item.label}</SlugLink>; })}
+                {productLinks.map(function (item) { return <SlugLink key={item.label} to={item.href} onClick={function () { setDesktopMenuOpen(false); }} className="block text-sm tracking-brand text-foreground hover:text-primary transition-colors py-4 border-b border-border/30 w-full">{item.label} <ChevronRight size={14} className="inline ml-1 opacity-40" /></SlugLink>; })}
+                <div className="h-px bg-border my-2" />
+                {mainLinks.map(function (item: any) { return <SlugLink key={item.label} to={item.href} onClick={function () { setDesktopMenuOpen(false); }} className="block text-sm tracking-brand text-foreground hover:text-primary transition-colors py-4 border-b border-border/30 w-full">{item.label} <ChevronRight size={14} className="inline ml-1 opacity-40" /></SlugLink>; })}
+              </div>
+              <div className="flex items-center gap-3 pt-6 text-xs text-muted-foreground">
+                <button onClick={function () { setLang("al"); setDesktopMenuOpen(false); }} className={"px-3 py-1.5 border rounded-sm transition-colors " + (isAl ? "border-foreground text-foreground font-semibold" : "border-border")}>AL</button>
+                <button onClick={function () { setLang("en"); setDesktopMenuOpen(false); }} className={"px-3 py-1.5 border rounded-sm transition-colors " + (!isAl ? "border-foreground text-foreground font-semibold" : "border-border")}>EN</button>
               </div>
             </div>
           </div>
@@ -419,22 +432,28 @@ function SiteHeader() {
           </div>
         </div>
         {mobileMenuOpen && (
-          <div className="border-b border-border bg-background">
+          <div className="fixed inset-0 z-50 bg-background overflow-y-auto">
+            <div className="border-b border-border">
+              <div className="container flex items-center justify-between h-14">
+                <button className="text-foreground" onClick={function () { setMobileMenuOpen(false); }}><X size={22} /></button>
+                <Link to="/" onClick={function () { setMobileMenuOpen(false); }}><img src={logo} alt="EGJEU" className="h-9 w-auto" /></Link>
+                <div className="w-[22px]" />
+              </div>
+            </div>
             <div className="container py-4 flex flex-col">
-              <button onClick={function () { setMobileProductsOpen(!mobileProductsOpen); }} className="flex items-center justify-between text-sm tracking-brand text-muted-foreground hover:text-primary transition-colors uppercase py-3 border-b border-border w-full">
+              <button onClick={function () { setMobileProductsOpen(!mobileProductsOpen); }} className="flex items-center justify-between text-sm tracking-brand text-foreground hover:text-primary transition-colors py-4 border-b border-border/30 w-full">
                 <span>{mobileProductsLabel}</span>
                 {mobileProductsOpen ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
               </button>
               {mobileProductsOpen && (
                 <div className="flex flex-col pl-4">
-                  {productLinks.map(function (item) { return <SlugLink key={item.label} to={item.href} onClick={function () { setMobileMenuOpen(false); setMobileProductsOpen(false); }} className="block text-sm tracking-brand text-muted-foreground/80 hover:text-primary transition-colors uppercase py-3 border-b border-border/50 last:border-b-0 w-full">{item.label}</SlugLink>; })}
+                  {productLinks.map(function (item) { return <SlugLink key={item.label} to={item.href} onClick={function () { setMobileMenuOpen(false); setMobileProductsOpen(false); }} className="block text-sm tracking-brand text-muted-foreground hover:text-primary transition-colors py-3 border-b border-border/20 w-full">{item.label}</SlugLink>; })}
                 </div>
               )}
-              {mainLinks.map(function (item: any) { return <SlugLink key={item.label} to={item.href} onClick={function () { setMobileMenuOpen(false); }} className="block text-sm tracking-brand text-muted-foreground hover:text-primary transition-colors uppercase py-3 border-b border-border last:border-b-0 w-full">{item.label}</SlugLink>; })}
-              <div className="flex items-center gap-2 pt-4 text-xs text-muted-foreground">
-                <button onClick={function () { setLang("al"); }} className={isAl ? "font-semibold text-foreground" : ""}>AL</button>
-                <span>|</span>
-                <button onClick={function () { setLang("en"); }} className={!isAl ? "font-semibold text-foreground" : ""}>EN</button>
+              {mainLinks.map(function (item: any) { return <SlugLink key={item.label} to={item.href} onClick={function () { setMobileMenuOpen(false); }} className="block text-sm tracking-brand text-foreground hover:text-primary transition-colors py-4 border-b border-border/30 w-full">{item.label} <ChevronRight size={14} className="inline ml-1 opacity-40" /></SlugLink>; })}
+              <div className="flex items-center gap-3 pt-6 text-xs text-muted-foreground">
+                <button onClick={function () { setLang("al"); setMobileMenuOpen(false); }} className={"px-3 py-1.5 border rounded-sm transition-colors " + (isAl ? "border-foreground text-foreground font-semibold" : "border-border")}>AL</button>
+                <button onClick={function () { setLang("en"); setMobileMenuOpen(false); }} className={"px-3 py-1.5 border rounded-sm transition-colors " + (!isAl ? "border-foreground text-foreground font-semibold" : "border-border")}>EN</button>
               </div>
             </div>
           </div>
