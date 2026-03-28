@@ -45,6 +45,7 @@ var pageTitles: Record<string, string> = {
   company: "Company",
   clients: "Clients",
   "tailor-made": "Tailor Made",
+  certifications: "Certifikimet",
   contact: "Contact",
   blog: "Blog",
   "blog-posts": "Blog Posts",
@@ -70,7 +71,7 @@ var pageTitles: Record<string, string> = {
   offers: "Kërkesat për Oferta",
 };
 
-var cmsPages = ["home", "company", "clients", "tailor-made", "contact", "blog"];
+var cmsPages = ["home", "company", "clients", "tailor-made", "certifications", "contact", "blog"];
 
 function AdminDashboard() {
   var authHook = useAuth();
