@@ -78,7 +78,7 @@ const ProductCard = ({
   return (
     <div className="group relative flex flex-col">
       <Link
-        to={`/koleksionet/${collectionSlug}/${product.id}`}
+        to={`/koleksionet/${collectionSlug}/${product.slug || product.id}`}
         className="block"
       >
         {/* Image */}
