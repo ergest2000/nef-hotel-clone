@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useCollections } from "@/hooks/useCollections";
 import {
   useProducts, useUpsertProduct, useDeleteProduct,
-  useProductImages, useAddProductImage, useDeleteProductImage,
+  useProductImages, useAddProductImage, useDeleteProductImage, useUpdateProductImage,
   useProductColors, useAddProductColor, useDeleteProductColor, useUpdateProductColor,
   useProductSizes, useAddProductSize, useDeleteProductSize,
   useGlobalColors,
@@ -40,9 +40,12 @@ const emptyProduct: Partial<Product> = {
 
 const ProductImagesManager = ({ productId }: { productId: string }) => {
   const { data: images, isLoading } = useProductImages(productId);
+  const { data: colors } = useProductColors(productId);
   const addImage = useAddProductImage();
   const removeImage = useDeleteProductImage();
+  const updateImage = useUpdateProductImage();
   const { toast } = useToast();
+  const [uploadColorId, setUploadColorId] = useState<string>("");
 
   const handleUpload = async (file: File) => {
     if ((images?.length ?? 0) >= 10) {
@@ -51,7 +54,24 @@ const ProductImagesManager = ({ productId }: { productId: string }) => {
     }
     const path = `products/${productId}/${Date.now()}-${file.name}`;
     const url = await uploadCmsImage(file, path);
-    addImage.mutate({ product_id: productId, image_url: url, sort_order: images?.length ?? 0 });
+    addImage.mutate({
+      product_id: productId,
+      image_url: url,
+      sort_order: images?.length ?? 0,
+      color_id: uploadColorId || null,
+    });
+  };
+
+  const getColorName = (colorId: string | null) => {
+    if (!colorId || !colors) return null;
+    const c = colors.find((cl) => cl.id === colorId);
+    return c ? (c.color_name_al || c.color_name) : null;
+  };
+
+  const getColorHex = (colorId: string | null) => {
+    if (!colorId || !colors) return null;
+    const c = colors.find((cl) => cl.id === colorId);
+    return c?.color_hex ?? null;
   };
 
   return (
@@ -60,22 +80,71 @@ const ProductImagesManager = ({ productId }: { productId: string }) => {
         <label className="text-xs font-medium text-muted-foreground">
           Foto shtesë ({images?.length ?? 0}/10)
         </label>
+      </div>
+
+      {/* Upload with color selection */}
+      <div className="flex items-center gap-2 flex-wrap bg-muted/50 p-3 rounded">
+        {colors && colors.length > 0 && (
+          <select
+            value={uploadColorId}
+            onChange={(e) => setUploadColorId(e.target.value)}
+            className="h-8 text-xs border border-border rounded px-2 bg-background"
+          >
+            <option value="">Pa ngjyrë (Gjenerale)</option>
+            {colors.map((c) => (
+              <option key={c.id} value={c.id}>{c.color_name_al || c.color_name}</option>
+            ))}
+          </select>
+        )}
         <label className="cursor-pointer">
-          <div className="flex items-center gap-1 px-3 py-1.5 bg-muted rounded text-xs hover:bg-muted/80">
-            <ImageIcon className="h-3 w-3" /> Shto foto
+          <div className="flex items-center gap-1 px-3 py-1.5 bg-background border border-border rounded text-xs hover:bg-muted">
+            <ImageIcon className="h-3 w-3" /> Ngarko foto
           </div>
           <input type="file" accept="image/*" className="hidden" onChange={(e) => {
             if (e.target.files?.[0]) handleUpload(e.target.files[0]);
           }} />
         </label>
+        {uploadColorId && (
+          <span className="text-[10px] text-muted-foreground">
+            → do lidhet me: <strong>{getColorName(uploadColorId)}</strong>
+          </span>
+        )}
       </div>
+
       {isLoading ? (
         <div className="text-xs text-muted-foreground">Duke ngarkuar...</div>
       ) : (
-        <div className="grid grid-cols-5 gap-2">
+        <div className="grid grid-cols-4 gap-2">
           {images?.map((img) => (
-            <div key={img.id} className="relative group aspect-square rounded overflow-hidden bg-muted">
-              <img src={img.image_url} alt="" className="w-full h-full object-cover" />
+            <div key={img.id} className="relative group rounded overflow-hidden bg-muted">
+              <div className="aspect-square">
+                <img src={img.image_url} alt="" className="w-full h-full object-cover" />
+              </div>
+              {/* Color badge */}
+              <div className="absolute bottom-0 left-0 right-0 bg-black/60 px-1.5 py-1 flex items-center gap-1">
+                {(img as any).color_id ? (
+                  <>
+                    <div className="w-3 h-3 rounded-full border border-white/40 shrink-0" style={{ backgroundColor: getColorHex((img as any).color_id) || "#ccc" }} />
+                    <span className="text-[9px] text-white truncate">{getColorName((img as any).color_id)}</span>
+                  </>
+                ) : (
+                  <span className="text-[9px] text-white/60">Gjenerale</span>
+                )}
+              </div>
+              {/* Color reassign select */}
+              {colors && colors.length > 0 && (
+                <select
+                  value={(img as any).color_id || ""}
+                  onChange={(e) => updateImage.mutate({ id: img.id, product_id: productId, updates: { color_id: e.target.value || null } })}
+                  className="absolute top-1 left-1 w-[calc(100%-2.25rem)] h-5 text-[9px] bg-white/90 border-0 rounded opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+                >
+                  <option value="">Gjenerale</option>
+                  {colors.map((c) => (
+                    <option key={c.id} value={c.id}>{c.color_name_al || c.color_name}</option>
+                  ))}
+                </select>
+              )}
+              {/* Delete */}
               <button
                 className="absolute top-1 right-1 w-5 h-5 bg-destructive/90 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
                 onClick={() => removeImage.mutate({ id: img.id, product_id: productId })}
