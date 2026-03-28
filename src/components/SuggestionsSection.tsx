@@ -47,12 +47,14 @@ const SuggestionsSection = ({ content }: { content?: SiteContent[] }) => {
         name: lang === "en" ? (p.title_en || p.title_al) : (p.title_al || p.title_en),
         image: p.image_url || catBedroom,
         id: p.id,
+        slug: p.slug || p.id,
         collectionSlug: p.collectionSlug || "all",
       }))
     : defaultProducts.map((def) => ({
         name: def.name,
         image: def.image,
         id: def.key,
+        slug: def.key,
         collectionSlug: "all",
       }));
 
@@ -251,7 +253,7 @@ const SuggestionsSection = ({ content }: { content?: SiteContent[] }) => {
               {products.map((product) => (
                 <a
                   key={product.id}
-                  href={`/koleksionet/${product.collectionSlug}/${product.id}`}
+                  href={`/koleksionet/${product.collectionSlug}/${product.slug}`}
                   draggable={false}
                   className="group shrink-0"
                   style={{
