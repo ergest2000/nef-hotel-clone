@@ -30,6 +30,33 @@ const pageComponents: Record<string, React.ComponentType> = {
   login: Login,
 };
 
+// Hardcoded fallback slugs — if DB has no entry, these still work
+const fallbackSlugs: Record<string, string> = {
+  "company": "company",
+  "kompania": "company",
+  "rreth-nesh": "company",
+  "about-us": "company",
+  "clients": "clients",
+  "klientet": "clients",
+  "tailor-made": "tailor-made",
+  "tekstile-te-personalizuara": "tailor-made",
+  "contact": "contact",
+  "kontakt": "contact",
+  "blog": "blog",
+  "shipping": "shipping",
+  "transporti": "shipping",
+  "payment-terms": "payment-terms",
+  "kushtet-e-pageses": "payment-terms",
+  "terms-of-use": "terms-of-use",
+  "kushtet-e-perdorimit": "terms-of-use",
+  "privacy-policy": "privacy-policy",
+  "politika-e-privatesise": "privacy-policy",
+  "register": "register",
+  "regjistrohu": "register",
+  "login": "login",
+  "hyrje": "login",
+};
+
 const SlugRouter = () => {
   const { slug } = useParams<{ slug: string }>();
   const { data: slugs, isLoading } = usePageSlugs();
@@ -44,8 +71,14 @@ const SlugRouter = () => {
 
   if (!slug) return null;
 
-  const pageKey = resolveSlug(slugs, slug);
-  
+  // 1. Try DB slugs first
+  let pageKey = resolveSlug(slugs, slug);
+
+  // 2. Fallback to hardcoded map
+  if (!pageKey) {
+    pageKey = fallbackSlugs[slug.toLowerCase()] ?? null;
+  }
+
   if (!pageKey) {
     return <NotFound />;
   }
