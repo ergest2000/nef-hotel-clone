@@ -5,6 +5,7 @@ import {
   useProductImages, useAddProductImage, useDeleteProductImage,
   useProductColors, useAddProductColor, useDeleteProductColor, useUpdateProductColor,
   useProductSizes, useAddProductSize, useDeleteProductSize,
+  useGlobalColors,
   type ProductColor, type ProductSize,
 } from "@/hooks/useCollections";
 import { useToast } from "@/hooks/use-toast";
@@ -91,21 +92,26 @@ const ProductImagesManager = ({ productId }: { productId: string }) => {
 
 const ProductColorsManager = ({ productId }: { productId: string }) => {
   const { data: colors } = useProductColors(productId);
+  const { data: globalColors } = useGlobalColors();
   const addColor = useAddProductColor();
   const removeColor = useDeleteProductColor();
   const updateColor = useUpdateProductColor();
   const { toast } = useToast();
-  const [newNameAl, setNewNameAl] = useState("");
-  const [newNameEn, setNewNameEn] = useState("");
-  const [newHex, setNewHex] = useState("#FFFFFF");
 
-  const handleAdd = () => {
-    if (!newNameAl.trim() && !newNameEn.trim()) return;
-    const name = newNameAl || newNameEn;
-    addColor.mutate({ product_id: productId, color_name: name, color_name_al: newNameAl, color_name_en: newNameEn, color_hex: newHex, image_url: "", sort_order: colors?.length ?? 0 });
-    setNewNameAl("");
-    setNewNameEn("");
-    setNewHex("#FFFFFF");
+  // Filter out global colors already assigned to this product
+  const assignedHexes = new Set(colors?.map((c) => c.color_hex.toLowerCase()) ?? []);
+  const availableColors = globalColors?.filter((gc) => !assignedHexes.has(gc.hex.toLowerCase())) ?? [];
+
+  const handleSelectColor = (gc: { name_al: string; name_en: string; hex: string }) => {
+    addColor.mutate({
+      product_id: productId,
+      color_name: gc.name_al || gc.name_en,
+      color_name_al: gc.name_al,
+      color_name_en: gc.name_en,
+      color_hex: gc.hex,
+      image_url: "",
+      sort_order: colors?.length ?? 0,
+    });
   };
 
   const handleColorImageUpload = async (colorId: string, file: File) => {
@@ -122,6 +128,8 @@ const ProductColorsManager = ({ productId }: { productId: string }) => {
   return (
     <div className="space-y-3">
       <label className="text-xs font-medium text-muted-foreground">Ngjyrat e produktit</label>
+
+      {/* Assigned colors */}
       <div className="space-y-2">
         {colors?.map((c) => (
           <div key={c.id} className="flex items-center gap-3 bg-muted px-3 py-2 rounded">
@@ -130,7 +138,6 @@ const ProductColorsManager = ({ productId }: { productId: string }) => {
               <span className="text-xs font-medium">{c.color_name_al || c.color_name}</span>
               <span className="text-xs text-muted-foreground"> / {c.color_name_en || c.color_name}</span>
             </div>
-            {/* Color image thumbnail or upload */}
             {(c as any).image_url ? (
               <div className="relative group w-10 h-10 rounded overflow-hidden bg-secondary shrink-0">
                 <img src={(c as any).image_url} alt="" className="w-full h-full object-cover" />
@@ -157,14 +164,30 @@ const ProductColorsManager = ({ productId }: { productId: string }) => {
           </div>
         ))}
       </div>
-      <div className="flex items-center gap-2 flex-wrap">
-        <Input type="color" value={newHex} onChange={(e) => setNewHex(e.target.value)} className="w-10 h-8 p-0.5" />
-        <Input value={newNameAl} onChange={(e) => setNewNameAl(e.target.value)} placeholder="Emri AL" className="h-8 text-xs flex-1 min-w-[100px]" />
-        <Input value={newNameEn} onChange={(e) => setNewNameEn(e.target.value)} placeholder="Name EN" className="h-8 text-xs flex-1 min-w-[100px]" />
-        <Button size="sm" variant="outline" className="h-8 text-xs" onClick={handleAdd}>
-          <Plus className="h-3 w-3 mr-1" /> Shto
-        </Button>
-      </div>
+
+      {/* Select from global colors */}
+      {availableColors.length > 0 ? (
+        <div>
+          <p className="text-[10px] text-muted-foreground mb-2">Zgjidh nga ngjyrat e paracaktuara:</p>
+          <div className="flex flex-wrap gap-2">
+            {availableColors.map((gc) => (
+              <button
+                key={gc.id}
+                onClick={() => handleSelectColor(gc)}
+                className="flex items-center gap-2 px-3 py-1.5 border border-border rounded-sm hover:border-primary hover:bg-primary/5 transition-colors"
+                title={`${gc.name_al} / ${gc.name_en}`}
+              >
+                <div className="w-5 h-5 rounded-full border border-border shrink-0" style={{ backgroundColor: gc.hex }} />
+                <span className="text-xs text-foreground">{gc.name_al || gc.name_en}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+      ) : globalColors && globalColors.length === 0 ? (
+        <p className="text-[10px] text-muted-foreground">
+          Nuk ka ngjyra globale. Shto nga Dashboard → Ngjyrat e Produktit.
+        </p>
+      ) : null}
     </div>
   );
 };
