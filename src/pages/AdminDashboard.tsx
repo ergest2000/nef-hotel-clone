@@ -34,7 +34,6 @@ import { AdminStaticPages } from "@/components/admin/AdminStaticPages";
 import { AdminNewsletter } from "@/components/admin/AdminNewsletter";
 import { AdminOfferRequests } from "@/components/admin/AdminOfferRequests";
 import { AdminContactSubmissions } from "@/components/admin/AdminContactSubmissions";
-import { AdminFooterManager } from "@/components/admin/AdminFooterManager";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import type { Tables } from "@/integrations/supabase/types";
 
@@ -66,7 +65,6 @@ var pageTitles: Record<string, string> = {
   "homepage-categories": "Kategoritë Homepage",
   "static-pages": "Faqet Statike",
   design: "Design Settings",
-  "footer-menus": "Footer Menus",
   settings: "Settings",
   newsletter: "Newsletter",
   offers: "Kërkesat për Oferta",
@@ -304,8 +302,6 @@ function AdminDashboard() {
         return <AdminStaticPages />;
       case "design":
         return <AdminDesignSettings />;
-      case "footer-menus":
-        return <AdminFooterManager />;
       case "newsletter":
         return <AdminNewsletter />;
       case "offers":
