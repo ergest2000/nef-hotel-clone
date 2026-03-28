@@ -10,7 +10,7 @@ export const useProductSearch = (query: string) => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("products")
-        .select("id, title_al, title_en, code, image_url, collection_id, composition_al, composition_en")
+        .select("id, title_al, title_en, code, image_url, collection_id, composition_al, composition_en, slug")
         .eq("visible", true)
         .order("sort_order");
       if (error) throw error;
