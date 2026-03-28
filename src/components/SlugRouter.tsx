@@ -10,6 +10,7 @@ import TailorMade from "@/pages/TailorMade";
 import Contact from "@/pages/Contact";
 import Blog from "@/pages/Blog";
 import Certifications from "@/pages/Certifications";
+import Catalogue from "@/pages/Catalogue";
 import Shipping from "@/pages/Shipping";
 import PaymentTerms from "@/pages/PaymentTerms";
 import TermsOfUse from "@/pages/TermsOfUse";
@@ -24,6 +25,7 @@ const pageComponents: Record<string, React.ComponentType> = {
   contact: Contact,
   blog: Blog,
   certifications: Certifications,
+  catalogue: Catalogue,
   shipping: Shipping,
   "payment-terms": PaymentTerms,
   "terms-of-use": TermsOfUse,
@@ -46,6 +48,9 @@ const fallbackSlugs: Record<string, string> = {
   "kontakt": "contact",
   "certifications": "certifications",
   "certifikimet": "certifications",
+  "catalogue": "catalogue",
+  "katalogu": "catalogue",
+  "katalog": "catalogue",
   "blog": "blog",
   "shipping": "shipping",
   "transporti": "shipping",
