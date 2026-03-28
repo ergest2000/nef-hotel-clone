@@ -23,6 +23,7 @@ interface NavMenuItem {
   id: string;
   location: string;
   label: string;
+  label_en: string;
   href: string;
   sort_order: number;
   visible: boolean;
@@ -104,10 +105,11 @@ export const AdminMenuManager = () => {
             title={loc.label}
             location={loc.key}
             items={items}
-            onAdd={(label, href) => {
+            onAdd={(label, labelEn, href) => {
               upsertMutation.mutate({
                 location: loc.key,
                 label,
+                label_en: labelEn,
                 href,
                 sort_order: items.length,
                 visible: true,
@@ -137,7 +139,7 @@ const MenuSection = ({
   title: string;
   location: string;
   items: NavMenuItem[];
-  onAdd: (label: string, href: string) => void;
+  onAdd: (label: string, labelEn: string, href: string) => void;
   onDelete: (id: string) => void;
   onUpdate: (item: Partial<NavMenuItem> & { id: string; location: string; label: string }) => void;
   onDragEnd: (e: any) => void;
@@ -145,6 +147,7 @@ const MenuSection = ({
 }) => {
   const [adding, setAdding] = useState(false);
   const [newLabel, setNewLabel] = useState("");
+  const [newLabelEn, setNewLabelEn] = useState("");
   const [newHref, setNewHref] = useState("");
 
   return (
@@ -158,10 +161,11 @@ const MenuSection = ({
 
       {adding && (
         <div className="px-4 py-3 border-b border-border bg-muted/20 flex items-center gap-2">
-          <Input value={newLabel} onChange={e => setNewLabel(e.target.value)} placeholder="Emri" className="text-xs h-8 flex-1" />
+          <Input value={newLabel} onChange={e => setNewLabel(e.target.value)} placeholder="Emri (AL)" className="text-xs h-8 flex-1" />
+          <Input value={newLabelEn} onChange={e => setNewLabelEn(e.target.value)} placeholder="Name (EN)" className="text-xs h-8 flex-1" />
           <Input value={newHref} onChange={e => setNewHref(e.target.value)} placeholder="/path" className="text-xs h-8 flex-1" />
           <Button size="sm" className="h-8 text-xs" onClick={() => {
-            if (newLabel) { onAdd(newLabel, newHref || "#"); setNewLabel(""); setNewHref(""); setAdding(false); }
+            if (newLabel) { onAdd(newLabel, newLabelEn || newLabel, newHref || "#"); setNewLabel(""); setNewLabelEn(""); setNewHref(""); setAdding(false); }
           }}>
             <Save size={14} />
           </Button>
@@ -194,6 +198,7 @@ const SortableMenuItem = ({
 }) => {
   const [editing, setEditing] = useState(false);
   const [label, setLabel] = useState(item.label);
+  const [labelEn, setLabelEn] = useState(item.label_en || "");
   const [href, setHref] = useState(item.href);
   const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id: item.id });
 
@@ -207,10 +212,11 @@ const SortableMenuItem = ({
 
       {editing ? (
         <>
-          <Input value={label} onChange={e => setLabel(e.target.value)} className="text-xs h-8 flex-1" />
+          <Input value={label} onChange={e => setLabel(e.target.value)} placeholder="AL" className="text-xs h-8 flex-1" />
+          <Input value={labelEn} onChange={e => setLabelEn(e.target.value)} placeholder="EN" className="text-xs h-8 flex-1" />
           <Input value={href} onChange={e => setHref(e.target.value)} className="text-xs h-8 flex-1" />
           <Button size="sm" className="h-8 text-xs" onClick={() => {
-            onUpdate({ id: item.id, location: item.location, label, href });
+            onUpdate({ id: item.id, location: item.location, label, label_en: labelEn, href });
             setEditing(false);
           }}>
             <Save size={14} />
@@ -218,7 +224,12 @@ const SortableMenuItem = ({
         </>
       ) : (
         <>
-          <span className="text-xs text-foreground flex-1 cursor-pointer" onClick={() => setEditing(true)}>{item.label}</span>
+          <span className="text-xs text-foreground flex-1 cursor-pointer" onClick={() => setEditing(true)}>
+            {item.label}
+            {item.label_en && item.label_en !== item.label && (
+              <span className="text-muted-foreground ml-1.5">/ {item.label_en}</span>
+            )}
+          </span>
           <span className="text-[10px] text-muted-foreground">{item.href}</span>
         </>
       )}
