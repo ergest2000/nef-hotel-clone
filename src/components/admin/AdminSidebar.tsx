@@ -1,7 +1,7 @@
 import {
   LayoutDashboard, Home, Building2, Users, Scissors, Phone, FileText, PenSquare,
   Image, Settings, Menu as MenuIcon, Award, ImageIcon, Link as LinkIcon, Paintbrush,
-  UserCog, ScrollText, Type, FolderOpen, Package, Star, Grid3X3, BookOpen, Gift, Mail, Palette, Footprints,
+  UserCog, ScrollText, Type, FolderOpen, Package, Star, Grid3X3, BookOpen, Gift, Mail, Palette,
 } from "lucide-react";
 import {
   Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel,
@@ -22,7 +22,6 @@ const menuItems: { key: string; label: string; icon: any; group: string; roles?:
   { key: "blog", label: "Blog CMS", icon: FileText, group: "pages", roles: ["admin"] },
   { key: "blog-posts", label: "Blog Posts", icon: PenSquare, group: "content", roles: ["admin", "editor"] },
   { key: "menus", label: "Menus", icon: MenuIcon, group: "content", roles: ["admin"] },
-  { key: "footer-menus", label: "Footer Menus", icon: Footprints, group: "content", roles: ["admin"] },
   { key: "clients-logos", label: "Clients Logos", icon: ImageIcon, group: "content", roles: ["admin"] },
   { key: "certifications-logos", label: "Certifications Logos", icon: Award, group: "content", roles: ["admin"] },
   { key: "static-pages", label: "Faqet Statike", icon: BookOpen, group: "content", roles: ["admin"] },
