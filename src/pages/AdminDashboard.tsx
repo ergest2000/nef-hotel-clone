@@ -346,6 +346,12 @@ function AdminDashboard() {
               onToggleVisibility={handleToggleVisibility}
               onDragEnd={handleDragEnd}
             />
+            {activePage === "company" && (
+              <>
+                <AdminLogoManager category="clients" title="Brandet Tona" />
+                <AdminLogoManager category="certifications" title="Certifikimet" />
+              </>
+            )}
             {showSeo && <AdminSeoEditor page={activePage} />}
           </div>
         );
