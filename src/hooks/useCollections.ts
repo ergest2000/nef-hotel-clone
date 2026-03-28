@@ -353,3 +353,70 @@ export const useAllProductSizes = () =>
       return data as unknown as ProductSize[];
     },
   });
+
+// ─── Global Colors (brand palette) ──────────────────────────────
+export interface GlobalColor {
+  id: string;
+  name_al: string;
+  name_en: string;
+  hex: string;
+  sort_order: number;
+  created_at: string;
+}
+
+export const useGlobalColors = () =>
+  useQuery({
+    queryKey: ["global_colors"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("global_colors" as any)
+        .select("*")
+        .order("sort_order");
+      if (error) throw error;
+      return data as unknown as GlobalColor[];
+    },
+  });
+
+export const useAddGlobalColor = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (item: { name_al: string; name_en: string; hex: string; sort_order: number }) => {
+      const { data, error } = await supabase
+        .from("global_colors" as any)
+        .insert(item)
+        .select()
+        .single();
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["global_colors"] }),
+  });
+};
+
+export const useUpdateGlobalColor = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, updates }: { id: string; updates: Partial<GlobalColor> }) => {
+      const { error } = await supabase
+        .from("global_colors" as any)
+        .update(updates)
+        .eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["global_colors"] }),
+  });
+};
+
+export const useDeleteGlobalColor = () => {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase
+        .from("global_colors" as any)
+        .delete()
+        .eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["global_colors"] }),
+  });
+};
