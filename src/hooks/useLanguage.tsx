@@ -15,7 +15,21 @@ const LanguageContext = createContext<LanguageContextType>({
 });
 
 export const LanguageProvider = ({ children }: { children: ReactNode }) => {
-  const [lang, setLang] = useState<Lang>("al");
+  const [lang, setLangState] = useState<Lang>(() => {
+    try {
+      const saved = localStorage.getItem("site_lang");
+      if (saved === "en" || saved === "al") return saved;
+    } catch {}
+    return "al";
+  });
+
+  const setLang = (l: Lang) => {
+    setLangState(l);
+    try {
+      localStorage.setItem("site_lang", l);
+    } catch {}
+  };
+
   return (
     <LanguageContext.Provider value={{ lang, setLang, isAl: lang === "al" }}>
       {children}
