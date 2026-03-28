@@ -13,7 +13,7 @@ const CertificationsSection = ({ content }: { content?: SiteContent[] }) => {
   return (
     <section className="py-12 md:py-16 border-t border-border">
       <div className="container">
-        <h2 className="text-xs md:text-sm tracking-[0.3em] uppercase font-medium text-foreground text-center mb-8">{title}</h2>
+        <h2 className="text-lg md:text-xl tracking-[0.25em] uppercase font-light text-foreground text-center mb-8">{title}</h2>
         <div className="flex flex-wrap justify-center gap-8 md:gap-16">
           {certs.map((cert) => (
             <div key={cert.id} className="flex items-center justify-center px-6 py-3 border border-border">
