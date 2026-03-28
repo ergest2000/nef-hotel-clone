@@ -22,7 +22,7 @@ import researchImg from "@/assets/company-research.jpg";
 const SectionHeading = ({ children, light = false }: { children: React.ReactNode; light?: boolean }) => (
   <div className="text-center mb-10 md:mb-14">
     <h2
-      className={`text-xs md:text-sm tracking-[0.3em] uppercase font-medium ${
+      className={`text-lg md:text-xl tracking-[0.25em] uppercase font-light ${
         light ? "text-white/90" : "text-foreground"
       }`}
     >
