@@ -5,6 +5,7 @@ export interface NavMenuItem {
   id: string;
   location: string;
   label: string;
+  label_en: string;
   href: string;
   sort_order: number;
   visible: boolean;
