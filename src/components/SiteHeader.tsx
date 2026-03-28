@@ -386,8 +386,6 @@ function SiteHeader() {
             <div className="border-t border-border" />
             <div className="container py-6">
               <div className="flex flex-col">
-                {productLinks.map(function (item) { return <SlugLink key={item.label} to={item.href} onClick={function () { setDesktopMenuOpen(false); }} className="block text-sm tracking-brand text-foreground hover:text-primary transition-colors py-4 border-b border-border/30 w-full">{item.label} <ChevronRight size={14} className="inline ml-1 opacity-40" /></SlugLink>; })}
-                <div className="h-px bg-border my-2" />
                 {mainLinks.map(function (item: any) { return <SlugLink key={item.label} to={item.href} onClick={function () { setDesktopMenuOpen(false); }} className="block text-sm tracking-brand text-foreground hover:text-primary transition-colors py-4 border-b border-border/30 w-full">{item.label} <ChevronRight size={14} className="inline ml-1 opacity-40" /></SlugLink>; })}
               </div>
               <div className="flex items-center gap-3 pt-6 text-xs text-muted-foreground">
@@ -441,15 +439,6 @@ function SiteHeader() {
               </div>
             </div>
             <div className="container py-4 flex flex-col">
-              <button onClick={function () { setMobileProductsOpen(!mobileProductsOpen); }} className="flex items-center justify-between text-sm tracking-brand text-foreground hover:text-primary transition-colors py-4 border-b border-border/30 w-full">
-                <span>{mobileProductsLabel}</span>
-                {mobileProductsOpen ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-              </button>
-              {mobileProductsOpen && (
-                <div className="flex flex-col pl-4">
-                  {productLinks.map(function (item) { return <SlugLink key={item.label} to={item.href} onClick={function () { setMobileMenuOpen(false); setMobileProductsOpen(false); }} className="block text-sm tracking-brand text-muted-foreground hover:text-primary transition-colors py-3 border-b border-border/20 w-full">{item.label}</SlugLink>; })}
-                </div>
-              )}
               {mainLinks.map(function (item: any) { return <SlugLink key={item.label} to={item.href} onClick={function () { setMobileMenuOpen(false); }} className="block text-sm tracking-brand text-foreground hover:text-primary transition-colors py-4 border-b border-border/30 w-full">{item.label} <ChevronRight size={14} className="inline ml-1 opacity-40" /></SlugLink>; })}
               <div className="flex items-center gap-3 pt-6 text-xs text-muted-foreground">
                 <button onClick={function () { setLang("al"); setMobileMenuOpen(false); }} className={"px-3 py-1.5 border rounded-sm transition-colors " + (isAl ? "border-foreground text-foreground font-semibold" : "border-border")}>AL</button>
