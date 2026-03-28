@@ -338,16 +338,20 @@ function SiteHeader() {
               <Search size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
               {searchFocused && <SearchDropdown query={searchQuery} isAl={isAl} onSelect={clearDesktopSearch} />}
             </div>
-            <div className="flex items-center gap-7 shrink-0 ml-auto">
-              <Link to="/wishlist" className="flex items-center gap-1.5 text-muted-foreground hover:text-foreground transition-colors">
-                <Heart size={15} className={wishlistCount > 0 ? "fill-primary text-primary" : ""} /><span>{wishlistCount}</span>
+            <div className="flex items-center gap-5 shrink-0 ml-auto">
+              <Link to="/wishlist" className="relative text-muted-foreground hover:text-foreground transition-colors">
+                <Heart size={18} className={wishlistCount > 0 ? "fill-primary text-primary" : ""} />
+                {wishlistCount > 0 && <span className="absolute -top-1.5 -right-2.5 bg-destructive text-destructive-foreground text-[8px] w-4 h-4 rounded-full flex items-center justify-center font-bold">{wishlistCount}</span>}
               </Link>
-              <Link to="/shporta" className="flex items-center gap-1.5 text-muted-foreground hover:text-foreground transition-colors"><ShoppingCart size={15} /><span>{totalItems}</span></Link>
+              <Link to="/shporta" className="relative text-muted-foreground hover:text-foreground transition-colors">
+                <ShoppingCart size={18} />
+                {totalItems > 0 && <span className="absolute -top-1.5 -right-2.5 bg-destructive text-destructive-foreground text-[8px] w-4 h-4 rounded-full flex items-center justify-center font-bold">{totalItems}</span>}
+              </Link>
               {user ? (
                 <div className="relative" ref={profileRef}>
                   <button onClick={function () { setProfileOpen(!profileOpen); setLoginOpen(false); }} className="relative text-muted-foreground hover:text-foreground transition-colors">
                     <User size={18} />
-                    {unseenOffersCount > 0 && <span className="absolute -top-1.5 -right-1.5 bg-destructive text-destructive-foreground text-[8px] w-4 h-4 rounded-full flex items-center justify-center font-bold">{unseenOffersCount}</span>}
+                    {unseenOffersCount > 0 && <span className="absolute -top-1.5 -right-2.5 bg-destructive text-destructive-foreground text-[8px] w-4 h-4 rounded-full flex items-center justify-center font-bold">{unseenOffersCount}</span>}
                   </button>
                   {profileOpen && <ProfileDropdown onClose={function () { setProfileOpen(false); }} />}
                 </div>
