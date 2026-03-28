@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback, useEffect } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { useCart } from "@/hooks/useCart";
 import {
@@ -167,7 +167,7 @@ const RelatedProducts = ({ collectionId, currentProductId, isAl, collectionSlug 
         </h2>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
           {related.map((p) => (
-            <Link key={p.id} to={`/koleksionet/${collectionSlug}/${p.id}`} className="group">
+            <Link key={p.id} to={`/koleksionet/${collectionSlug}/${p.slug || p.id}`} className="group">
               <div className="aspect-square bg-muted overflow-hidden mb-3">
                 {p.image_url ? (
                   <img src={p.image_url} alt={isAl ? p.title_al : p.title_en} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" />
@@ -189,8 +189,10 @@ const RelatedProducts = ({ collectionId, currentProductId, isAl, collectionSlug 
 };
 
 // ─── Main Product Detail Page ───────────────────────────────────
+const isUUID = (s: string) => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(s);
+
 const ProductDetail = () => {
-  const { slug, productId } = useParams();
+  const { slug, productSlug } = useParams();
   const { isAl } = useLanguage();
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -204,28 +206,50 @@ const ProductDetail = () => {
   const [lightbox, setLightbox] = useState<{ images: string[]; index: number } | null>(null);
   const [selectedColorId, setSelectedColorId] = useState<string | null>(null);
   const [selectedSizeId, setSelectedSizeId] = useState<string | null>(null);
+  const [redirected, setRedirected] = useState(false);
 
   const t = (al: string, en: string) => (isAl ? al : en);
 
-  const product = allProducts?.find((p) => p.id === productId);
+  // Find product by slug first, then by UUID for backward compatibility
+  const product = useMemo(() => {
+    if (!allProducts || !productSlug) return undefined;
+    // Try slug match first
+    const bySlug = allProducts.find((p) => p.slug === productSlug);
+    if (bySlug) return bySlug;
+    // Fallback: try UUID match (old URLs)
+    if (isUUID(productSlug)) {
+      return allProducts.find((p) => p.id === productSlug);
+    }
+    return undefined;
+  }, [allProducts, productSlug]);
+
+  // Redirect old UUID URLs to new slug URLs
+  useEffect(() => {
+    if (!product || !slug || redirected) return;
+    if (productSlug && isUUID(productSlug) && product.slug) {
+      setRedirected(true);
+      navigate(`/koleksionet/${slug}/${product.slug}`, { replace: true });
+    }
+  }, [product, productSlug, slug, navigate, redirected]);
+
   const collection = collections?.find((c) => c.slug === slug);
   const parentCollection = collection?.parent_id
     ? collections?.find((c) => c.id === collection.parent_id)
     : null;
 
-  const productColors = allColors?.filter((c) => c.product_id === productId) ?? [];
-  const productSizes = allSizes?.filter((s) => s.product_id === productId) ?? [];
+  const productColors = allColors?.filter((c) => c.product_id === product?.id) ?? [];
+  const productSizes = allSizes?.filter((s) => s.product_id === product?.id) ?? [];
 
-  const isWishlisted = wishlistItems?.some((w) => w.product_id === productId) ?? false;
+  const isWishlisted = wishlistItems?.some((w) => w.product_id === product?.id) ?? false;
 
   const handleWishlistClick = useCallback(() => {
     if (!user) {
       navigate("/login");
       return;
     }
-    if (!productId) return;
-    toggleWishlist.mutate({ userId: user.id, productId, isWishlisted });
-  }, [user, productId, isWishlisted, navigate, toggleWishlist]);
+    if (!product?.id) return;
+    toggleWishlist.mutate({ userId: user.id, productId: product.id, isWishlisted });
+  }, [user, product?.id, isWishlisted, navigate, toggleWishlist]);
 
   // Show loading spinner while data is being fetched
   if (productsLoading || collectionsLoading || colorsLoading || sizesLoading) {
