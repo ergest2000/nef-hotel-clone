@@ -150,7 +150,7 @@ Content: ${form.content_al}`
 
   const handleSubmit = () => {
     if (!form.slug) {
-      const slug = form.title_en.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+      const slug = form.title_al.toLowerCase().replace(/ë/g, "e").replace(/ç/g, "c").replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
       form.slug = slug || `post-${Date.now()}`;
     }
     onSave({ ...form, ...(post?.id ? { id: post.id } : {}) });
