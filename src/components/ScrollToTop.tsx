@@ -5,7 +5,8 @@ const ScrollToTop = () => {
   const { pathname } = useLocation();
 
   useEffect(() => {
-    // Scroll the main scrollable container or window to top
+    // Skip scroll reset on admin pages
+    if (pathname.startsWith("/admin")) return;
     const scrollable = document.querySelector("#root > div");
     if (scrollable) {
       scrollable.scrollTop = 0;
