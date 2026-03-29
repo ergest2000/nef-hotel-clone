@@ -126,7 +126,7 @@ function Contact() {
       {isSectionVisible("map") && (
         <section>
           <iframe
-            src={"https://www.google.com/maps?q=" + mapLat + "," + mapLng + "&z=" + mapZoom + "&output=embed"}
+            src={"https://maps.google.com/maps?q=" + mapLat + "," + mapLng + "&z=" + mapZoom + "&output=embed"}
             width="100%"
             height="350"
             className="md:h-[450px]"
