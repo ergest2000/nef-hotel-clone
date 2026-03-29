@@ -1,38 +1,27 @@
-import { createContext, useContext, useEffect, useState, useRef, ReactNode } from "react";
+import { createContext, useContext, useEffect, useState, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import type { User, Session } from "@supabase/supabase-js";
 
 export type AppRole = "admin" | "manager" | "editor" | "user";
 
-interface AuthContext {
-  user: User | null;
-  session: Session | null;
-  isAdmin: boolean;
-  role: AppRole;
-  loading: boolean;
-  signIn: (email: string, password: string) => Promise<{ error: Error | null; role: AppRole; user: User | null }>;
-  signOut: () => Promise<void>;
-}
-
-const AuthCtx = createContext<AuthContext>({
-  user: null,
-  session: null,
+const AuthCtx = createContext({
+  user: null as any,
+  session: null as any,
   isAdmin: false,
-  role: "user",
+  role: "user" as AppRole,
   loading: true,
-  signIn: async () => ({ error: null, role: "user", user: null }),
+  signIn: async (_email: string, _password: string) => ({ error: null as Error | null, role: "user" as AppRole, user: null as any }),
   signOut: async () => {},
 });
 
-export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const [user, setUser] = useState<User | null>(null);
-  const [session, setSession] = useState<Session | null>(null);
+export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
+  const [user, setUser] = useState(null as any);
+  const [session, setSession] = useState(null as any);
   const [isAdmin, setIsAdmin] = useState(false);
-  const [role, setRole] = useState<AppRole>("user");
+  const [role, setRole] = useState("user" as AppRole);
   const [loading, setLoading] = useState(true);
   const initializedRef = useRef(false);
 
-  const checkRole = async (userId: string): Promise<AppRole> => {
+  const checkRole = async (userId: string) => {
     try {
       const priorityRoles = ["admin", "manager", "editor"] as const;
       const results = await Promise.all(
@@ -42,17 +31,19 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           return { candidateRole, hasRole: Boolean(data) };
         })
       );
-      return results.find((r) => r.hasRole)?.candidateRole ?? "user";
+      const matched = results.find((r) => r.hasRole);
+      return (matched ? matched.candidateRole : "user") as AppRole;
     } catch {
-      return "user";
+      return "user" as AppRole;
     }
   };
 
   useEffect(() => {
     let isMounted = true;
 
-    supabase.auth.getSession().then(async ({ data: { session: s } }) => {
+    supabase.auth.getSession().then(async ({ data }) => {
       if (!isMounted) return;
+      const s = data.session;
       setSession(s);
       setUser(s?.user ?? null);
       if (s?.user) {
@@ -62,16 +53,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       if (isMounted) { setLoading(false); initializedRef.current = true; }
     });
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event) => {
-        if (!isMounted || !initializedRef.current) return;
-        if (event === "SIGNED_OUT") {
-          setUser(null); setSession(null); setIsAdmin(false); setRole("user");
-        }
+    const { data: sub } = supabase.auth.onAuthStateChange((event) => {
+      if (!isMounted || !initializedRef.current) return;
+      if (event === "SIGNED_OUT") {
+        setUser(null);
+        setSession(null);
+        setIsAdmin(false);
+        setRole("user");
       }
-    );
+    });
 
-    return () => { isMounted = false; subscription.unsubscribe(); };
+    return () => { isMounted = false; sub.subscription.unsubscribe(); };
   }, []);
 
   const signIn = async (email: string, password: string) => {
@@ -91,13 +83,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
       const nextUser = data.user ?? null;
       const nextSession = data.session ?? null;
-      const resolvedRole = nextUser ? await checkRole(nextUser.id) : "user";
+      const resolvedRole = nextUser ? await checkRole(nextUser.id) : ("user" as AppRole);
 
       setSession(nextSession);
       setUser(nextUser);
       setRole(resolvedRole);
       setIsAdmin(resolvedRole === "admin");
       setLoading(false);
+      initializedRef.current = true;
 
       return { error: null, role: resolvedRole, user: nextUser };
     } catch (error) {
@@ -114,13 +107,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setRole("user");
   };
 
-  const contextValue = { user, session, isAdmin, role, loading, signIn, signOut };
+  const val = { user, session, isAdmin, role, loading, signIn, signOut };
 
-  return (
-    <AuthCtx.Provider value={contextValue}>
-      {children}
-    </AuthCtx.Provider>
-  );
+  return React.createElement(AuthCtx.Provider, { value: val }, children);
 };
 
 export const useAuth = () => useContext(AuthCtx);
