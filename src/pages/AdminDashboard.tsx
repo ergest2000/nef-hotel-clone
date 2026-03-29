@@ -218,13 +218,13 @@ function AdminDashboard() {
     [sections, activePage, updateOrder]
   );
 
-  var isLoading = loadingContent || loadingSections || loadingBlog;
+  var isFirstLoad = (loadingContent && !content) || (loadingSections && !sections);
   var pageSections = sections ? sections.filter(function (s) { return s.page === activePage; }) : [];
   var pageContent = content ? content.filter(function (c) { return c.page === activePage; }) : [];
   var uniquePages = new Set(sections ? sections.map(function (s) { return s.page; }) : []);
 
   function renderContent() {
-    if (isLoading) {
+    if (isFirstLoad) {
       return (
         <div className="flex items-center justify-center py-20">
           <div className="text-center">
