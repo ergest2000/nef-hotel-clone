@@ -21,6 +21,7 @@ export const usePageSlugs = () => {
       if (error) throw error;
       return data as PageSlug[];
     },
+    staleTime: 30000, // 30 sekonda — rifreskon shpejt pas ndryshimeve
   });
 };
 
