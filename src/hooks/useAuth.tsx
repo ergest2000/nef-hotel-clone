@@ -41,33 +41,26 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     let isMounted = true;
 
-    supabase.auth.getSession().then(async ({ data }) => {
-      if (!isMounted) return;
-      const s = data.session;
-      setSession(s);
-      setUser(s?.user ?? null);
-      if (s?.user) {
-        const r = await checkRole(s.user.id);
-        if (isMounted) { setRole(r); setIsAdmin(r === "admin"); }
-      }
-      if (isMounted) { setLoading(false); initializedRef.current = true; }
-    });
-
+    // With autoRefreshToken: true, onAuthStateChange fires INITIAL_SESSION
+    // before getSession resolves, so we handle initialization via the listener only.
     const { data: sub } = supabase.auth.onAuthStateChange(async (event, newSession) => {
-      if (!isMounted || !initializedRef.current) return;
+      if (!isMounted) return;
+
       if (event === "SIGNED_OUT") {
         setUser(null);
         setSession(null);
         setIsAdmin(false);
         setRole("user");
-      } else if (event === "TOKEN_REFRESHED" || event === "SIGNED_IN") {
-        // Update session/user silently without triggering loading state
+        setLoading(false);
+        initializedRef.current = true;
+      } else if (event === "INITIAL_SESSION" || event === "SIGNED_IN" || event === "TOKEN_REFRESHED") {
         setSession(newSession);
         setUser(newSession?.user ?? null);
         if (newSession?.user) {
           const r = await checkRole(newSession.user.id);
           if (isMounted) { setRole(r); setIsAdmin(r === "admin"); }
         }
+        if (isMounted) { setLoading(false); initializedRef.current = true; }
       }
     });
 
