@@ -30,16 +30,22 @@ function SearchDropdown(props: { query: string; isAl: boolean; onSelect: () => v
         <div className="px-4 py-6 text-center text-sm text-muted-foreground">{isAl ? "Nuk u gjetën produkte" : "No products found"}</div>
       ) : (
         <div>
+          <div className="px-4 py-2 border-b border-border bg-muted/20">
+            <p className="text-[10px] tracking-brand text-muted-foreground uppercase">{results.length} {isAl ? "produkte u gjetën" : "products found"}</p>
+          </div>
           {results.map(function (product: any) {
+            var collectionName = isAl ? product.collectionTitle_al : (product.collectionTitle_en || product.collectionTitle_al);
             return (
               <button key={product.id} className="w-full flex items-center gap-4 px-4 py-3 hover:bg-muted/40 transition-colors text-left border-b border-border/50 last:border-b-0" onClick={function () { navigate("/koleksionet/" + product.collectionSlug + "/" + (product.slug || product.id)); onSelect(); }}>
-                <div className="w-16 h-16 bg-muted overflow-hidden flex-shrink-0 border border-border/30">
-                  {product.image_url ? <img src={product.image_url} alt="" className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center bg-muted"><Package className="w-6 h-6 text-muted-foreground/20" /></div>}
+                <div className="w-14 h-14 bg-muted overflow-hidden flex-shrink-0 border border-border/30 rounded">
+                  {product.image_url ? <img src={product.image_url} alt="" className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center bg-muted"><Package className="w-5 h-5 text-muted-foreground/20" /></div>}
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="text-sm font-medium text-foreground leading-snug">{isAl ? product.title_al : product.title_en || product.title_al}</p>
-                  {product.code && <p className="text-xs text-muted-foreground mt-0.5">{"Kod.: " + product.code}</p>}
+                  <p className="text-sm font-medium text-foreground leading-snug truncate">{isAl ? product.title_al : product.title_en || product.title_al}</p>
+                  {collectionName && <p className="text-[11px] text-primary/70 mt-0.5 truncate">{collectionName}</p>}
+                  {product.code && <p className="text-[10px] text-muted-foreground mt-0.5">{"Kod.: " + product.code}</p>}
                 </div>
+                <ChevronRight size={14} className="text-muted-foreground/40 shrink-0" />
               </button>
             );
           })}
