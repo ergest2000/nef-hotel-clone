@@ -34,7 +34,6 @@ function SearchDropdown(props: { query: string; isAl: boolean; onSelect: () => v
             <p className="text-[10px] tracking-brand text-muted-foreground uppercase">{results.length} {isAl ? "produkte u gjetën" : "products found"}</p>
           </div>
           {results.map(function (product: any) {
-            var collectionName = isAl ? product.collectionTitle_al : (product.collectionTitle_en || product.collectionTitle_al);
             return (
               <button key={product.id} className="w-full flex items-center gap-4 px-4 py-3 hover:bg-muted/40 transition-colors text-left border-b border-border/50 last:border-b-0" onClick={function () { navigate("/koleksionet/" + product.collectionSlug + "/" + (product.slug || product.id)); onSelect(); }}>
                 <div className="w-14 h-14 bg-muted overflow-hidden flex-shrink-0 border border-border/30 rounded">
@@ -42,8 +41,6 @@ function SearchDropdown(props: { query: string; isAl: boolean; onSelect: () => v
                 </div>
                 <div className="min-w-0 flex-1">
                   <p className="text-sm font-medium text-foreground leading-snug truncate">{isAl ? product.title_al : product.title_en || product.title_al}</p>
-                  {collectionName && <p className="text-[11px] text-primary/70 mt-0.5 truncate">{collectionName}</p>}
-                  {product.code && <p className="text-[10px] text-muted-foreground mt-0.5">{"Kod.: " + product.code}</p>}
                 </div>
                 <ChevronRight size={14} className="text-muted-foreground/40 shrink-0" />
               </button>
