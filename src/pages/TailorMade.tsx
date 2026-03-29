@@ -281,7 +281,17 @@ function TailorMade() {
       )}
 
       {isSectionVisible("gallery") && galleryImages.length > 0 && (
-        <GalleryCarousel images={galleryImages} />
+        <section className="py-12 md:py-24">
+          <div className="container text-center mb-8 md:mb-12">
+            <h2 className="text-lg md:text-2xl tracking-wide-brand text-foreground font-light mb-3">
+              {g("gallery", "title", isAl ? "GALERIA" : "GALLERY")}
+            </h2>
+            <p className="text-xs md:text-sm text-muted-foreground max-w-lg mx-auto">
+              {g("gallery", "subtitle", isAl ? "Shikoni produktet tona të personalizuara." : "View our customized products.")}
+            </p>
+          </div>
+          <GalleryCarousel images={galleryImages} />
+        </section>
       )}
 
       {isSectionVisible("contact-form") && (
