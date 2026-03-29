@@ -43,7 +43,7 @@ export const AdminBlogManager = ({ posts, lang, onSave, onDelete, onUploadImage 
               <button onClick={() => setEditingId(editingId === post.id ? null : post.id)} className="flex-1 flex items-center gap-2 text-left">
                 {editingId === post.id ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
                 <span className="text-xs text-foreground font-medium">
-                  {lang === "al" ? post.title_al : post.title_en}
+                  {post.title_al || post.title_en}
                 </span>
               </button>
               <div className="flex items-center gap-2">
@@ -150,8 +150,13 @@ Content: ${form.content_al}`
 
   const handleSubmit = () => {
     if (!form.slug) {
-      const slug = form.title_al.toLowerCase().replace(/ë/g, "e").replace(/ç/g, "c").replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
-      form.slug = slug || `post-${Date.now()}`;
+      let slug = form.title_al.toLowerCase()
+        .replace(/ë/g, "e").replace(/ç/g, "c").replace(/ü/g, "u").replace(/ö/g, "o")
+        .replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+      // Add short suffix to avoid duplicates
+      if (!slug) slug = `post-${Date.now()}`;
+      else slug = slug + "-" + Date.now().toString(36).slice(-4);
+      form.slug = slug;
     }
     onSave({ ...form, ...(post?.id ? { id: post.id } : {}) });
   };
