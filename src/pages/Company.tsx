@@ -93,7 +93,36 @@ const ImageCarousel = ({ images }: { images: { image_url: string; alt_text: stri
   );
 };
 
-/* ── Brands static display ──────────────────────────────────────── */
+/* ── Clients Marquee (seamless infinite scroll) ────────────────── */
+const ClientsMarquee = ({ clients }: { clients: { name: string; logo: string | null }[] }) => {
+  if (!clients.length) return null;
+  // Triple for seamless loop
+  const tripled = [...clients, ...clients, ...clients];
+  const duration = Math.max(clients.length * 3, 15);
+  return (
+    <div className="overflow-hidden">
+      <style>{`
+        @keyframes marquee { 0% { transform: translateX(0); } 100% { transform: translateX(-33.333%); } }
+      `}</style>
+      <div
+        className="flex items-center gap-14 md:gap-20 w-max"
+        style={{ animation: `marquee ${duration}s linear infinite` }}
+      >
+        {tripled.map((c, i) => (
+          <div key={i} className="flex items-center justify-center shrink-0">
+            {c.logo ? (
+              <img src={c.logo} alt={c.name} className="h-[40px] md:h-[50px] w-auto object-contain" />
+            ) : (
+              <span className="text-[11px] tracking-[0.15em] text-muted-foreground font-medium uppercase whitespace-nowrap">{c.name}</span>
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+/* ── Brands static display (suppliers/partners) ───────────────── */
 const BrandsDisplay = ({ brands }: { brands: { name: string; logo: string | null }[] }) => {
   if (!brands.length) return null;
   return (
@@ -101,11 +130,7 @@ const BrandsDisplay = ({ brands }: { brands: { name: string; logo: string | null
       {brands.map((b, i) => (
         <div key={i} className="flex items-center justify-center">
           {b.logo ? (
-            <img
-              src={b.logo}
-              alt={b.name}
-              className="h-[60px] md:h-[80px] w-auto object-contain"
-            />
+            <img src={b.logo} alt={b.name} className="h-[60px] md:h-[80px] w-auto object-contain" />
           ) : (
             <span className="text-sm tracking-[0.15em] text-foreground font-medium uppercase whitespace-nowrap">{b.name}</span>
           )}
@@ -126,8 +151,14 @@ const Company = () => {
   const vis = (key: string) => { if (!sections) return true; const s = sections.find((x) => x.section_key === key); return s ? s.visible : true; };
   const getImg = (sec: string, key: string, fb: string) => { const v = g(sec, key, ""); return v && !v.startsWith("/src/") ? v : fb; };
 
-  const { data: brandLogos } = useManagedLogos("clients");
-  const brands = (brandLogos?.filter((l) => l.visible) ?? []).map((l) => ({ name: l.name, logo: l.logo_url }));
+  // Clients (companies we work with) — marquee
+  const { data: clientLogos } = useManagedLogos("clients");
+  const clients = (clientLogos?.filter((l) => l.visible) ?? []).map((l) => ({ name: l.name, logo: l.logo_url }));
+
+  // Brands/Suppliers (brands we use) — static
+  const { data: supplierLogos } = useManagedLogos("suppliers");
+  const suppliers = (supplierLogos?.filter((l) => l.visible) ?? []).map((l) => ({ name: l.name, logo: l.logo_url }));
+
   const { data: certLogos } = useManagedLogos("certifications");
   const certs = certLogos?.filter((l) => l.visible) ?? [];
 
@@ -195,12 +226,22 @@ const Company = () => {
         </section>
       )}
 
-      {/* ── Brands ───────────────────────────────────────────────── */}
-      {vis("brands") && brands.length > 0 && (
+      {/* ── Clients Marquee (auto-scroll) ──────────────────────────── */}
+      {vis("clients") && clients.length > 0 && (
         <section className="py-16 md:py-24">
           <div className="container">
+            <SectionHeading>{g("clients", "title", t("KLIENTËT TANË", "OUR CLIENTS"))}</SectionHeading>
+          </div>
+          <ClientsMarquee clients={clients} />
+        </section>
+      )}
+
+      {/* ── Brands / Suppliers (static) ──────────────────────────── */}
+      {vis("brands") && suppliers.length > 0 && (
+        <section className="py-16 md:py-24 border-t border-border">
+          <div className="container">
             <SectionHeading>{g("brands", "title", t("BRANDET TONA", "OUR BRANDS"))}</SectionHeading>
-            <BrandsDisplay brands={brands} />
+            <BrandsDisplay brands={suppliers} />
           </div>
         </section>
       )}
