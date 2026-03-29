@@ -67,35 +67,42 @@ export const useUpsertBlogPost = () => {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (post: Partial<BlogPost> & { slug: string }) => {
-      // Ensure slug uniqueness: check for existing posts with same slug (excluding current post)
       let finalSlug = post.slug;
+
+      // Check slug uniqueness
       const { data: existing } = await supabase
         .from("blog_posts")
         .select("id, slug")
         .eq("slug", finalSlug);
-      
+
       const isDuplicate = existing?.some((e) => e.id !== post.id && e.slug === finalSlug);
       if (isDuplicate) {
-        // Append suffix to make unique
-        let suffix = 1;
-        let candidate = `${finalSlug}-${suffix}`;
-        while (true) {
-          const { data: check } = await supabase
-            .from("blog_posts")
-            .select("id")
-            .eq("slug", candidate);
-          if (!check?.length || check.every((c) => c.id === post.id)) break;
-          suffix++;
-          candidate = `${finalSlug}-${suffix}`;
-        }
-        finalSlug = candidate;
+        finalSlug = finalSlug + "-" + Date.now().toString(36).slice(-5);
       }
 
-      const { data, error } = await supabase
-        .from("blog_posts")
-        .upsert({ ...post, slug: finalSlug }, { onConflict: "slug" })
-        .select()
-        .single();
+      let data, error;
+      if (post.id) {
+        // UPDATE existing post
+        const { id, ...updates } = post;
+        const result = await supabase
+          .from("blog_posts")
+          .update({ ...updates, slug: finalSlug })
+          .eq("id", id)
+          .select()
+          .single();
+        data = result.data;
+        error = result.error;
+      } else {
+        // INSERT new post
+        const result = await supabase
+          .from("blog_posts")
+          .insert({ ...post, slug: finalSlug })
+          .select()
+          .single();
+        data = result.data;
+        error = result.error;
+      }
+
       if (error) throw error;
       return data;
     },
