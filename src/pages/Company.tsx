@@ -5,7 +5,7 @@ import { useLanguage } from "@/hooks/useLanguage";
 import { useManagedLogos } from "@/hooks/useManagedLogos";
 import { useGalleryImages } from "@/hooks/useGalleryImages";
 import { Link } from "react-router-dom";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, ChevronLeft, ChevronRight } from "lucide-react";
 import { useState, useEffect, useRef, useMemo } from "react";
 
 import heroImg from "@/assets/company-hero.jpg";
@@ -140,6 +140,98 @@ const BrandsDisplay = ({ brands }: { brands: { name: string; logo: string | null
   );
 };
 
+/* ── Services Carousel (Beltrami-style split layout) ───────────── */
+const ServicesCarousel = ({ slides, isAl }: { slides: { title: string; text: string; image: string; link: string; color: string }[]; isAl: boolean }) => {
+  const [current, setCurrent] = useState(0);
+  const total = slides.length;
+  const timerRef = useRef<number>();
+
+  const next = () => setCurrent((c) => (c < total - 1 ? c + 1 : 0));
+  const prev = () => setCurrent((c) => (c > 0 ? c - 1 : total - 1));
+
+  // Auto-advance every 5s
+  useEffect(() => {
+    timerRef.current = window.setInterval(next, 5000);
+    return () => clearInterval(timerRef.current);
+  }, [total]);
+
+  const resetTimer = () => {
+    clearInterval(timerRef.current);
+    timerRef.current = window.setInterval(next, 5000);
+  };
+
+  if (!slides.length) return null;
+  const slide = slides[current];
+
+  return (
+    <div className="relative overflow-hidden">
+      <div className="grid grid-cols-1 md:grid-cols-2 min-h-[500px] md:min-h-[600px]">
+        {/* Left: Text */}
+        <div className="flex flex-col justify-center px-8 md:px-16 lg:px-24 py-16" style={{ backgroundColor: slide.color || "#1a3a2a" }}>
+          <span className="text-white/40 text-[10px] tracking-[0.3em] uppercase mb-6">{(current + 1).toString().padStart(2, "0")} / {total.toString().padStart(2, "0")}</span>
+          <h3 className="text-3xl md:text-4xl lg:text-5xl font-light text-white leading-tight mb-4">
+            {slide.title}
+          </h3>
+          <div className="w-10 h-px bg-white/30 mb-6" />
+          <p className="text-sm md:text-base text-white/70 leading-relaxed mb-10 max-w-md">
+            {slide.text}
+          </p>
+          <Link
+            to={slide.link}
+            className="inline-flex items-center gap-2 text-[11px] tracking-[0.2em] uppercase text-white border-b border-white/40 pb-1 hover:border-white transition-colors self-start"
+          >
+            {isAl ? "Shiko Produktet" : "Discover"}
+            <ArrowRight className="h-3.5 w-3.5" />
+          </Link>
+        </div>
+        {/* Right: Image */}
+        <div className="relative overflow-hidden bg-muted">
+          <img
+            src={slide.image}
+            alt={slide.title}
+            className="w-full h-full object-cover transition-transform duration-700"
+            key={current}
+          />
+        </div>
+      </div>
+      {/* Navigation */}
+      {total > 1 && (
+        <>
+          {/* Dots on right edge */}
+          <div className="hidden md:flex flex-col gap-2 absolute right-6 top-1/2 -translate-y-1/2 z-10">
+            {slides.map((_, i) => (
+              <button
+                key={i}
+                onClick={() => { setCurrent(i); resetTimer(); }}
+                className={`w-2.5 h-2.5 rounded-full transition-all ${i === current ? "bg-foreground scale-125" : "bg-foreground/25 hover:bg-foreground/50"}`}
+              />
+            ))}
+          </div>
+          {/* Arrows bottom-left on text side */}
+          <div className="absolute bottom-6 left-8 md:left-16 lg:left-24 flex gap-3 z-10">
+            <button onClick={() => { prev(); resetTimer(); }} className="w-10 h-10 rounded-full border border-white/30 flex items-center justify-center text-white hover:bg-white/10 transition-colors">
+              <ChevronLeft className="h-4 w-4" />
+            </button>
+            <button onClick={() => { next(); resetTimer(); }} className="w-10 h-10 rounded-full border border-white/30 flex items-center justify-center text-white hover:bg-white/10 transition-colors">
+              <ChevronRight className="h-4 w-4" />
+            </button>
+          </div>
+          {/* Mobile dots */}
+          <div className="md:hidden flex justify-center gap-2 py-4 bg-background">
+            {slides.map((_, i) => (
+              <button
+                key={i}
+                onClick={() => { setCurrent(i); resetTimer(); }}
+                className={`w-2 h-2 rounded-full transition-colors ${i === current ? "bg-foreground" : "bg-foreground/20"}`}
+              />
+            ))}
+          </div>
+        </>
+      )}
+    </div>
+  );
+};
+
 /* ── Page ───────────────────────────────────────────────────────── */
 const Company = () => {
   const { lang, isAl } = useLanguage();
@@ -168,6 +260,24 @@ const Company = () => {
     { value: g("stats", "stat3_value", "500+"), label: g("stats", "stat3_label", t("Produkte", "Products")) },
     { value: g("stats", "stat4_value", "12+"), label: g("stats", "stat4_label", t("Vende", "Countries")) },
   ];
+
+  // Services slides from CMS (up to 6)
+  const serviceSlides = [];
+  for (let i = 1; i <= 6; i++) {
+    const title = g("services", `slide${i}_title`, "");
+    const text = g("services", `slide${i}_text`, "");
+    const image = g("services", `slide${i}_image`, "");
+    const link = g("services", `slide${i}_link`, "/koleksionet");
+    const color = g("services", `slide${i}_color`, "#163058");
+    if (title) serviceSlides.push({ title, text, image, link, color });
+  }
+  // Fallback slides if CMS is empty
+  const defaultSlides = [
+    { title: t("Tekstile\npër Hotele", "Textiles\nfor Hotels"), text: t("Ekspertizë, profesionalizëm dhe besueshmëri për hotelet më të mira.", "Expertise, professionalism and reliability for the best hotels."), image: heroImg, link: "/koleksionet", color: "#163058" },
+    { title: t("Tekstile\npër SPA", "Textiles\nfor SPA"), text: t("Peshqirë, mbulesa dhe aksesorë premium për çdo SPA.", "Towels, linens and premium accessories for every SPA."), image: heroImg, link: "/koleksionet", color: "#2d4a3e" },
+    { title: t("Tekstile\npër Restorante", "Textiles\nfor Restaurants"), text: t("Mbulesa tavoline, peceta dhe aksesorë elegante.", "Tablecloths, napkins and elegant accessories."), image: heroImg, link: "/koleksionet", color: "#3d2e1e" },
+  ];
+  const slides = serviceSlides.length > 0 ? serviceSlides : defaultSlides;
 
   return (
     <div className="min-h-screen bg-background">
@@ -223,6 +333,13 @@ const Company = () => {
               ))}
             </div>
           </div>
+        </section>
+      )}
+
+      {/* ── Services Carousel (Beltrami-style) ──────────────────────── */}
+      {vis("services") && slides.length > 0 && (
+        <section>
+          <ServicesCarousel slides={slides} isAl={isAl} />
         </section>
       )}
 
