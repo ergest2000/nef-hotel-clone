@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState, useRef } from "react";
+import React, { createContext, useContext, useEffect, useState, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
 export type AppRole = "admin" | "manager" | "editor" | "user";
