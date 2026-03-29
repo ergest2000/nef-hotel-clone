@@ -350,7 +350,8 @@ function AdminDashboard() {
             {activePage === "company" && (
               <>
                 <AdminGalleryManager galleryKey="company" title="Foto Carousel (Rreth Nesh)" />
-                <AdminLogoManager category="clients" title="Brandet Tona" />
+                <AdminLogoManager category="clients" title="Klientët Tanë (Auto-scroll logos)" />
+                <AdminLogoManager category="suppliers" title="Brandet Tona (Statik, 2 logo)" />
                 <AdminLogoManager category="certifications" title="Certifikimet" />
               </>
             )}
