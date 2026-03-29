@@ -22,7 +22,16 @@ import NotFound from "./pages/NotFound";
 import SlugRouter from "./components/SlugRouter";
 import ResetPassword from "./pages/ResetPassword";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 5 * 60 * 1000,   // 5 minuta — nuk ri-fetch nëse data është fresh
+      gcTime: 10 * 60 * 1000,     // 10 minuta — mban në cache
+      refetchOnWindowFocus: false, // Nuk ri-fetch kur kthehesh në tab
+      retry: 1,                   // Vetëm 1 retry në rast gabimi
+    },
+  },
+});
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
