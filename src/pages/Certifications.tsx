@@ -1,104 +1,90 @@
-import SiteHeader from "@/components/SiteHeader";
-import SiteFooter from "@/components/SiteFooter";
-import { usePageContent, usePageSections, getContentValue } from "@/hooks/useCms";
-import { useLanguage } from "@/hooks/useLanguage";
-import { useDesign } from "@/hooks/useDesignSettings";
-import { Link } from "react-router-dom";
+import { useState, useEffect, useCallback } from "react";
+import useEmblaCarousel from "embla-carousel-react";
+import { getContentValue } from "@/hooks/useCms";
+import { useManagedLogos } from "@/hooks/useManagedLogos";
+import type { Tables } from "@/integrations/supabase/types";
 
-const Certifications = () => {
-  const { lang, isAl } = useLanguage();
-  const { data: content } = usePageContent("certifications", lang);
-  const { data: sections } = usePageSections("certifications");
-  const { settings } = useDesign();
+type SiteContent = Tables<"site_content">;
 
-  const t = (al: string, en: string) => (isAl ? al : en);
+const CertificationsSection = ({ content }: { content?: SiteContent[] }) => {
+  const title = getContentValue(content, "certifications", "title", "CERTIFICATIONS");
+  const { data: logos } = useManagedLogos("certifications");
+  const certs = logos?.filter((l) => l.visible) ?? [];
 
-  const g = (sectionKey: string, fieldKey: string, fallback: string) =>
-    getContentValue(content, sectionKey, fieldKey, fallback);
+  const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true, align: "center" });
+  const [selectedIndex, setSelectedIndex] = useState(0);
 
-  const isSectionVisible = (key: string) => {
-    if (!sections) return true;
-    const s = sections.find((sec) => sec.section_key === key);
-    return s ? s.visible : true;
-  };
+  const onSelect = useCallback(() => {
+    if (!emblaApi) return;
+    setSelectedIndex(emblaApi.selectedScrollSnap());
+  }, [emblaApi]);
 
-  // Up to 6 certification items — each has image, title, text from CMS
-  const certItems = [];
-  for (let i = 1; i <= 6; i++) {
-    if (!isSectionVisible("cert" + i)) continue;
-    const image = g("cert" + i, "image", "");
-    const title = g("cert" + i, "title", "");
-    const text = g("cert" + i, "text", "");
-    if (image || title || text) {
-      certItems.push({ key: "cert" + i, image, title, text });
-    }
-  }
+  useEffect(() => {
+    if (!emblaApi) return;
+    emblaApi.on("select", onSelect);
+    onSelect();
+    return () => { emblaApi.off("select", onSelect); };
+  }, [emblaApi, onSelect]);
+
+  useEffect(() => {
+    if (!emblaApi) return;
+    var timer = setInterval(function () {
+      emblaApi.scrollNext();
+    }, 3000);
+    return function () { clearInterval(timer); };
+  }, [emblaApi]);
 
   return (
-    <div className="min-h-screen bg-background">
-      <SiteHeader />
+    <section className="py-12 md:py-16 border-t border-border">
+      <div className="container">
+        <h2 className="text-lg md:text-xl tracking-[0.25em] uppercase font-light text-foreground text-center mb-10">{title}</h2>
 
-      {/* Breadcrumb */}
-      <div className="bg-muted/30 border-b border-border">
-        <div className="container py-3">
-          <div className="flex items-center gap-2 text-xs text-muted-foreground uppercase tracking-wider">
-            <Link to="/" className="hover:text-foreground">{t("KRYESORE", "HOME")}</Link>
-            <span>—</span>
-            <span className="text-foreground">{t("ÇERTIFIKIME", "CERTIFICATIONS")}</span>
-          </div>
-        </div>
-      </div>
-
-      {/* Hero Title */}
-      <div className="bg-muted/30 border-b border-border">
-        <div className="container py-8 md:py-12">
-          <h1 className="text-2xl md:text-3xl font-light tracking-[0.15em] text-foreground uppercase">
-            {g("hero", "title", t("ÇERTIFIKIME", "CERTIFICATIONS"))}
-          </h1>
-        </div>
-      </div>
-
-      {/* Certification Items */}
-      <div className="container py-10 md:py-16">
-        <div className="space-y-12 md:space-y-16">
-          {certItems.length > 0 ? (
-            certItems.map((cert) => (
-              <div key={cert.key} className="grid grid-cols-1 md:grid-cols-[280px_1fr] gap-6 md:gap-10 items-center">
-                {cert.image ? (
-                  <div className="w-full max-w-[280px]">
-                    <img
-                      src={cert.image}
-                      alt={cert.title}
-                      className="w-full h-auto object-contain"
-                    />
-                  </div>
+        {/* Desktop: flex row with dividers */}
+        <div className="hidden md:flex items-center justify-center">
+          {certs.map((cert, i) => (
+            <div key={cert.id} className="flex items-center">
+              {i > 0 && <div className="w-px h-16 bg-border/60 mx-10" />}
+              <div className="flex items-center justify-center px-6 py-3">
+                {cert.logo_url ? (
+                  <img src={cert.logo_url} alt={cert.name} className="h-[100px] w-auto object-contain" />
                 ) : (
-                  <div />
+                  <span className="text-sm tracking-[0.15em] text-muted-foreground font-semibold uppercase">{cert.name}</span>
                 )}
-                <div>
-                  {cert.title && (
-                    <h2 className="text-base md:text-lg font-medium tracking-[0.1em] text-foreground uppercase mb-3">{cert.title}</h2>
-                  )}
-                  <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-wrap">
-                    {cert.text}
-                  </p>
-                </div>
               </div>
-            ))
-          ) : (
-            <p className="text-sm text-muted-foreground text-center py-12">
-              {t(
-                "Certifikimet do të shtohen së shpejti. Menaxhoni nga Dashboard → Certifikimet.",
-                "Certifications will be added soon. Manage from Dashboard → Certifications."
-              )}
-            </p>
+            </div>
+          ))}
+        </div>
+
+        {/* Mobile: Embla carousel — 1 per slide, large logos */}
+        <div className="md:hidden">
+          <div className="overflow-hidden" ref={emblaRef}>
+            <div className="flex">
+              {certs.map((cert) => (
+                <div key={cert.id} className="flex-[0_0_100%] min-w-0 flex items-center justify-center py-6 px-8">
+                  {cert.logo_url ? (
+                    <img src={cert.logo_url} alt={cert.name} className="h-[130px] w-auto object-contain max-w-[80%]" />
+                  ) : (
+                    <span className="text-sm tracking-[0.15em] text-muted-foreground font-semibold uppercase text-center">{cert.name}</span>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+          {certs.length > 1 && (
+            <div className="flex justify-center gap-2 mt-4">
+              {certs.map((_, i) => (
+                <button
+                  key={i}
+                  onClick={() => emblaApi?.scrollTo(i)}
+                  className={"w-2 h-2 rounded-full transition-colors " + (i === selectedIndex ? "bg-primary" : "bg-border")}
+                />
+              ))}
+            </div>
           )}
         </div>
       </div>
-
-      <SiteFooter />
-    </div>
+    </section>
   );
 };
 
-export default Certifications;
+export default CertificationsSection;
