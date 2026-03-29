@@ -100,43 +100,10 @@ const BlogPostForm = ({
     sort_order: post?.sort_order ?? 0,
   });
   const [uploading, setUploading] = useState(false);
-  const [translating, setTranslating] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
 
   const update = (field: string, value: any) => setForm((prev) => ({ ...prev, [field]: value }));
-
-  const handleAutoTranslate = async () => {
-    if (!form.title_al && !form.excerpt_al && !form.content_al) return;
-    setTranslating(true);
-    try {
-      const response = await fetch("https://api.anthropic.com/v1/messages", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          model: "claude-sonnet-4-20250514",
-          max_tokens: 4000,
-          messages: [{
-            role: "user",
-            content: `Translate the following Albanian text to English. Return ONLY a JSON object with keys "title", "excerpt", "content". Keep HTML tags in content intact. Do not add any explanation.
-
-Title: ${form.title_al}
-Excerpt: ${form.excerpt_al}
-Content: ${form.content_al}`
-          }]
-        })
-      });
-      const data = await response.json();
-      const text = data.content?.[0]?.text || "";
-      const clean = text.replace(/```json|```/g, "").trim();
-      const parsed = JSON.parse(clean);
-      if (parsed.title) update("title_en", parsed.title);
-      if (parsed.excerpt) update("excerpt_en", parsed.excerpt);
-      if (parsed.content) update("content_en", parsed.content);
-    } catch (e) {
-      console.error("Translation error:", e);
-    }
-    setTranslating(false);
-  };
 
   const handleImageUpload = async (file: File) => {
     setUploading(true);
@@ -149,16 +116,16 @@ Content: ${form.content_al}`
   };
 
   const handleSubmit = () => {
-    if (!form.slug) {
-      let slug = form.title_al.toLowerCase()
-        .replace(/ë/g, "e").replace(/ç/g, "c").replace(/ü/g, "u").replace(/ö/g, "o")
+    let finalSlug = form.slug;
+    if (!finalSlug || !post?.id) {
+      // Generate from Albanian title for new posts or empty slug
+      let base = form.title_al.toLowerCase()
+        .replace(/ë/g, "e").replace(/ç/g, "c").replace(/ü/g, "u").replace(/ö/g, "o").replace(/ä/g, "a")
         .replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
-      // Add short suffix to avoid duplicates
-      if (!slug) slug = `post-${Date.now()}`;
-      else slug = slug + "-" + Date.now().toString(36).slice(-4);
-      form.slug = slug;
+      if (!base) base = "post";
+      finalSlug = base + "-" + Date.now().toString(36).slice(-5);
     }
-    onSave({ ...form, ...(post?.id ? { id: post.id } : {}) });
+    onSave({ ...form, slug: finalSlug, ...(post?.id ? { id: post.id } : {}) });
   };
 
   return (
@@ -183,17 +150,7 @@ Content: ${form.content_al}`
           <Input value={form.title_al} onChange={(e) => update("title_al", e.target.value)} className="text-xs h-9" />
         </div>
         <div className="space-y-1">
-          <div className="flex items-center justify-between">
-            <label className="text-[10px] tracking-brand text-muted-foreground uppercase">Titulli (EN)</label>
-            <button
-              type="button"
-              onClick={handleAutoTranslate}
-              disabled={translating}
-              className="text-[9px] tracking-brand text-primary hover:text-primary/80 uppercase disabled:opacity-50"
-            >
-              {translating ? "Duke përkthyer..." : "🔄 Përkthe AL → EN"}
-            </button>
-          </div>
+          <label className="text-[10px] tracking-brand text-muted-foreground uppercase">Titulli (EN)</label>
           <Input value={form.title_en} onChange={(e) => update("title_en", e.target.value)} className="text-xs h-9" />
         </div>
       </div>
@@ -209,30 +166,26 @@ Content: ${form.content_al}`
         </div>
       </div>
 
-      {/* Rich Text Content AL */}
-      <div className="space-y-1">
-        <label className="text-[10px] tracking-brand text-muted-foreground uppercase">
-          Përmbajtja (AL) — Rich Text Editor
-        </label>
-        <RichTextEditor
-          content={form.content_al}
-          onChange={(html) => update("content_al", html)}
-          onUploadImage={onUploadImage}
-          placeholder="Shkruani artikullin në Shqip..."
-        />
-      </div>
-
-      {/* Rich Text Content EN */}
-      <div className="space-y-1">
-        <label className="text-[10px] tracking-brand text-muted-foreground uppercase">
-          Përmbajtja (EN) — Rich Text Editor
-        </label>
-        <RichTextEditor
-          content={form.content_en}
-          onChange={(html) => update("content_en", html)}
-          onUploadImage={onUploadImage}
-          placeholder="Write article in English..."
-        />
+      {/* Rich Text Content AL + EN side by side */}
+      <div className="grid grid-cols-2 gap-4">
+        <div className="space-y-1">
+          <label className="text-[10px] tracking-brand text-muted-foreground uppercase">Përmbajtja (AL)</label>
+          <RichTextEditor
+            content={form.content_al}
+            onChange={(html) => update("content_al", html)}
+            onUploadImage={onUploadImage}
+            placeholder="Shkruani artikullin në Shqip..."
+          />
+        </div>
+        <div className="space-y-1">
+          <label className="text-[10px] tracking-brand text-muted-foreground uppercase">Përmbajtja (EN)</label>
+          <RichTextEditor
+            content={form.content_en}
+            onChange={(html) => update("content_en", html)}
+            onUploadImage={onUploadImage}
+            placeholder="Write article in English..."
+          />
+        </div>
       </div>
 
       {/* Image */}
