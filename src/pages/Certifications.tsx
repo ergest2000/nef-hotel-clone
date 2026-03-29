@@ -55,24 +55,31 @@ const CertificationsSection = ({ content }: { content?: SiteContent[] }) => {
           ))}
         </div>
 
-        {/* Mobile: Embla carousel — 1 per slide, large logos */}
+        {/* Mobile: Embla carousel — 3 per slide */}
         <div className="md:hidden">
           <div className="overflow-hidden" ref={emblaRef}>
             <div className="flex">
-              {certs.map((cert) => (
-                <div key={cert.id} className="flex-[0_0_100%] min-w-0 flex items-center justify-center py-6 px-8">
-                  {cert.logo_url ? (
-                    <img src={cert.logo_url} alt={cert.name} className="h-[130px] w-auto object-contain max-w-[80%]" />
-                  ) : (
-                    <span className="text-sm tracking-[0.15em] text-muted-foreground font-semibold uppercase text-center">{cert.name}</span>
-                  )}
-                </div>
-              ))}
+              {Array.from({ length: Math.ceil(certs.length / 3) }).map((_, slideIdx) => {
+                var slideCerts = certs.slice(slideIdx * 3, slideIdx * 3 + 3);
+                return (
+                  <div key={slideIdx} className="flex-[0_0_100%] min-w-0 grid grid-cols-3 items-center justify-items-center py-6 px-2">
+                    {slideCerts.map((cert) => (
+                      <div key={cert.id} className="flex items-center justify-center p-2">
+                        {cert.logo_url ? (
+                          <img src={cert.logo_url} alt={cert.name} className="w-full max-w-[100px] h-auto object-contain" />
+                        ) : (
+                          <span className="text-[10px] tracking-[0.15em] text-muted-foreground font-semibold uppercase text-center">{cert.name}</span>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                );
+              })}
             </div>
           </div>
-          {certs.length > 1 && (
+          {Math.ceil(certs.length / 3) > 1 && (
             <div className="flex justify-center gap-2 mt-4">
-              {certs.map((_, i) => (
+              {Array.from({ length: Math.ceil(certs.length / 3) }).map((_, i) => (
                 <button
                   key={i}
                   onClick={() => emblaApi?.scrollTo(i)}
