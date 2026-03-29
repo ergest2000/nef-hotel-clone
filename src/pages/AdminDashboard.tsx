@@ -380,8 +380,21 @@ function AdminDashboard() {
     if (!el || isFirstLoad) return;
     var saved = sessionStorage.getItem("admin_scroll_" + activePage);
     if (saved) {
-      // Delay to ensure content is rendered
-      var timer = setTimeout(function () { el.scrollTop = Number(saved); }, 50);
+      var scrollTarget = Number(saved);
+      var attempts = 0;
+      var maxAttempts = 10;
+      // Retry until content is tall enough or max attempts reached
+      function tryRestore() {
+        if (!el || attempts >= maxAttempts) return;
+        attempts++;
+        if (el.scrollHeight > scrollTarget) {
+          el.scrollTop = scrollTarget;
+        } else {
+          requestAnimationFrame(tryRestore);
+        }
+      }
+      // Initial delay to let React render, then try restoring
+      var timer = setTimeout(tryRestore, 100);
       return function () { clearTimeout(timer); };
     }
   }, [activePage, isFirstLoad, content, sections]);
