@@ -25,7 +25,7 @@ const CertificationsSection = ({ content }: { content?: SiteContent[] }) => {
               )}
               <div className="flex items-center justify-center px-6 py-3">
                 {cert.logo_url ? (
-                  <img src={cert.logo_url} alt={cert.name} className="h-[60px] md:h-[70px] w-auto object-contain" />
+                  <img src={cert.logo_url} alt={cert.name} className="h-[80px] md:h-[100px] w-auto object-contain" />
                 ) : (
                   <span className="text-sm tracking-[0.15em] text-muted-foreground font-semibold uppercase">{cert.name}</span>
                 )}
