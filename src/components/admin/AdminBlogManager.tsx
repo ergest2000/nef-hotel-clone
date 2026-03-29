@@ -100,9 +100,43 @@ const BlogPostForm = ({
     sort_order: post?.sort_order ?? 0,
   });
   const [uploading, setUploading] = useState(false);
+  const [translating, setTranslating] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
 
   const update = (field: string, value: any) => setForm((prev) => ({ ...prev, [field]: value }));
+
+  const handleAutoTranslate = async () => {
+    if (!form.title_al && !form.excerpt_al && !form.content_al) return;
+    setTranslating(true);
+    try {
+      const response = await fetch("https://api.anthropic.com/v1/messages", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          model: "claude-sonnet-4-20250514",
+          max_tokens: 4000,
+          messages: [{
+            role: "user",
+            content: `Translate the following Albanian text to English. Return ONLY a JSON object with keys "title", "excerpt", "content". Keep HTML tags in content intact. Do not add any explanation.
+
+Title: ${form.title_al}
+Excerpt: ${form.excerpt_al}
+Content: ${form.content_al}`
+          }]
+        })
+      });
+      const data = await response.json();
+      const text = data.content?.[0]?.text || "";
+      const clean = text.replace(/```json|```/g, "").trim();
+      const parsed = JSON.parse(clean);
+      if (parsed.title) update("title_en", parsed.title);
+      if (parsed.excerpt) update("excerpt_en", parsed.excerpt);
+      if (parsed.content) update("content_en", parsed.content);
+    } catch (e) {
+      console.error("Translation error:", e);
+    }
+    setTranslating(false);
+  };
 
   const handleImageUpload = async (file: File) => {
     setUploading(true);
@@ -144,7 +178,17 @@ const BlogPostForm = ({
           <Input value={form.title_al} onChange={(e) => update("title_al", e.target.value)} className="text-xs h-9" />
         </div>
         <div className="space-y-1">
-          <label className="text-[10px] tracking-brand text-muted-foreground uppercase">Titulli (EN)</label>
+          <div className="flex items-center justify-between">
+            <label className="text-[10px] tracking-brand text-muted-foreground uppercase">Titulli (EN)</label>
+            <button
+              type="button"
+              onClick={handleAutoTranslate}
+              disabled={translating}
+              className="text-[9px] tracking-brand text-primary hover:text-primary/80 uppercase disabled:opacity-50"
+            >
+              {translating ? "Duke përkthyer..." : "🔄 Përkthe AL → EN"}
+            </button>
+          </div>
           <Input value={form.title_en} onChange={(e) => update("title_en", e.target.value)} className="text-xs h-9" />
         </div>
       </div>
