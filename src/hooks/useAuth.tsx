@@ -51,7 +51,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     let isMounted = true;
 
-    // Load session once on mount
     supabase.auth.getSession().then(async ({ data: { session: s } }) => {
       if (!isMounted) return;
       setSession(s);
@@ -63,9 +62,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       if (isMounted) { setLoading(false); initializedRef.current = true; }
     });
 
-    // Only listen for sign out — ignore everything else
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, nextSession) => {
+      (event) => {
         if (!isMounted || !initializedRef.current) return;
         if (event === "SIGNED_OUT") {
           setUser(null); setSession(null); setIsAdmin(false); setRole("user");
