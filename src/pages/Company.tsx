@@ -255,10 +255,9 @@ const Company = () => {
   const certs = certLogos?.filter((l) => l.visible) ?? [];
 
   const stats = [
-    { value: g("stats", "stat1_value", "50+"), label: g("stats", "stat1_label", t("Vite Eksperiencë", "Years of Experience")) },
+    { value: g("stats", "stat1_value", "20+"), label: g("stats", "stat1_label", t("Vite Eksperiencë", "Years of Experience")) },
     { value: g("stats", "stat2_value", "1500+"), label: g("stats", "stat2_label", t("Klientë", "Clients")) },
     { value: g("stats", "stat3_value", "500+"), label: g("stats", "stat3_label", t("Produkte", "Products")) },
-    { value: g("stats", "stat4_value", "12+"), label: g("stats", "stat4_label", t("Vende", "Countries")) },
   ];
 
   // Services slides from CMS (up to 6)
@@ -275,7 +274,7 @@ const Company = () => {
   const defaultSlides = [
     { title: t("Tekstile\npër Hotele", "Textiles\nfor Hotels"), text: t("Ekspertizë, profesionalizëm dhe besueshmëri për hotelet më të mira.", "Expertise, professionalism and reliability for the best hotels."), image: heroImg, link: "/koleksionet", color: "#163058" },
     { title: t("Tekstile\npër SPA", "Textiles\nfor SPA"), text: t("Peshqirë, mbulesa dhe aksesorë premium për çdo SPA.", "Towels, linens and premium accessories for every SPA."), image: heroImg, link: "/koleksionet", color: "#2d4a3e" },
-    { title: t("Tekstile\npër Restorante", "Textiles\nfor Restaurants"), text: t("Mbulesa tavoline, peceta dhe aksesorë elegante.", "Tablecloths, napkins and elegant accessories."), image: heroImg, link: "/koleksionet", color: "#3d2e1e" },
+    { title: t("Tekstile\npër Restorante", "Textiles\nfor Restaurants"), text: t("Mbulesa tavoline, peceta dhe aksesorë elegante për ambiente luksoze.", "Tablecloths, napkins and elegant accessories for luxury environments."), image: heroImg, link: "/koleksionet", color: "#3d2e1e" },
   ];
   const slides = serviceSlides.length > 0 ? serviceSlides : defaultSlides;
 
@@ -327,7 +326,7 @@ const Company = () => {
         <section className="py-16 md:py-24 bg-muted/30">
           <div className="container">
             <SectionHeading>{g("stats", "title", t("NUMRAT TANË", "OUR NUMBERS"))}</SectionHeading>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-10 md:gap-6 max-w-4xl mx-auto">
+            <div className="grid grid-cols-3 gap-10 md:gap-6 max-w-3xl mx-auto">
               {stats.map((s, i) => (
                 <AnimatedStat key={i} value={s.value} label={s.label} />
               ))}
