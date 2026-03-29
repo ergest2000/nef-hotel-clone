@@ -100,7 +100,6 @@ const BlogPostForm = ({
     sort_order: post?.sort_order ?? 0,
   });
   const [uploading, setUploading] = useState(false);
-  const [uploading, setUploading] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
 
   const update = (field: string, value: any) => setForm((prev) => ({ ...prev, [field]: value }));
