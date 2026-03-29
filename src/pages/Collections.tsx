@@ -640,7 +640,7 @@ const Collections = () => {
             className={`text-xl md:text-4xl lg:text-5xl font-light leading-tight max-w-xl ${heroImage ? "text-white" : "text-foreground"}`}
             style={{ textTransform: 'none', letterSpacing: 'normal' }}
           >
-            {pageTitle}.
+            {pageTitle}
           </h1>
           {pageDescription && (
             <p className={`mt-2 md:mt-3 text-xs md:text-base max-w-lg leading-relaxed ${heroImage ? "text-white/80" : "text-muted-foreground"}`}>
