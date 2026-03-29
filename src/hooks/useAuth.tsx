@@ -53,13 +53,21 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       if (isMounted) { setLoading(false); initializedRef.current = true; }
     });
 
-    const { data: sub } = supabase.auth.onAuthStateChange((event) => {
+    const { data: sub } = supabase.auth.onAuthStateChange(async (event, newSession) => {
       if (!isMounted || !initializedRef.current) return;
       if (event === "SIGNED_OUT") {
         setUser(null);
         setSession(null);
         setIsAdmin(false);
         setRole("user");
+      } else if (event === "TOKEN_REFRESHED" || event === "SIGNED_IN") {
+        // Update session/user silently without triggering loading state
+        setSession(newSession);
+        setUser(newSession?.user ?? null);
+        if (newSession?.user) {
+          const r = await checkRole(newSession.user.id);
+          if (isMounted) { setRole(r); setIsAdmin(r === "admin"); }
+        }
       }
     });
 
