@@ -348,16 +348,16 @@ function SiteHeader() {
                 {totalItems > 0 && <span className="absolute -top-1.5 -right-2.5 bg-destructive text-destructive-foreground text-[8px] w-4 h-4 rounded-full flex items-center justify-center font-bold">{totalItems}</span>}
               </Link>
               {user ? (
-                <div className="relative" ref={profileRef}>
-                  <button onClick={function () { setProfileOpen(!profileOpen); setLoginOpen(false); }} className="relative text-muted-foreground hover:text-foreground transition-colors">
+                <div className="relative flex items-center" ref={profileRef}>
+                  <button onClick={function () { setProfileOpen(!profileOpen); setLoginOpen(false); }} className="relative text-muted-foreground hover:text-foreground transition-colors flex items-center">
                     <User size={18} />
                     {unseenOffersCount > 0 && <span className="absolute -top-1.5 -right-2.5 bg-destructive text-destructive-foreground text-[8px] w-4 h-4 rounded-full flex items-center justify-center font-bold">{unseenOffersCount}</span>}
                   </button>
                   {profileOpen && <ProfileDropdown onClose={function () { setProfileOpen(false); }} />}
                 </div>
               ) : (
-                <div className="relative" ref={loginRef}>
-                  <button onClick={function () { setLoginOpen(!loginOpen); setProfileOpen(false); }} className="text-muted-foreground hover:text-foreground transition-colors">
+                <div className="relative flex items-center" ref={loginRef}>
+                  <button onClick={function () { setLoginOpen(!loginOpen); setProfileOpen(false); }} className="text-muted-foreground hover:text-foreground transition-colors flex items-center">
                     <User size={18} />
                   </button>
                   {loginOpen && <LoginModal onClose={function () { setLoginOpen(false); }} isAl={isAl} content={cmsContent} />}
