@@ -6,7 +6,9 @@ const DASHBOARD_ROLES = ["admin", "manager", "editor"];
 const AdminRoute = ({ children }: { children: React.ReactNode }) => {
   const { user, role, loading } = useAuth();
 
-  if (loading) {
+  // Only show loading on very first load (no user determined yet)
+  // Once user is set, never unmount children even if loading flickers
+  if (loading && !user) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <p className="text-sm tracking-brand text-muted-foreground">Loading...</p>
