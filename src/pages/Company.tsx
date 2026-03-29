@@ -255,16 +255,16 @@ const Company = () => {
               {certs.map((c, i) => (
                 <div key={c.id} className="flex items-center">
                   {i > 0 && (
-                    <div className="hidden md:block w-px h-12 bg-border mx-8" />
+                    <div className="hidden md:block w-px h-16 bg-border/60 mx-10" />
                   )}
                   {i > 0 && (
-                    <div className="md:hidden w-16 h-px bg-border my-5" />
+                    <div className="md:hidden w-16 h-px bg-border/60 my-6" />
                   )}
-                  <div className="flex items-center justify-center px-4 py-2">
+                  <div className="flex items-center justify-center px-6 py-3">
                     {c.logo_url ? (
-                      <img src={c.logo_url} alt={c.name} className="max-h-10 max-w-[120px] object-contain" />
+                      <img src={c.logo_url} alt={c.name} className="h-[60px] md:h-[70px] w-auto object-contain" />
                     ) : (
-                      <span className="text-xs tracking-[0.15em] text-muted-foreground font-semibold uppercase">{c.name}</span>
+                      <span className="text-sm tracking-[0.15em] text-muted-foreground font-semibold uppercase">{c.name}</span>
                     )}
                   </div>
                 </div>
