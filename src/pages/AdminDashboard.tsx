@@ -373,7 +373,23 @@ function AdminDashboard() {
             onSignOut={signOut}
             pageTitle={pageTitles[activePage] || activePage}
           />
-          <main className="flex-1 p-6 md:p-8 bg-muted/30 overflow-auto">{renderContent()}</main>
+          <main
+            className="flex-1 p-6 md:p-8 bg-muted/30 overflow-auto"
+            onScroll={(e) => {
+              const el = e.currentTarget;
+              sessionStorage.setItem("admin_scroll_" + activePage, String(el.scrollTop));
+            }}
+            ref={(el) => {
+              if (el) {
+                const saved = sessionStorage.getItem("admin_scroll_" + activePage);
+                if (saved) {
+                  requestAnimationFrame(() => { el.scrollTop = Number(saved); });
+                }
+              }
+            }}
+          >
+            {renderContent()}
+          </main>
         </div>
       </div>
     </SidebarProvider>
