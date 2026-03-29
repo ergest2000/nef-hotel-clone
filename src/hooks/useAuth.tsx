@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState, ReactNode } from "react";
+import { createContext, useContext, useEffect, useState, useRef, ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import type { User, Session } from "@supabase/supabase-js";
 
@@ -30,6 +30,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [isAdmin, setIsAdmin] = useState(false);
   const [role, setRole] = useState<AppRole>("user");
   const [loading, setLoading] = useState(true);
+  const initializedRef = useRef(false);
 
   const checkRole = async (userId: string): Promise<AppRole> => {
     try {
@@ -37,70 +38,42 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const results = await Promise.all(
         priorityRoles.map(async (candidateRole) => {
           const { data, error } = await supabase.rpc("has_role", { _user_id: userId, _role: candidateRole });
-          if (error) {
-            console.error(`Role check failed for ${candidateRole}:`, error.message);
-            return { candidateRole, hasRole: false };
-          }
+          if (error) return { candidateRole, hasRole: false };
           return { candidateRole, hasRole: Boolean(data) };
         })
       );
-
-      const matchedRole = results.find((result) => result.hasRole)?.candidateRole;
-      return matchedRole ?? "user";
-    } catch (error) {
-      console.error("Failed to resolve user role:", error);
+      return results.find((r) => r.hasRole)?.candidateRole ?? "user";
+    } catch {
       return "user";
-    }
-  };
-
-  const applySessionState = async (nextSession: Session | null) => {
-    try {
-      setSession(nextSession);
-      setUser(nextSession?.user ?? null);
-
-      if (!nextSession?.user) {
-        setIsAdmin(false);
-        setRole("user");
-        return;
-      }
-
-      const resolvedRole = await checkRole(nextSession.user.id);
-      setRole(resolvedRole);
-      setIsAdmin(resolvedRole === "admin");
-    } finally {
-      setLoading(false);
     }
   };
 
   useEffect(() => {
     let isMounted = true;
 
-    const syncSession = async (nextSession: Session | null) => {
+    // Load session once on mount
+    supabase.auth.getSession().then(async ({ data: { session: s } }) => {
       if (!isMounted) return;
-      // Only show loading on initial load, not on subsequent auth events
-      if (!user && !session) setLoading(true);
-      await applySessionState(nextSession);
-    };
+      setSession(s);
+      setUser(s?.user ?? null);
+      if (s?.user) {
+        const r = await checkRole(s.user.id);
+        if (isMounted) { setRole(r); setIsAdmin(r === "admin"); }
+      }
+      if (isMounted) { setLoading(false); initializedRef.current = true; }
+    });
 
+    // Only listen for sign out — ignore everything else
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, nextSession) => {
-        if (!isMounted) return;
-        // Only react to actual sign in/out events
-        if (event === "SIGNED_IN" && !user) {
-          void syncSession(nextSession);
-        } else if (event === "SIGNED_OUT") {
-          void syncSession(null);
+        if (!isMounted || !initializedRef.current) return;
+        if (event === "SIGNED_OUT") {
+          setUser(null); setSession(null); setIsAdmin(false); setRole("user");
         }
-        // Ignore TOKEN_REFRESHED, INITIAL_SESSION, USER_UPDATED etc.
       }
     );
 
-    void supabase.auth.getSession().then(({ data: { session: nextSession } }) => syncSession(nextSession));
-
-    return () => {
-      isMounted = false;
-      subscription.unsubscribe();
-    };
+    return () => { isMounted = false; subscription.unsubscribe(); };
   }, []);
 
   const signIn = async (email: string, password: string) => {
