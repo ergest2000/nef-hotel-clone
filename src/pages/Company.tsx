@@ -390,22 +390,6 @@ const Company = () => {
         </section>
       )}
 
-      {/* ── CTA ──────────────────────────────────────────────────── */}
-      {vis("cta") && (
-        <section className="py-20 md:py-28">
-          <div className="container text-center">
-            <SectionHeading>{g("cta", "title", t("NA KONTAKTONI", "CONTACT US"))}</SectionHeading>
-            <p className="text-sm text-muted-foreground max-w-md mx-auto mb-10 leading-relaxed">
-              {g("cta", "text", t("Jemi të gatshëm t'ju ndihmojmë me zgjidhje të personalizuara për biznesin tuaj.", "We are ready to help you with customized solutions for your business."))}
-            </p>
-            <Link to="/checkout" className="inline-flex items-center gap-3 px-10 py-4 text-[11px] tracking-[0.25em] uppercase text-white hover:opacity-90 transition-opacity" style={{ backgroundColor: "#163058" }}>
-              {g("cta", "button", t("KËRKO NJË OFERTË", "REQUEST A QUOTE"))}
-              <ArrowRight className="h-3.5 w-3.5" />
-            </Link>
-          </div>
-        </section>
-      )}
-
       <SiteFooter />
     </div>
   );
