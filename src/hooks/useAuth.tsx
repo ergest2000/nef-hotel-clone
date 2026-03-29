@@ -116,8 +116,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setRole("user");
   };
 
+  const contextValue = { user, session, isAdmin, role, loading, signIn, signOut };
+
   return (
-    <AuthCtx.Provider value={{ user, session, isAdmin, role, loading, signIn, signOut }}>
+    <AuthCtx.Provider value={contextValue}>
       {children}
     </AuthCtx.Provider>
   );
