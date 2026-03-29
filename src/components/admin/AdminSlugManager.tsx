@@ -43,8 +43,8 @@ export const AdminSlugManager = () => {
     const edit = edits[id];
     if (!edit) return;
     
-    // Sanitize slugs
-    const sanitized_al = edit.slug_al.toLowerCase().replace(/[^a-z0-9\-]/g, "").replace(/^-+|-+$/g, "");
+    // Sanitize slugs — allow Albanian characters ë and ç
+    const sanitized_al = edit.slug_al.toLowerCase().replace(/[^a-zëç0-9\-]/g, "").replace(/^-+|-+$/g, "");
     const sanitized_en = edit.slug_en.toLowerCase().replace(/[^a-z0-9\-]/g, "").replace(/^-+|-+$/g, "");
 
     if (!sanitized_al || !sanitized_en) {
