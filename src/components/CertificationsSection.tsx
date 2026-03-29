@@ -55,20 +55,20 @@ const CertificationsSection = ({ content }: { content?: SiteContent[] }) => {
           ))}
         </div>
 
-        {/* Mobile: Embla carousel — 3 per slide */}
+        {/* Mobile: Embla carousel — 2 per slide */}
         <div className="md:hidden">
           <div className="overflow-hidden" ref={emblaRef}>
             <div className="flex">
-              {Array.from({ length: Math.ceil(certs.length / 3) }).map((_, slideIdx) => {
-                var slideCerts = certs.slice(slideIdx * 3, slideIdx * 3 + 3);
+              {Array.from({ length: Math.ceil(certs.length / 2) }).map((_, slideIdx) => {
+                var slideCerts = certs.slice(slideIdx * 2, slideIdx * 2 + 2);
                 return (
-                  <div key={slideIdx} className="flex-[0_0_100%] min-w-0 flex items-center justify-center gap-4 py-4 px-2">
+                  <div key={slideIdx} className="flex-[0_0_100%] min-w-0 flex items-center justify-center gap-8 py-6 px-4">
                     {slideCerts.map((cert) => (
                       <div key={cert.id} className="flex-1 flex items-center justify-center">
                         {cert.logo_url ? (
-                          <img src={cert.logo_url} alt={cert.name} className="h-[60px] w-auto object-contain" />
+                          <img src={cert.logo_url} alt={cert.name} className="h-[90px] w-auto object-contain" />
                         ) : (
-                          <span className="text-[10px] tracking-[0.15em] text-muted-foreground font-semibold uppercase text-center">{cert.name}</span>
+                          <span className="text-xs tracking-[0.15em] text-muted-foreground font-semibold uppercase text-center">{cert.name}</span>
                         )}
                       </div>
                     ))}
@@ -77,9 +77,9 @@ const CertificationsSection = ({ content }: { content?: SiteContent[] }) => {
               })}
             </div>
           </div>
-          {Math.ceil(certs.length / 3) > 1 && (
+          {Math.ceil(certs.length / 2) > 1 && (
             <div className="flex justify-center gap-2 mt-4">
-              {Array.from({ length: Math.ceil(certs.length / 3) }).map((_, i) => (
+              {Array.from({ length: Math.ceil(certs.length / 2) }).map((_, i) => (
                 <button
                   key={i}
                   onClick={() => emblaApi?.scrollTo(i)}
