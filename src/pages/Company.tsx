@@ -93,30 +93,21 @@ const ImageCarousel = ({ images }: { images: { image_url: string; alt_text: stri
   );
 };
 
-/* ── Brands auto-scroll ────────────────────────────────────────── */
-const BrandsCarousel = ({ brands }: { brands: { name: string; logo: string | null }[] }) => {
-  const scrollRef = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    const el = scrollRef.current;
-    if (!el || brands.length < 3) return;
-    let id: number; let pos = 0;
-    const step = () => { pos += 0.4; if (pos >= el.scrollWidth / 2) pos = 0; el.scrollLeft = pos; id = requestAnimationFrame(step); };
-    id = requestAnimationFrame(step);
-    const pause = () => cancelAnimationFrame(id);
-    const resume = () => { id = requestAnimationFrame(step); };
-    el.addEventListener("mouseenter", pause); el.addEventListener("mouseleave", resume);
-    return () => { cancelAnimationFrame(id); el.removeEventListener("mouseenter", pause); el.removeEventListener("mouseleave", resume); };
-  }, [brands.length]);
+/* ── Brands static display ──────────────────────────────────────── */
+const BrandsDisplay = ({ brands }: { brands: { name: string; logo: string | null }[] }) => {
   if (!brands.length) return null;
-  const doubled = [...brands, ...brands];
   return (
-    <div ref={scrollRef} className="flex gap-10 md:gap-14 overflow-hidden items-center" style={{ scrollbarWidth: "none" }}>
-      {doubled.map((b, i) => (
-        <div key={i} className="flex items-center justify-center shrink-0 px-4 py-3 min-w-[140px] md:min-w-[180px]">
+    <div className="flex flex-wrap items-center justify-center gap-12 md:gap-20">
+      {brands.map((b, i) => (
+        <div key={i} className="flex items-center justify-center">
           {b.logo ? (
-            <img src={b.logo} alt={b.name} className="max-h-10 md:max-h-12 max-w-[120px] md:max-w-[140px] object-contain opacity-40 hover:opacity-100 transition-opacity duration-300" />
+            <img
+              src={b.logo}
+              alt={b.name}
+              className="h-[60px] md:h-[80px] w-auto object-contain"
+            />
           ) : (
-            <span className="text-[11px] tracking-[0.15em] text-muted-foreground/50 hover:text-foreground font-medium uppercase transition-colors duration-300 whitespace-nowrap">{b.name}</span>
+            <span className="text-sm tracking-[0.15em] text-foreground font-medium uppercase whitespace-nowrap">{b.name}</span>
           )}
         </div>
       ))}
@@ -209,7 +200,7 @@ const Company = () => {
         <section className="py-16 md:py-24">
           <div className="container">
             <SectionHeading>{g("brands", "title", t("BRANDET TONA", "OUR BRANDS"))}</SectionHeading>
-            <BrandsCarousel brands={brands} />
+            <BrandsDisplay brands={brands} />
           </div>
         </section>
       )}
