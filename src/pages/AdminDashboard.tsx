@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import {
@@ -361,11 +361,36 @@ function AdminDashboard() {
     }
   }
 
+  var mainRef = useRef<HTMLDivElement>(null);
+
+  // Save scroll position continuously
+  useEffect(() => {
+    var el = mainRef.current;
+    if (!el) return;
+    var handler = function () {
+      sessionStorage.setItem("admin_scroll_" + activePage, String(el.scrollTop));
+    };
+    el.addEventListener("scroll", handler, { passive: true });
+    return function () { el.removeEventListener("scroll", handler); };
+  }, [activePage]);
+
+  // Restore scroll position after content renders
+  useEffect(() => {
+    var el = mainRef.current;
+    if (!el || isFirstLoad) return;
+    var saved = sessionStorage.getItem("admin_scroll_" + activePage);
+    if (saved) {
+      // Delay to ensure content is rendered
+      var timer = setTimeout(function () { el.scrollTop = Number(saved); }, 50);
+      return function () { clearTimeout(timer); };
+    }
+  }, [activePage, isFirstLoad, content, sections]);
+
   return (
     <SidebarProvider>
-      <div className="min-h-screen flex w-full">
+      <div className="h-screen flex w-full overflow-hidden">
         <AdminSidebar activePage={activePage} onPageChange={setActivePage} />
-        <div className="flex-1 flex flex-col min-w-0">
+        <div className="flex-1 flex flex-col min-w-0 h-screen">
           <AdminHeader
             user={user}
             lang={lang}
@@ -373,21 +398,7 @@ function AdminDashboard() {
             onSignOut={signOut}
             pageTitle={pageTitles[activePage] || activePage}
           />
-          <main
-            className="flex-1 p-6 md:p-8 bg-muted/30 overflow-auto"
-            onScroll={(e) => {
-              const el = e.currentTarget;
-              sessionStorage.setItem("admin_scroll_" + activePage, String(el.scrollTop));
-            }}
-            ref={(el) => {
-              if (el) {
-                const saved = sessionStorage.getItem("admin_scroll_" + activePage);
-                if (saved) {
-                  requestAnimationFrame(() => { el.scrollTop = Number(saved); });
-                }
-              }
-            }}
-          >
+          <main ref={mainRef} className="flex-1 p-6 md:p-8 bg-muted/30 overflow-y-auto">
             {renderContent()}
           </main>
         </div>
