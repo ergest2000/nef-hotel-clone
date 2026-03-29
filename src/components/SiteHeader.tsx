@@ -273,7 +273,7 @@ function SiteHeader() {
 
   var contactLabel = isAl ? h("contact_text_al", "CONTACT:") : h("contact_text_en", "CONTACT:");
   var contactPhone = h("contact_phone", "+355 69 000 0000");
-  var searchPlaceholder = isAl ? h("search_placeholder_al", "Kerko per produkte ketu") : h("search_placeholder_en", "Search for products here");
+  var searchPlaceholder = isAl ? h("search_placeholder_al", "Kërko për produkte këtu") : h("search_placeholder_en", "Search for products here");
   var registerBtnText = isAl ? h("register_text_al", "REGJISTROHU / HYR") : h("register_text_en", "REGISTER / LOGIN");
   var mobileProductsLabel = isAl ? h("mobile_products_al", "Produkte") : h("mobile_products_en", "Products");
 
@@ -357,8 +357,8 @@ function SiteHeader() {
                 </div>
               ) : (
                 <div className="relative flex items-center" ref={loginRef}>
-                  <button onClick={function () { setLoginOpen(!loginOpen); setProfileOpen(false); }} className="text-muted-foreground hover:text-foreground transition-colors flex items-center">
-                    <User size={18} />
+                  <button onClick={function () { setLoginOpen(!loginOpen); setProfileOpen(false); }} className="text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1 text-[11px] tracking-brand uppercase whitespace-nowrap">
+                    {isAl ? "Hyr / Regjistrohu" : "Login / Register"}
                   </button>
                   {loginOpen && <LoginModal onClose={function () { setLoginOpen(false); }} isAl={isAl} content={cmsContent} />}
                 </div>
@@ -415,7 +415,7 @@ function SiteHeader() {
                   {unseenOffersCount > 0 && <span className="absolute -top-1.5 -right-1.5 bg-destructive text-destructive-foreground text-[8px] w-4 h-4 rounded-full flex items-center justify-center font-bold">{unseenOffersCount}</span>}
                 </Link>
               ) : (
-                <SlugLink to="/login" className="text-muted-foreground hover:text-foreground"><User size={18} /></SlugLink>
+                <SlugLink to="/login" className="text-muted-foreground hover:text-foreground text-[10px] tracking-brand uppercase whitespace-nowrap">{isAl ? "Hyr" : "Login"}</SlugLink>
               )}
             </div>
           </div>
