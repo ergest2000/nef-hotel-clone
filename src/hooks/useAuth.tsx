@@ -77,20 +77,21 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     const syncSession = async (nextSession: Session | null) => {
       if (!isMounted) return;
-      setLoading(true);
+      // Only show loading on initial load, not on subsequent auth events
+      if (!user && !session) setLoading(true);
       await applySessionState(nextSession);
     };
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, nextSession) => {
-        // Skip full re-render on token refresh — just update session silently
-        if (event === "TOKEN_REFRESHED") {
-          if (isMounted) {
-            setSession(nextSession);
-          }
-          return;
+        if (!isMounted) return;
+        // Only react to actual sign in/out events
+        if (event === "SIGNED_IN" && !user) {
+          void syncSession(nextSession);
+        } else if (event === "SIGNED_OUT") {
+          void syncSession(null);
         }
-        void syncSession(nextSession);
+        // Ignore TOKEN_REFRESHED, INITIAL_SESSION, USER_UPDATED etc.
       }
     );
 
