@@ -82,7 +82,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     };
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (_event, nextSession) => {
+      (event, nextSession) => {
+        // Skip full re-render on token refresh — just update session silently
+        if (event === "TOKEN_REFRESHED") {
+          if (isMounted) {
+            setSession(nextSession);
+          }
+          return;
+        }
         void syncSession(nextSession);
       }
     );
