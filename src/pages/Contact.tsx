@@ -29,9 +29,9 @@ function Contact() {
   var form = formState[0];
   var setForm = formState[1];
 
-  var mapLat = settings["contact_map_lat"] || "41.3275";
-  var mapLng = settings["contact_map_lng"] || "19.8187";
-  var mapZoom = settings["contact_map_zoom"] || "15";
+  var mapLat = g("map", "lat", "41.3275");
+  var mapLng = g("map", "lng", "19.8187");
+  var mapZoom = g("map", "zoom", "15");
   var infoBgColor = settings["contact_info_bg_color"];
 
   function isSectionVisible(key: string) {
