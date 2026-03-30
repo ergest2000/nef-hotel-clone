@@ -3,6 +3,8 @@ import { useCollections, useUpsertCollection, useDeleteCollection, useUpdateColl
 import { useToast } from "@/hooks/use-toast";
 import { useAutoTranslate } from "@/hooks/useAutoTranslate";
 import { uploadCmsImage } from "@/hooks/useCms";
+import { supabase } from "@/integrations/supabase/client";
+import { useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -26,23 +28,38 @@ export const AdminCollectionsManager = () => {
   const { translateField, translating } = useAutoTranslate();
   const [editItem, setEditItem] = useState<Partial<Collection> | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const qc = useQueryClient();
 
   const topLevel = collections?.filter((c) => !c.parent_id) ?? [];
   const getChildren = (parentId: string) => collections?.filter((c) => c.parent_id === parentId) ?? [];
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!editItem?.slug) {
       toast({ title: "Gabim", description: "Slug është i detyrueshëm", variant: "destructive" });
       return;
     }
-    upsert.mutate(editItem as any, {
-      onSuccess: () => {
-        toast({ title: "U ruajt!" });
-        setDialogOpen(false);
-        setEditItem(null);
-      },
-      onError: (e) => toast({ title: "Gabim", description: e.message, variant: "destructive" }),
-    });
+    setSaving(true);
+    try {
+      const payload: any = {};
+      const fields = ['title_al','title_en','description_al','description_en','slug','image_url','parent_id','visible','sort_order'];
+      fields.forEach(f => { if ((editItem as any)[f] !== undefined) payload[f] = (editItem as any)[f]; });
+
+      if (editItem.id) {
+        const { error } = await supabase.from("collections").update(payload).eq("id", editItem.id);
+        if (error) throw error;
+      } else {
+        const { error } = await supabase.from("collections").insert(payload);
+        if (error) throw error;
+      }
+      qc.invalidateQueries({ queryKey: ["collections"] });
+      toast({ title: "U ruajt!" });
+      setDialogOpen(false);
+      setEditItem(null);
+    } catch (e: any) {
+      toast({ title: "Gabim", description: e.message, variant: "destructive" });
+    }
+    setSaving(false);
   };
 
   const handleDelete = (id: string) => {
@@ -266,8 +283,9 @@ export const AdminCollectionsManager = () => {
               </div>
               <div className="flex justify-end gap-2">
                 <Button variant="outline" onClick={() => setDialogOpen(false)}>Anulo</Button>
-                <Button onClick={handleSave} disabled={upsert.isPending}>
-                  {upsert.isPending ? "Duke ruajtur..." : "Ruaj"}
+                <Button onClick={handleSave} disabled={saving}>
+                  {saving ? "Duke ruajtur..." : "Ruaj"}
+                </Button>
                 </Button>
               </div>
             </div>
