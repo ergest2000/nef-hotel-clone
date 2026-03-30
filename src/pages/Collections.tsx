@@ -24,27 +24,11 @@ export const useUpsertCollection = () => {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (item: Partial<Collection> & { slug: string }) => {
-      if (item.id) {
-        // Update existing
-        const { id, ...updateData } = item;
-        const { data, error } = await supabase
-          .from("collections")
-          .update(updateData)
-          .eq("id", id)
-          .select()
-          .single();
-        if (error) throw error;
-        return data;
-      } else {
-        // Insert new
-        const { data, error } = await supabase
-          .from("collections")
-          .insert(item)
-          .select()
-          .single();
-        if (error) throw error;
-        return data;
-      }
+      const { created_at, updated_at, ...payload } = item as any;
+      const { error } = await supabase
+        .from("collections")
+        .upsert(payload, { onConflict: "id" });
+      if (error) throw error;
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["collections"] }),
   });
@@ -92,31 +76,14 @@ export const useUpsertProduct = () => {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (item: Partial<Product> & { collection_id: string }) => {
-      const payload = { ...item };
+      const { created_at, updated_at, ...payload } = item as any;
       if (payload.slug === '') {
         delete payload.slug;
       }
-      if (payload.id) {
-        // Update existing
-        const { id, ...updateData } = payload;
-        const { data, error } = await supabase
-          .from("products")
-          .update(updateData)
-          .eq("id", id)
-          .select()
-          .single();
-        if (error) throw error;
-        return data;
-      } else {
-        // Insert new
-        const { data, error } = await supabase
-          .from("products")
-          .insert(payload)
-          .select()
-          .single();
-        if (error) throw error;
-        return data;
-      }
+      const { error } = await supabase
+        .from("products")
+        .upsert(payload, { onConflict: "id" });
+      if (error) throw error;
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["products"] });
