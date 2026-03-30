@@ -128,7 +128,7 @@ const Checkout = () => {
                 </p>
                 <Button
                   className="mt-4 h-12 px-8 text-xs tracking-wider uppercase rounded-none text-white hover:opacity-90"
-                  style={{ backgroundColor: "#163058" }}
+                  style={{ backgroundColor: "#204b6f" }}
                   disabled={requestLoading}
                   onClick={handleRequestQuote}
                 >
@@ -137,7 +137,7 @@ const Checkout = () => {
               </div>
             ) : (
               <>
-                <div className="px-6 py-3 mb-0" style={{ backgroundColor: "#163058" }}>
+                <div className="px-6 py-3 mb-0" style={{ backgroundColor: "#204b6f" }}>
                   <h2 className="text-lg font-medium text-white">
                     {t("checkout_auth_header", "Kyçu ose Regjistrohu", "Log in or Register")}
                   </h2>
@@ -160,7 +160,7 @@ const Checkout = () => {
                           </Link>
                         </div>
                       </div>
-                      <Button type="submit" disabled={loginLoading} className="h-12 px-10 text-xs tracking-wider uppercase rounded-none text-white hover:opacity-90" style={{ backgroundColor: "#163058" }}>
+                      <Button type="submit" disabled={loginLoading} className="h-12 px-10 text-xs tracking-wider uppercase rounded-none text-white hover:opacity-90" style={{ backgroundColor: "#204b6f" }}>
                         {loginLoading ? "..." : t("checkout_login_btn", "HYRJE", "LOGIN")}
                       </Button>
                     </form>
@@ -199,7 +199,7 @@ const Checkout = () => {
                         <label className="text-xs tracking-wider text-muted-foreground uppercase">{t("checkout_pw", "FJALËKALIMI", "PASSWORD")}</label>
                         <Input value={newPassword} onChange={(e) => setNewPassword(e.target.value)} className="border-0 border-b border-border rounded-none px-0 h-10 focus-visible:ring-0" type="password" required />
                       </div>
-                      <Button type="submit" disabled={registerLoading} className="h-12 px-10 text-xs tracking-wider uppercase rounded-none text-white hover:opacity-90" style={{ backgroundColor: "#163058" }}>
+                      <Button type="submit" disabled={registerLoading} className="h-12 px-10 text-xs tracking-wider uppercase rounded-none text-white hover:opacity-90" style={{ backgroundColor: "#204b6f" }}>
                         {registerLoading ? "..." : t("checkout_register_btn", "REGJISTROHU", "REGISTER")}
                       </Button>
                     </form>
