@@ -299,7 +299,6 @@ export const AdminCollectionsManager = () => {
                 <Button onClick={handleSave} disabled={saving}>
                   {saving ? "Duke ruajtur..." : "Ruaj"}
                 </Button>
-                </Button>
               </div>
             </div>
           )}
