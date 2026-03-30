@@ -176,16 +176,16 @@ const Checkout = () => {
                         <Input value={newName} onChange={(e) => setNewName(e.target.value)} className="border-0 border-b border-border rounded-none px-0 h-10 focus-visible:ring-0" required />
                       </div>
                       <div>
-                        <label className="text-xs tracking-wider text-muted-foreground uppercase">{t("checkout_profession", "PROFESIONI", "PROFESSION")}</label>
-                        <Input value={newProperty} onChange={(e) => setNewProperty(e.target.value)} className="border-0 border-b border-border rounded-none px-0 h-10 focus-visible:ring-0" />
-                      </div>
-                      <div>
                         <label className="text-xs tracking-wider text-muted-foreground uppercase">{t("checkout_business", "EMRI I BIZNESIT", "BUSINESS NAME")}</label>
                         <Input value={newHotel} onChange={(e) => setNewHotel(e.target.value)} className="border-0 border-b border-border rounded-none px-0 h-10 focus-visible:ring-0" />
                       </div>
                       <div>
                         <label className="text-xs tracking-wider text-muted-foreground uppercase">{t("checkout_city", "QYTETI", "CITY")}</label>
                         <Input value={newCity} onChange={(e) => setNewCity(e.target.value)} className="border-0 border-b border-border rounded-none px-0 h-10 focus-visible:ring-0" />
+                      </div>
+                      <div>
+                        <label className="text-xs tracking-wider text-muted-foreground uppercase">{t("checkout_country", "SHTETI", "COUNTRY")}</label>
+                        <Input value={newProperty} onChange={(e) => setNewProperty(e.target.value)} className="border-0 border-b border-border rounded-none px-0 h-10 focus-visible:ring-0" />
                       </div>
                       <div>
                         <label className="text-xs tracking-wider text-muted-foreground uppercase">{t("checkout_phone", "TELEFONI", "PHONE")}</label>
