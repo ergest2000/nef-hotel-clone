@@ -45,12 +45,25 @@ export const AdminCollectionsManager = () => {
       const fields = ['title_al','title_en','description_al','description_en','slug','image_url','parent_id','visible','sort_order'];
       fields.forEach(f => { if ((editItem as any)[f] !== undefined) payload[f] = (editItem as any)[f]; });
 
+      const url = (import.meta.env.VITE_SUPABASE_URL || "https://yvkwkrumopgspyohrgio.supabase.co") + "/rest/v1/collections";
+      const key = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl2a3drcnVtb3Bnc3B5b2hyZ2lvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI5OTU1NzMsImV4cCI6MjA4ODU3MTU3M30.xjSZ7U-Fqdg_lf66YaEem1Wi5W5h4kO1ab1vezV8XIc";
+      const session = await supabase.auth.getSession();
+      const token = session.data.session?.access_token || key;
+
       if (editItem.id) {
-        const { error } = await supabase.from("collections").update(payload).eq("id", editItem.id);
-        if (error) throw error;
+        const res = await fetch(url + "?id=eq." + editItem.id, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json", "apikey": key, "Authorization": "Bearer " + token, "Prefer": "return=minimal" },
+          body: JSON.stringify(payload),
+        });
+        if (!res.ok) { const t = await res.text(); throw new Error(t); }
       } else {
-        const { error } = await supabase.from("collections").insert(payload);
-        if (error) throw error;
+        const res = await fetch(url, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "apikey": key, "Authorization": "Bearer " + token, "Prefer": "return=minimal" },
+          body: JSON.stringify(payload),
+        });
+        if (!res.ok) { const t = await res.text(); throw new Error(t); }
       }
       qc.invalidateQueries({ queryKey: ["collections"] });
       toast({ title: "U ruajt!" });
