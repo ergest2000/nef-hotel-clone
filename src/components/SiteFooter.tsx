@@ -79,8 +79,10 @@ function SiteFooter() {
   var catCount = Math.min(10, Math.max(0, parseInt(catCountVal) || 7));
   var col2Links: { label: string; href: string }[] = [];
   for (var ci = 1; ci <= catCount; ci++) {
-    var catLabel = h("cat" + ci + "_label", "");
+    var catLabelAl = h("cat" + ci + "_label", "");
+    var catLabelEn = h("cat" + ci + "_label_en", "");
     var catHref = h("cat" + ci + "_href", "#");
+    var catLabel = isAl ? catLabelAl : (catLabelEn || catLabelAl);
     if (catLabel) col2Links.push({ label: catLabel, href: catHref });
   }
 
