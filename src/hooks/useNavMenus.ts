@@ -24,5 +24,6 @@ export const useNavMenusByLocation = (location: string) => {
       if (error) throw error;
       return data as NavMenuItem[];
     },
+    staleTime: 30000, // 30s — rifreskon shpejt pas ndryshimeve në admin
   });
 };
