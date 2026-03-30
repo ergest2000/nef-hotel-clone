@@ -60,7 +60,12 @@ export const AdminMenuManager = () => {
       const { error } = await supabase.from("nav_menus").upsert(item);
       if (error) throw error;
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["nav_menus"] }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["nav_menus"] });
+    },
+    onError: (e: any) => {
+      toast({ title: "Gabim", description: e.message, variant: "destructive" });
+    },
   });
 
   const deleteMutation = useMutation({
