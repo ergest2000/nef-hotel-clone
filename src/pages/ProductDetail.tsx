@@ -173,8 +173,8 @@ const ProductGallery = ({ mainImage, productId, selectedColorId, colorImageUrl, 
 };
 
 // ─── Related Products ───────────────────────────────────────────
-const RelatedProducts = ({ collectionId, currentProductId, isAl, collectionSlug }: {
-  collectionId: string; currentProductId: string; isAl: boolean; collectionSlug: string;
+const RelatedProducts = ({ collectionId, currentProductId, isAl, collectionSlug, allColors }: {
+  collectionId: string; currentProductId: string; isAl: boolean; collectionSlug: string; allColors?: ProductColor[];
 }) => {
   const { data: allProducts } = useProducts(collectionId);
   const related = useMemo(
@@ -193,22 +193,49 @@ const RelatedProducts = ({ collectionId, currentProductId, isAl, collectionSlug 
           {t("KOMBINOJE ATE ME", "COMBINE IT WITH")}
         </h2>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
-          {related.map((p) => (
-            <Link key={p.id} to={`/koleksionet/${collectionSlug}/${p.slug || p.id}`} className="group">
-              <div className="aspect-square bg-muted overflow-hidden mb-3">
-                {p.image_url ? (
-                  <img src={p.image_url} alt={isAl ? p.title_al : p.title_en} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" />
-                ) : (
-                  <div className="flex items-center justify-center h-full">
-                    <Package className="h-10 w-10 text-muted-foreground/20" />
+          {related.map((p) => {
+            var productColors = allColors ? allColors.filter(function (c) { return c.product_id === p.id; }) : [];
+            return (
+              <div key={p.id} className="group">
+                <Link to={`/koleksionet/${collectionSlug}/${p.slug || p.id}`}>
+                  <div className="aspect-square bg-muted overflow-hidden mb-3">
+                    {p.image_url ? (
+                      <img src={p.image_url} alt={isAl ? p.title_al : p.title_en} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" />
+                    ) : (
+                      <div className="flex items-center justify-center h-full">
+                        <Package className="h-10 w-10 text-muted-foreground/20" />
+                      </div>
+                    )}
+                  </div>
+                  <p className="text-sm font-medium text-foreground group-hover:text-primary transition-colors line-clamp-2">
+                    {toTitleCase(isAl ? p.title_al : p.title_en)}
+                  </p>
+                </Link>
+                {productColors.length > 0 && (
+                  <div className="mt-2">
+                    <div className="flex flex-wrap gap-2">
+                      {productColors.slice(0, 6).map(function (color) {
+                        return (
+                          <Link
+                            key={color.id}
+                            to={`/koleksionet/${collectionSlug}/${p.slug || p.id}`}
+                            className="w-7 h-7 rounded-full transition-transform hover:scale-110 border border-gray-300 shadow-sm"
+                            style={{ backgroundColor: color.color_hex || "#ccc" }}
+                            title={isAl ? (color.color_name_al || color.color_name) : (color.color_name_en || color.color_name)}
+                          />
+                        );
+                      })}
+                      {productColors.length > 6 && (
+                        <Link to={`/koleksionet/${collectionSlug}/${p.slug || p.id}`} className="w-7 h-7 rounded-full bg-muted border border-border flex items-center justify-center text-[9px] text-muted-foreground">
+                          +{productColors.length - 6}
+                        </Link>
+                      )}
+                    </div>
                   </div>
                 )}
               </div>
-              <p className="text-sm font-medium text-foreground group-hover:text-primary transition-colors line-clamp-2">
-                {toTitleCase(isAl ? p.title_al : p.title_en)}
-              </p>
-            </Link>
-          ))}
+            );
+          })}
         </div>
       </div>
     </section>
@@ -565,6 +592,7 @@ const ProductDetail = () => {
           currentProductId={product.id}
           isAl={isAl}
           collectionSlug={slug ?? ""}
+          allColors={allColors ?? undefined}
         />
       )}
 
