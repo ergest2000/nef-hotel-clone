@@ -1,5 +1,6 @@
 import { useRef, useState, useEffect, useCallback } from "react";
 import { useSuggestedProductsFull } from "@/hooks/useHomepageSuggestions";
+import { useAllProductColors } from "@/hooks/useCollections";
 import { useLanguage } from "@/hooks/useLanguage";
 import { getContentValue } from "@/hooks/useCms";
 import { ChevronLeft, ChevronRight } from "lucide-react";
@@ -39,8 +40,9 @@ const getVisibleCount = (): number => {
 
 const SuggestionsSection = ({ content }: { content?: SiteContent[] }) => {
   const title = getContentValue(content, "suggestions", "title", "SUGGESTIONS FOR YOU");
-  const { lang } = useLanguage();
+  const { lang, isAl } = useLanguage();
   const { data: dynamicProducts } = useSuggestedProductsFull();
+  const { data: allColors } = useAllProductColors();
 
   const products = dynamicProducts?.length
     ? dynamicProducts.map((p: any) => ({
@@ -275,6 +277,29 @@ const SuggestionsSection = ({ content }: { content?: SiteContent[] }) => {
                   >
                     {toTitleCase(product.name)}
                   </p>
+                  {allColors && (() => {
+                    var productColors = allColors.filter(function (c) { return c.product_id === product.id; });
+                    if (productColors.length === 0) return null;
+                    return (
+                      <div className="mt-2 flex flex-wrap gap-1.5">
+                        {productColors.slice(0, 6).map(function (color) {
+                          return (
+                            <span
+                              key={color.id}
+                              className="w-6 h-6 rounded-full border border-gray-300 shadow-sm"
+                              style={{ backgroundColor: color.color_hex || "#ccc" }}
+                              title={isAl ? (color.color_name_al || color.color_name) : (color.color_name_en || color.color_name)}
+                            />
+                          );
+                        })}
+                        {productColors.length > 6 && (
+                          <span className="w-6 h-6 rounded-full bg-muted border border-border flex items-center justify-center text-[8px] text-muted-foreground">
+                            +{productColors.length - 6}
+                          </span>
+                        )}
+                      </div>
+                    );
+                  })()}
                 </a>
               ))}
             </div>
