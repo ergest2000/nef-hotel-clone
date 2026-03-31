@@ -185,13 +185,22 @@ const ServicesCarousel = ({ slides, isAl }: { slides: { title: string; text: str
           </Link>
           {/* Arrows inline with text */}
           {total > 1 && (
-            <div className="flex gap-2 mt-6">
+            <div className="flex items-center gap-4 mt-6">
               <button onClick={() => { prev(); resetTimer(); }} className="w-9 h-9 rounded-full border border-white/40 flex items-center justify-center text-white/70 hover:text-white hover:border-white/70 active:bg-white/10 transition-colors">
                 <ChevronLeft className="h-4 w-4" />
               </button>
               <button onClick={() => { next(); resetTimer(); }} className="w-9 h-9 rounded-full border border-white/40 flex items-center justify-center text-white/70 hover:text-white hover:border-white/70 active:bg-white/10 transition-colors">
                 <ChevronRight className="h-4 w-4" />
               </button>
+              <div className="flex gap-2 ml-2">
+                {slides.map((_, i) => (
+                  <button
+                    key={i}
+                    onClick={() => { setCurrent(i); resetTimer(); }}
+                    className={`w-2 h-2 rounded-full transition-colors ${i === current ? "bg-white" : "bg-white/30"}`}
+                  />
+                ))}
+              </div>
             </div>
           )}
         </div>
@@ -221,16 +230,6 @@ const ServicesCarousel = ({ slides, isAl }: { slides: { title: string; text: str
                 key={i}
                 onClick={() => { setCurrent(i); resetTimer(); }}
                 className={`w-2.5 h-2.5 rounded-full transition-all ${i === current ? "bg-foreground scale-125" : "bg-foreground/25 hover:bg-foreground/50"}`}
-              />
-            ))}
-          </div>
-          {/* Mobile dots */}
-          <div className="md:hidden flex justify-center gap-2 py-4 bg-background">
-            {slides.map((_, i) => (
-              <button
-                key={i}
-                onClick={() => { setCurrent(i); resetTimer(); }}
-                className={`w-2 h-2 rounded-full transition-colors ${i === current ? "bg-foreground" : "bg-foreground/20"}`}
               />
             ))}
           </div>
