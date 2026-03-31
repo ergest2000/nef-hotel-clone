@@ -167,7 +167,7 @@ const ServicesCarousel = ({ slides, isAl }: { slides: { title: string; text: str
     <div className="relative overflow-hidden">
       <div className="grid grid-cols-1 md:grid-cols-2 min-h-[400px] md:min-h-[600px]">
         {/* Left: Text */}
-        <div className="flex flex-col justify-center px-6 md:px-16 lg:px-24 py-10 md:py-16 order-2 md:order-1" style={{ backgroundColor: slide.color || "#1a3a2a" }}>
+        <div className="flex flex-col justify-center px-6 md:px-16 lg:px-24 py-10 pb-24 md:py-16 order-2 md:order-1" style={{ backgroundColor: slide.color || "#1a3a2a" }}>
           <span className="text-white/40 text-[10px] tracking-[0.3em] uppercase mb-4 md:mb-6">{(current + 1).toString().padStart(2, "0")} / {total.toString().padStart(2, "0")}</span>
           <h3 className="text-2xl md:text-4xl lg:text-5xl font-light text-white leading-tight mb-3 md:mb-4">
             {slide.title}
@@ -183,6 +183,17 @@ const ServicesCarousel = ({ slides, isAl }: { slides: { title: string; text: str
             {isAl ? "Shiko Produktet" : "Discover"}
             <ArrowRight className="h-3.5 w-3.5" />
           </Link>
+          {/* Arrows inline with text */}
+          {total > 1 && (
+            <div className="flex gap-2 mt-6">
+              <button onClick={() => { prev(); resetTimer(); }} className="w-9 h-9 rounded-full border border-white/40 flex items-center justify-center text-white/70 hover:text-white hover:border-white/70 active:bg-white/10 transition-colors">
+                <ChevronLeft className="h-4 w-4" />
+              </button>
+              <button onClick={() => { next(); resetTimer(); }} className="w-9 h-9 rounded-full border border-white/40 flex items-center justify-center text-white/70 hover:text-white hover:border-white/70 active:bg-white/10 transition-colors">
+                <ChevronRight className="h-4 w-4" />
+              </button>
+            </div>
+          )}
         </div>
         {/* Right: Image */}
         <div className="relative overflow-hidden bg-muted h-[250px] md:h-auto order-1 md:order-2">
@@ -203,7 +214,7 @@ const ServicesCarousel = ({ slides, isAl }: { slides: { title: string; text: str
       {/* Navigation */}
       {total > 1 && (
         <>
-          {/* Dots on right edge */}
+          {/* Dots on right edge - desktop only */}
           <div className="hidden md:flex flex-col gap-2 absolute right-6 top-1/2 -translate-y-1/2 z-10">
             {slides.map((_, i) => (
               <button
@@ -212,15 +223,6 @@ const ServicesCarousel = ({ slides, isAl }: { slides: { title: string; text: str
                 className={`w-2.5 h-2.5 rounded-full transition-all ${i === current ? "bg-foreground scale-125" : "bg-foreground/25 hover:bg-foreground/50"}`}
               />
             ))}
-          </div>
-          {/* Arrows - inside text area */}
-          <div className="absolute bottom-4 left-6 md:bottom-6 md:left-16 lg:left-24 flex gap-3 z-10">
-            <button onClick={() => { prev(); resetTimer(); }} className="w-11 h-11 rounded-full border-2 border-white/50 flex items-center justify-center text-white hover:bg-white/10 active:bg-white/20 transition-colors">
-              <ChevronLeft className="h-5 w-5" />
-            </button>
-            <button onClick={() => { next(); resetTimer(); }} className="w-11 h-11 rounded-full border-2 border-white/50 flex items-center justify-center text-white hover:bg-white/10 active:bg-white/20 transition-colors">
-              <ChevronRight className="h-5 w-5" />
-            </button>
           </div>
           {/* Mobile dots */}
           <div className="md:hidden flex justify-center gap-2 py-4 bg-background">
