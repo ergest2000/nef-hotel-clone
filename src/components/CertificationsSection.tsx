@@ -1,5 +1,3 @@
-import { useState, useEffect, useCallback } from "react";
-import useEmblaCarousel from "embla-carousel-react";
 import { getContentValue } from "@/hooks/useCms";
 import { useManagedLogos } from "@/hooks/useManagedLogos";
 import type { Tables } from "@/integrations/supabase/types";
@@ -10,29 +8,6 @@ const CertificationsSection = ({ content }: { content?: SiteContent[] }) => {
   const title = getContentValue(content, "certifications", "title", "CERTIFICATIONS");
   const { data: logos } = useManagedLogos("certifications");
   const certs = logos?.filter((l) => l.visible) ?? [];
-
-  const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true, align: "center" });
-  const [selectedIndex, setSelectedIndex] = useState(0);
-
-  const onSelect = useCallback(() => {
-    if (!emblaApi) return;
-    setSelectedIndex(emblaApi.selectedScrollSnap());
-  }, [emblaApi]);
-
-  useEffect(() => {
-    if (!emblaApi) return;
-    emblaApi.on("select", onSelect);
-    onSelect();
-    return () => { emblaApi.off("select", onSelect); };
-  }, [emblaApi, onSelect]);
-
-  useEffect(() => {
-    if (!emblaApi) return;
-    var timer = setInterval(function () {
-      emblaApi.scrollNext();
-    }, 3000);
-    return function () { clearInterval(timer); };
-  }, [emblaApi]);
 
   return (
     <section className="py-12 md:py-16 border-t border-border">
@@ -55,39 +30,17 @@ const CertificationsSection = ({ content }: { content?: SiteContent[] }) => {
           ))}
         </div>
 
-        {/* Mobile: Embla carousel — 2 per slide */}
-        <div className="md:hidden">
-          <div className="overflow-hidden" ref={emblaRef}>
-            <div className="flex">
-              {Array.from({ length: Math.ceil(certs.length / 2) }).map((_, slideIdx) => {
-                var slideCerts = certs.slice(slideIdx * 2, slideIdx * 2 + 2);
-                return (
-                  <div key={slideIdx} className="flex-[0_0_100%] min-w-0 flex items-center justify-center gap-8 py-6 px-4">
-                    {slideCerts.map((cert) => (
-                      <div key={cert.id} className="flex-1 flex items-center justify-center">
-                        {cert.logo_url ? (
-                          <img src={cert.logo_url} alt={cert.name} className="h-[90px] w-auto object-contain" />
-                        ) : (
-                          <span className="text-xs tracking-[0.15em] text-muted-foreground font-semibold uppercase text-center">{cert.name}</span>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                );
-              })}
+        {/* Mobile: 3 per row grid, large logos */}
+        <div className="md:hidden grid grid-cols-3 items-center justify-items-center gap-2 px-2">
+          {certs.map((cert) => (
+            <div key={cert.id} className="flex items-center justify-center">
+              {cert.logo_url ? (
+                <img src={cert.logo_url} alt={cert.name} className="w-full h-auto object-contain" />
+              ) : (
+                <span className="text-[10px] tracking-[0.15em] text-muted-foreground font-semibold uppercase text-center">{cert.name}</span>
+              )}
             </div>
-          </div>
-          {Math.ceil(certs.length / 2) > 1 && (
-            <div className="flex justify-center gap-2 mt-4">
-              {Array.from({ length: Math.ceil(certs.length / 2) }).map((_, i) => (
-                <button
-                  key={i}
-                  onClick={() => emblaApi?.scrollTo(i)}
-                  className={"w-2 h-2 rounded-full transition-colors " + (i === selectedIndex ? "bg-primary" : "bg-border")}
-                />
-              ))}
-            </div>
-          )}
+          ))}
         </div>
       </div>
     </section>
