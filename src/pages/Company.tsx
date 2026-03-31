@@ -165,15 +165,15 @@ const ServicesCarousel = ({ slides, isAl }: { slides: { title: string; text: str
 
   return (
     <div className="relative overflow-hidden">
-      <div className="grid grid-cols-1 md:grid-cols-2 min-h-[500px] md:min-h-[600px]">
+      <div className="grid grid-cols-1 md:grid-cols-2 min-h-[400px] md:min-h-[600px]">
         {/* Left: Text */}
-        <div className="flex flex-col justify-center px-8 md:px-16 lg:px-24 py-16" style={{ backgroundColor: slide.color || "#1a3a2a" }}>
-          <span className="text-white/40 text-[10px] tracking-[0.3em] uppercase mb-6">{(current + 1).toString().padStart(2, "0")} / {total.toString().padStart(2, "0")}</span>
-          <h3 className="text-3xl md:text-4xl lg:text-5xl font-light text-white leading-tight mb-4">
+        <div className="flex flex-col justify-center px-6 md:px-16 lg:px-24 py-10 md:py-16 order-2 md:order-1" style={{ backgroundColor: slide.color || "#1a3a2a" }}>
+          <span className="text-white/40 text-[10px] tracking-[0.3em] uppercase mb-4 md:mb-6">{(current + 1).toString().padStart(2, "0")} / {total.toString().padStart(2, "0")}</span>
+          <h3 className="text-2xl md:text-4xl lg:text-5xl font-light text-white leading-tight mb-3 md:mb-4">
             {slide.title}
           </h3>
-          <div className="w-10 h-px bg-white/30 mb-6" />
-          <p className="text-sm md:text-base text-white/70 leading-relaxed mb-10 max-w-md">
+          <div className="w-10 h-px bg-white/30 mb-4 md:mb-6" />
+          <p className="text-xs md:text-base text-white/70 leading-relaxed mb-6 md:mb-10 max-w-md">
             {slide.text}
           </p>
           <Link
@@ -185,13 +185,19 @@ const ServicesCarousel = ({ slides, isAl }: { slides: { title: string; text: str
           </Link>
         </div>
         {/* Right: Image */}
-        <div className="relative overflow-hidden bg-muted">
-          <img
-            src={slide.image}
-            alt={slide.title}
-            className="w-full h-full object-cover transition-transform duration-700"
-            key={current}
-          />
+        <div className="relative overflow-hidden bg-muted h-[250px] md:h-auto order-1 md:order-2">
+          {slide.image ? (
+            <img
+              src={slide.image}
+              alt={slide.title}
+              className="w-full h-full object-cover transition-transform duration-700"
+              key={current}
+            />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center bg-muted text-muted-foreground text-sm">
+              {isAl ? "Pa imazh" : "No image"}
+            </div>
+          )}
         </div>
       </div>
       {/* Navigation */}
