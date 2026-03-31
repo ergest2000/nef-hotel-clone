@@ -213,13 +213,13 @@ const ServicesCarousel = ({ slides, isAl }: { slides: { title: string; text: str
               />
             ))}
           </div>
-          {/* Arrows bottom-left on text side */}
-          <div className="absolute bottom-6 left-8 md:left-16 lg:left-24 flex gap-3 z-10">
-            <button onClick={() => { prev(); resetTimer(); }} className="w-10 h-10 rounded-full border border-white/30 flex items-center justify-center text-white hover:bg-white/10 transition-colors">
-              <ChevronLeft className="h-4 w-4" />
+          {/* Arrows - inside text area */}
+          <div className="absolute bottom-4 left-6 md:bottom-6 md:left-16 lg:left-24 flex gap-3 z-10">
+            <button onClick={() => { prev(); resetTimer(); }} className="w-11 h-11 rounded-full border-2 border-white/50 flex items-center justify-center text-white hover:bg-white/10 active:bg-white/20 transition-colors">
+              <ChevronLeft className="h-5 w-5" />
             </button>
-            <button onClick={() => { next(); resetTimer(); }} className="w-10 h-10 rounded-full border border-white/30 flex items-center justify-center text-white hover:bg-white/10 transition-colors">
-              <ChevronRight className="h-4 w-4" />
+            <button onClick={() => { next(); resetTimer(); }} className="w-11 h-11 rounded-full border-2 border-white/50 flex items-center justify-center text-white hover:bg-white/10 active:bg-white/20 transition-colors">
+              <ChevronRight className="h-5 w-5" />
             </button>
           </div>
           {/* Mobile dots */}
