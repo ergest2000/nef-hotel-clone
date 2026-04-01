@@ -7,7 +7,7 @@ import {
   Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel,
   SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarHeader, SidebarFooter, useSidebar,
 } from "@/components/ui/sidebar";
-import logo from "@/assets/egjeu-logo-white.png";
+import logo from "@/assets/egjeu-logo.png";
 import { useAuth, type AppRole } from "@/hooks/useAuth";
 
 type RoleAccess = AppRole[];
@@ -69,13 +69,13 @@ export const AdminSidebar = function ({ activePage, onPageChange }: AdminSidebar
 
   return (
     <Sidebar collapsible="icon" className="border-r-0">
-      <SidebarHeader className="bg-[hsl(207,56%,22%)] border-b border-white/5">
+      <SidebarHeader className="bg-white border-b border-border">
         <div className="flex items-center gap-3 px-3 py-3">
           <img src={logo} alt="EGJEU" className="h-8 w-auto shrink-0" />
           {!collapsed && (
             <div className="flex flex-col">
-              <span className="text-[11px] font-medium text-white tracking-wide">EGJEU</span>
-              <span className="text-[9px] text-white/50">{panelLabel}</span>
+              <span className="text-[11px] font-medium text-[hsl(207,56%,25%)] tracking-wide">EGJEU</span>
+              <span className="text-[9px] text-muted-foreground">{panelLabel}</span>
             </div>
           )}
         </div>
