@@ -267,13 +267,16 @@ const ProductDetail = () => {
   // Find product by slug first, then by UUID for backward compatibility
   const product = useMemo(() => {
     if (!allProducts || !productSlug) return undefined;
+    console.log("[ProductDetail] Looking for productSlug:", productSlug, "in", allProducts.length, "products");
+    console.log("[ProductDetail] Available slugs:", allProducts.map(p => p.slug));
     // Try slug match first
     const bySlug = allProducts.find((p) => p.slug === productSlug);
-    if (bySlug) return bySlug;
+    if (bySlug) { console.log("[ProductDetail] Found by slug:", bySlug.id); return bySlug; }
     // Fallback: try UUID match (old URLs)
     if (isUUID(productSlug)) {
       return allProducts.find((p) => p.id === productSlug);
     }
+    console.log("[ProductDetail] Product NOT found!");
     return undefined;
   }, [allProducts, productSlug]);
 
