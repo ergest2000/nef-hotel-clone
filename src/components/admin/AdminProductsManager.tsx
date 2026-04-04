@@ -8,6 +8,7 @@ import {
   useGlobalColors,
   type ProductColor, type ProductSize,
 } from "@/hooks/useCollections";
+import { useDuplicateProduct } from "@/hooks/useDuplicateProduct";
 import { useToast } from "@/hooks/use-toast";
 import { useAutoTranslate } from "@/hooks/useAutoTranslate";
 import { uploadCmsImage } from "@/hooks/useCms";
@@ -21,7 +22,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { Plus, Trash2, Edit, Package, Image as ImageIcon, ExternalLink, X } from "lucide-react";
+import { Plus, Trash2, Edit, Package, Image as ImageIcon, ExternalLink, X, Copy } from "lucide-react";
 import { TranslateButton } from "./TranslateButton";
 import type { Tables } from "@/integrations/supabase/types";
 
@@ -82,7 +83,6 @@ const ProductImagesManager = ({ productId }: { productId: string }) => {
         </label>
       </div>
 
-      {/* Upload with color selection */}
       <div className="flex items-center gap-2 flex-wrap bg-muted/50 p-3 rounded">
         {colors && colors.length > 0 && (
           <select
@@ -120,7 +120,6 @@ const ProductImagesManager = ({ productId }: { productId: string }) => {
               <div className="aspect-square">
                 <img src={img.image_url} alt="" className="w-full h-full object-cover" />
               </div>
-              {/* Color badge */}
               <div className="absolute bottom-0 left-0 right-0 bg-black/60 px-1.5 py-1 flex items-center gap-1">
                 {(img as any).color_id ? (
                   <>
@@ -131,7 +130,6 @@ const ProductImagesManager = ({ productId }: { productId: string }) => {
                   <span className="text-[9px] text-white/60">Gjenerale</span>
                 )}
               </div>
-              {/* Color reassign select */}
               {colors && colors.length > 0 && (
                 <select
                   value={(img as any).color_id || ""}
@@ -144,7 +142,6 @@ const ProductImagesManager = ({ productId }: { productId: string }) => {
                   ))}
                 </select>
               )}
-              {/* Delete */}
               <button
                 className="absolute top-1 right-1 w-5 h-5 bg-destructive/90 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
                 onClick={() => removeImage.mutate({ id: img.id, product_id: productId })}
@@ -167,7 +164,6 @@ const ProductColorsManager = ({ productId }: { productId: string }) => {
   const updateColor = useUpdateProductColor();
   const { toast } = useToast();
 
-  // Filter out global colors already assigned to this product
   const assignedHexes = new Set(colors?.map((c) => c.color_hex.toLowerCase()) ?? []);
   const availableColors = globalColors?.filter((gc) => !assignedHexes.has(gc.hex.toLowerCase())) ?? [];
 
@@ -197,8 +193,6 @@ const ProductColorsManager = ({ productId }: { productId: string }) => {
   return (
     <div className="space-y-3">
       <label className="text-xs font-medium text-muted-foreground">Ngjyrat e produktit</label>
-
-      {/* Assigned colors */}
       <div className="space-y-2">
         {colors?.map((c) => (
           <div key={c.id} className="flex items-center gap-3 bg-muted px-3 py-2 rounded">
@@ -233,8 +227,6 @@ const ProductColorsManager = ({ productId }: { productId: string }) => {
           </div>
         ))}
       </div>
-
-      {/* Select from global colors */}
       {availableColors.length > 0 ? (
         <div>
           <p className="text-[10px] text-muted-foreground mb-2">Zgjidh nga ngjyrat e paracaktuara:</p>
@@ -287,7 +279,9 @@ const ProductSizesManager = ({ productId }: { productId: string }) => {
         ))}
       </div>
       <div className="flex items-center gap-2">
-        <Input value={newLabel} onChange={(e) => setNewLabel(e.target.value)} placeholder="p.sh. 50x100, 80x150" className="h-8 text-xs flex-1" />
+        <Input value={newLabel} onChange={(e) => setNewLabel(e.target.value)} placeholder="p.sh. 50x100, 80x150" className="h-8 text-xs flex-1"
+          onKeyDown={(e) => { if (e.key === "Enter") handleAdd(); }}
+        />
         <Button size="sm" variant="outline" className="h-8 text-xs" onClick={handleAdd}>
           <Plus className="h-3 w-3 mr-1" /> Shto
         </Button>
@@ -302,6 +296,7 @@ export const AdminProductsManager = () => {
   const { data: products, isLoading } = useProducts(selectedCollection || undefined);
   const upsert = useUpsertProduct();
   const remove = useDeleteProduct();
+  const duplicate = useDuplicateProduct();
   const { toast } = useToast();
   const { translateField, translating } = useAutoTranslate();
   const [editItem, setEditItem] = useState<Partial<Product> | null>(null);
@@ -327,6 +322,10 @@ export const AdminProductsManager = () => {
     remove.mutate(id, {
       onSuccess: () => toast({ title: "U fshi!" }),
     });
+  };
+
+  const handleDuplicate = (id: string) => {
+    duplicate.mutate(id);
   };
 
   const handleImageUpload = async (file: File) => {
@@ -425,10 +424,26 @@ export const AdminProductsManager = () => {
                         <ExternalLink className="h-3.5 w-3.5" />
                       </Button>
                     )}
-                    <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openEdit(product)}>
+                    <Button
+                      variant="ghost" size="icon" className="h-7 w-7"
+                      onClick={() => openEdit(product)}
+                      title="Ndrysho"
+                    >
                       <Edit className="h-3.5 w-3.5" />
                     </Button>
-                    <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleDelete(product.id)}>
+                    <Button
+                      variant="ghost" size="icon" className="h-7 w-7"
+                      onClick={() => handleDuplicate(product.id)}
+                      disabled={duplicate.isPending}
+                      title="Duplikо"
+                    >
+                      <Copy className="h-3.5 w-3.5" />
+                    </Button>
+                    <Button
+                      variant="ghost" size="icon" className="h-7 w-7"
+                      onClick={() => handleDelete(product.id)}
+                      title="Fshi"
+                    >
                       <Trash2 className="h-3.5 w-3.5 text-destructive" />
                     </Button>
                   </div>
