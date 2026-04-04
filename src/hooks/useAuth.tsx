@@ -23,6 +23,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [roleLoading, setRoleLoading] = useState(true);
   const [ready, setReady] = useState(false);
   const initializedRef = useRef(false);
+  const roleLoadedForRef = useRef<string | null>(null); // tracks which userId has a resolved role
 
   const checkRole = async (userId: string): Promise<AppRole> => {
     try {
@@ -53,8 +54,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       initializedRef.current = true;
 
       if (existingSession?.user) {
-        checkRole(existingSession.user.id).then((r) => {
-          if (isMounted) { setRole(r); setIsAdmin(r === "admin"); setRoleLoading(false); }
+        const userId = existingSession.user.id;
+        checkRole(userId).then((r) => {
+          if (isMounted) {
+            setRole(r);
+            setIsAdmin(r === "admin");
+            setRoleLoading(false);
+            roleLoadedForRef.current = userId;
+          }
         });
       } else {
         setRoleLoading(false);
@@ -73,22 +80,29 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         setRoleLoading(false);
         setReady(true);
         initializedRef.current = true;
-      } else if (event === "SIGNED_IN") {
+        roleLoadedForRef.current = null;
+      } else if (event === "TOKEN_REFRESHED") {
+        // Only update session — never touch role or roleLoading
         setSession(newSession);
-        setUser(newSession?.user ?? null);
+      } else if (event === "SIGNED_IN") {
+        const newUser = newSession?.user ?? null;
+        setSession(newSession);
+        setUser(newUser);
         setLoading(false);
         setReady(true);
         initializedRef.current = true;
-        if (newSession?.user) {
+        // Only re-check role if it's a different user
+        if (newUser && roleLoadedForRef.current !== newUser.id) {
           setRoleLoading(true);
-          checkRole(newSession.user.id).then((r) => {
-            if (isMounted) { setRole(r); setIsAdmin(r === "admin"); setRoleLoading(false); }
+          checkRole(newUser.id).then((r) => {
+            if (isMounted) {
+              setRole(r);
+              setIsAdmin(r === "admin");
+              setRoleLoading(false);
+              roleLoadedForRef.current = newUser.id;
+            }
           });
-        } else {
-          setRoleLoading(false);
         }
-      } else if (event === "TOKEN_REFRESHED") {
-        setSession(newSession);
       } else if (event === "INITIAL_SESSION") {
         if (initializedRef.current) return;
         setSession(newSession);
@@ -97,8 +111,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         setReady(true);
         initializedRef.current = true;
         if (newSession?.user) {
-          checkRole(newSession.user.id).then((r) => {
-            if (isMounted) { setRole(r); setIsAdmin(r === "admin"); setRoleLoading(false); }
+          const userId = newSession.user.id;
+          checkRole(userId).then((r) => {
+            if (isMounted) {
+              setRole(r);
+              setIsAdmin(r === "admin");
+              setRoleLoading(false);
+              roleLoadedForRef.current = userId;
+            }
           });
         } else {
           setRoleLoading(false);
@@ -130,6 +150,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setIsAdmin(resolvedRole === "admin");
       setLoading(false);
       setRoleLoading(false);
+      if (nextUser) roleLoadedForRef.current = nextUser.id;
       initializedRef.current = true;
       return { error: null, role: resolvedRole, user: nextUser };
     } catch (error) {
@@ -144,6 +165,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     setUser(null);
     setIsAdmin(false);
     setRole("user");
+    roleLoadedForRef.current = null;
   };
 
   const val = { user, session, isAdmin, role, loading, roleLoading, signIn, signOut };
