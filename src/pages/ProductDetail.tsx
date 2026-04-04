@@ -262,27 +262,18 @@ const ProductDetail = () => {
   const [selectedSizeId, setSelectedSizeId] = useState<string | null>(null);
   const [redirected, setRedirected] = useState(false);
 
-  // Debug logging
-  console.log("[ProductDetail] productsLoading:", productsLoading, "error:", productsError?.message);
-  console.log("[ProductDetail] colorsLoading:", colorsLoading, "error:", colorsError?.message);
-  console.log("[ProductDetail] sizesLoading:", sizesLoading, "error:", sizesError?.message);
-  console.log("[ProductDetail] collectionsLoading:", collectionsLoading);
-
   const t = (al: string, en: string) => (isAl ? al : en);
 
   // Find product by slug first, then by UUID for backward compatibility
   const product = useMemo(() => {
     if (!allProducts || !productSlug) return undefined;
-    console.log("[ProductDetail] Looking for productSlug:", productSlug, "in", allProducts.length, "products");
-    console.log("[ProductDetail] Available slugs:", allProducts.map(p => p.slug));
     // Try slug match first
     const bySlug = allProducts.find((p) => p.slug === productSlug);
-    if (bySlug) { console.log("[ProductDetail] Found by slug:", bySlug.id); return bySlug; }
+    if (bySlug) return bySlug;
     // Fallback: try UUID match (old URLs)
     if (isUUID(productSlug)) {
       return allProducts.find((p) => p.id === productSlug);
     }
-    console.log("[ProductDetail] Product NOT found!");
     return undefined;
   }, [allProducts, productSlug]);
 
