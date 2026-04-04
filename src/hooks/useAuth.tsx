@@ -19,11 +19,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [isAdmin, setIsAdmin] = useState(false);
   const [role, setRole] = useState("user" as AppRole);
   const [loading, setLoading] = useState(true);
+  const [ready, setReady] = useState(false);
   const initializedRef = useRef(false);
 
   const checkRole = async (userId: string): Promise<AppRole> => {
     try {
-      // Race against a 5s timeout so loading never hangs forever
       const timeout = new Promise<AppRole>((resolve) =>
         setTimeout(() => resolve("user"), 5000)
       );
@@ -48,8 +48,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     let isMounted = true;
 
-    // Explicitly call getSession first to ensure INITIAL_SESSION fires reliably
-    // across all Supabase JS versions and deployment environments.
     supabase.auth.getSession().then(async ({ data: { session: existingSession } }) => {
       if (!isMounted || initializedRef.current) return;
       if (existingSession?.user) {
@@ -58,7 +56,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         const r = await checkRole(existingSession.user.id);
         if (isMounted) { setRole(r); setIsAdmin(r === "admin"); }
       }
-      if (isMounted) { setLoading(false); initializedRef.current = true; }
+      if (isMounted) {
+        setLoading(false);
+        setReady(true);
+        initializedRef.current = true;
+      }
     });
 
     const { data: sub } = supabase.auth.onAuthStateChange(async (event, newSession) => {
@@ -70,6 +72,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         setIsAdmin(false);
         setRole("user");
         setLoading(false);
+        setReady(true);
         initializedRef.current = true;
       } else if (event === "SIGNED_IN" || event === "TOKEN_REFRESHED") {
         setSession(newSession);
@@ -78,9 +81,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           const r = await checkRole(newSession.user.id);
           if (isMounted) { setRole(r); setIsAdmin(r === "admin"); }
         }
-        if (isMounted) { setLoading(false); initializedRef.current = true; }
+        if (isMounted) { setLoading(false); setReady(true); initializedRef.current = true; }
       } else if (event === "INITIAL_SESSION") {
-        // Handled by getSession() above — skip if already initialized
         if (initializedRef.current) return;
         setSession(newSession);
         setUser(newSession?.user ?? null);
@@ -88,7 +90,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           const r = await checkRole(newSession.user.id);
           if (isMounted) { setRole(r); setIsAdmin(r === "admin"); }
         }
-        if (isMounted) { setLoading(false); initializedRef.current = true; }
+        if (isMounted) { setLoading(false); setReady(true); initializedRef.current = true; }
       }
     });
 
@@ -98,29 +100,24 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const signIn = async (email: string, password: string) => {
     setLoading(true);
     const normalizedEmail = email.trim().toLowerCase();
-
     try {
       const { data, error } = await supabase.auth.signInWithPassword({
         email: normalizedEmail,
         password,
       });
-
       if (error) {
         setLoading(false);
         return { error: error as Error, role: "user" as AppRole, user: null };
       }
-
       const nextUser = data.user ?? null;
       const nextSession = data.session ?? null;
       const resolvedRole = nextUser ? await checkRole(nextUser.id) : ("user" as AppRole);
-
       setSession(nextSession);
       setUser(nextUser);
       setRole(resolvedRole);
       setIsAdmin(resolvedRole === "admin");
       setLoading(false);
       initializedRef.current = true;
-
       return { error: null, role: resolvedRole, user: nextUser };
     } catch (error) {
       setLoading(false);
@@ -137,6 +134,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   const val = { user, session, isAdmin, role, loading, signIn, signOut };
+
+  // Render nothing until session is resolved — eliminates the flash
+  if (!ready) return null;
 
   return React.createElement(AuthCtx.Provider, { value: val }, children);
 };
