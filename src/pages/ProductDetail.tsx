@@ -251,9 +251,9 @@ const ProductDetail = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { data: collections, isLoading: collectionsLoading } = useCollections();
-  const { data: allProducts, isLoading: productsLoading } = useProducts();
-  const { data: allColors, isLoading: colorsLoading } = useAllProductColors();
-  const { data: allSizes, isLoading: sizesLoading } = useAllProductSizes();
+  const { data: allProducts, isLoading: productsLoading, error: productsError } = useProducts();
+  const { data: allColors, isLoading: colorsLoading, error: colorsError } = useAllProductColors();
+  const { data: allSizes, isLoading: sizesLoading, error: sizesError } = useAllProductSizes();
   const { data: wishlistItems } = useWishlist(user?.id);
   const toggleWishlist = useToggleWishlist();
   const { addItem } = useCart();
@@ -261,6 +261,12 @@ const ProductDetail = () => {
   const [selectedColorId, setSelectedColorId] = useState<string | null>(null);
   const [selectedSizeId, setSelectedSizeId] = useState<string | null>(null);
   const [redirected, setRedirected] = useState(false);
+
+  // Debug logging
+  console.log("[ProductDetail] productsLoading:", productsLoading, "error:", productsError?.message);
+  console.log("[ProductDetail] colorsLoading:", colorsLoading, "error:", colorsError?.message);
+  console.log("[ProductDetail] sizesLoading:", sizesLoading, "error:", sizesError?.message);
+  console.log("[ProductDetail] collectionsLoading:", collectionsLoading);
 
   const t = (al: string, en: string) => (isAl ? al : en);
 
@@ -308,8 +314,9 @@ const ProductDetail = () => {
     toggleWishlist.mutate({ userId: user.id, productId: product.id, isWishlisted });
   }, [user, product?.id, isWishlisted, navigate, toggleWishlist]);
 
-  // Show loading spinner while data is being fetched
-  if (productsLoading || collectionsLoading || colorsLoading || sizesLoading) {
+  // Show loading spinner while essential data is being fetched
+  // Don't block on colors/sizes — they are optional
+  if (productsLoading || collectionsLoading || (colorsLoading && !colorsError) || (sizesLoading && !sizesError)) {
     return (
       <div className="min-h-screen bg-background">
         <SiteHeader />
