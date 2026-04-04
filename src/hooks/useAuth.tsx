@@ -21,18 +21,25 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [loading, setLoading] = useState(true);
   const initializedRef = useRef(false);
 
-  const checkRole = async (userId: string) => {
+  const checkRole = async (userId: string): Promise<AppRole> => {
     try {
-      const priorityRoles = ["admin", "manager", "editor"] as const;
-      const results = await Promise.all(
-        priorityRoles.map(async (candidateRole) => {
-          const { data, error } = await supabase.rpc("has_role", { _user_id: userId, _role: candidateRole });
-          if (error) return { candidateRole, hasRole: false };
-          return { candidateRole, hasRole: Boolean(data) };
-        })
+      // Race against a 5s timeout so loading never hangs forever
+      const timeout = new Promise<AppRole>((resolve) =>
+        setTimeout(() => resolve("user"), 5000)
       );
-      const matched = results.find((r) => r.hasRole);
-      return (matched ? matched.candidateRole : "user") as AppRole;
+      const check = async (): Promise<AppRole> => {
+        const priorityRoles = ["admin", "manager", "editor"] as const;
+        const results = await Promise.all(
+          priorityRoles.map(async (candidateRole) => {
+            const { data, error } = await supabase.rpc("has_role", { _user_id: userId, _role: candidateRole });
+            if (error) return { candidateRole, hasRole: false };
+            return { candidateRole, hasRole: Boolean(data) };
+          })
+        );
+        const matched = results.find((r) => r.hasRole);
+        return (matched ? matched.candidateRole : "user") as AppRole;
+      };
+      return await Promise.race([check(), timeout]);
     } catch {
       return "user" as AppRole;
     }
@@ -41,8 +48,19 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     let isMounted = true;
 
-    // With autoRefreshToken: true, onAuthStateChange fires INITIAL_SESSION
-    // before getSession resolves, so we handle initialization via the listener only.
+    // Explicitly call getSession first to ensure INITIAL_SESSION fires reliably
+    // across all Supabase JS versions and deployment environments.
+    supabase.auth.getSession().then(async ({ data: { session: existingSession } }) => {
+      if (!isMounted || initializedRef.current) return;
+      if (existingSession?.user) {
+        setSession(existingSession);
+        setUser(existingSession.user);
+        const r = await checkRole(existingSession.user.id);
+        if (isMounted) { setRole(r); setIsAdmin(r === "admin"); }
+      }
+      if (isMounted) { setLoading(false); initializedRef.current = true; }
+    });
+
     const { data: sub } = supabase.auth.onAuthStateChange(async (event, newSession) => {
       if (!isMounted) return;
 
@@ -53,7 +71,17 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         setRole("user");
         setLoading(false);
         initializedRef.current = true;
-      } else if (event === "INITIAL_SESSION" || event === "SIGNED_IN" || event === "TOKEN_REFRESHED") {
+      } else if (event === "SIGNED_IN" || event === "TOKEN_REFRESHED") {
+        setSession(newSession);
+        setUser(newSession?.user ?? null);
+        if (newSession?.user) {
+          const r = await checkRole(newSession.user.id);
+          if (isMounted) { setRole(r); setIsAdmin(r === "admin"); }
+        }
+        if (isMounted) { setLoading(false); initializedRef.current = true; }
+      } else if (event === "INITIAL_SESSION") {
+        // Handled by getSession() above — skip if already initialized
+        if (initializedRef.current) return;
         setSession(newSession);
         setUser(newSession?.user ?? null);
         if (newSession?.user) {
