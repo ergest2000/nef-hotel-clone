@@ -1,26 +1,156 @@
-import { Navigate } from "react-router-dom";
-import { useAuth } from "@/hooks/useAuth";
+import React, { createContext, useContext, useEffect, useState, useRef } from "react";
+import { supabase } from "@/integrations/supabase/client";
 
-const DASHBOARD_ROLES = ["admin", "manager", "editor"];
+export type AppRole = "admin" | "manager" | "editor" | "user";
 
-const AdminRoute = ({ children }: { children: React.ReactNode }) => {
-  const { user, role, loading } = useAuth();
+const AuthCtx = createContext({
+  user: null as any,
+  session: null as any,
+  isAdmin: false,
+  role: "user" as AppRole,
+  loading: true,
+  roleLoading: true,
+  signIn: async (_email: string, _password: string) => ({ error: null as Error | null, role: "user" as AppRole, user: null as any }),
+  signOut: async () => {},
+});
 
-  // Only show loading on very first load (no user determined yet)
-  // Once user is set, never unmount children even if loading flickers
-  if (loading && !user) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <p className="text-sm tracking-brand text-muted-foreground">Loading...</p>
-      </div>
-    );
-  }
+export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
+  const [user, setUser] = useState(null as any);
+  const [session, setSession] = useState(null as any);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [role, setRole] = useState("user" as AppRole);
+  const [loading, setLoading] = useState(true);
+  const [roleLoading, setRoleLoading] = useState(true);
+  const [ready, setReady] = useState(false);
+  const initializedRef = useRef(false);
 
-  if (!user || !DASHBOARD_ROLES.includes(role)) {
-    return <Navigate to="/login" replace />;
-  }
+  const checkRole = async (userId: string): Promise<AppRole> => {
+    try {
+      const priorityRoles = ["admin", "manager", "editor"] as const;
+      const results = await Promise.all(
+        priorityRoles.map(async (candidateRole) => {
+          const { data, error } = await supabase.rpc("has_role", { _user_id: userId, _role: candidateRole });
+          if (error) return { candidateRole, hasRole: false };
+          return { candidateRole, hasRole: Boolean(data) };
+        })
+      );
+      const matched = results.find((r) => r.hasRole);
+      return (matched ? matched.candidateRole : "user") as AppRole;
+    } catch {
+      return "user" as AppRole;
+    }
+  };
 
-  return <>{children}</>;
+  useEffect(() => {
+    let isMounted = true;
+
+    supabase.auth.getSession().then(({ data: { session: existingSession } }) => {
+      if (!isMounted || initializedRef.current) return;
+      setSession(existingSession);
+      setUser(existingSession?.user ?? null);
+      setLoading(false);
+      setReady(true);
+      initializedRef.current = true;
+
+      if (existingSession?.user) {
+        checkRole(existingSession.user.id).then((r) => {
+          if (isMounted) { setRole(r); setIsAdmin(r === "admin"); setRoleLoading(false); }
+        });
+      } else {
+        setRoleLoading(false);
+      }
+    });
+
+    const { data: sub } = supabase.auth.onAuthStateChange((event, newSession) => {
+      if (!isMounted) return;
+
+      if (event === "SIGNED_OUT") {
+        setUser(null);
+        setSession(null);
+        setIsAdmin(false);
+        setRole("user");
+        setLoading(false);
+        setRoleLoading(false);
+        setReady(true);
+        initializedRef.current = true;
+      } else if (event === "SIGNED_IN") {
+        setSession(newSession);
+        setUser(newSession?.user ?? null);
+        setLoading(false);
+        setReady(true);
+        initializedRef.current = true;
+        if (newSession?.user) {
+          setRoleLoading(true);
+          checkRole(newSession.user.id).then((r) => {
+            if (isMounted) { setRole(r); setIsAdmin(r === "admin"); setRoleLoading(false); }
+          });
+        } else {
+          setRoleLoading(false);
+        }
+      } else if (event === "TOKEN_REFRESHED") {
+        setSession(newSession);
+      } else if (event === "INITIAL_SESSION") {
+        if (initializedRef.current) return;
+        setSession(newSession);
+        setUser(newSession?.user ?? null);
+        setLoading(false);
+        setReady(true);
+        initializedRef.current = true;
+        if (newSession?.user) {
+          checkRole(newSession.user.id).then((r) => {
+            if (isMounted) { setRole(r); setIsAdmin(r === "admin"); setRoleLoading(false); }
+          });
+        } else {
+          setRoleLoading(false);
+        }
+      }
+    });
+
+    return () => { isMounted = false; sub.subscription.unsubscribe(); };
+  }, []);
+
+  const signIn = async (email: string, password: string) => {
+    setLoading(true);
+    const normalizedEmail = email.trim().toLowerCase();
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: normalizedEmail,
+        password,
+      });
+      if (error) {
+        setLoading(false);
+        return { error: error as Error, role: "user" as AppRole, user: null };
+      }
+      const nextUser = data.user ?? null;
+      const nextSession = data.session ?? null;
+      const resolvedRole = nextUser ? await checkRole(nextUser.id) : ("user" as AppRole);
+      setSession(nextSession);
+      setUser(nextUser);
+      setRole(resolvedRole);
+      setIsAdmin(resolvedRole === "admin");
+      setLoading(false);
+      setRoleLoading(false);
+      initializedRef.current = true;
+      return { error: null, role: resolvedRole, user: nextUser };
+    } catch (error) {
+      setLoading(false);
+      return { error: error as Error, role: "user" as AppRole, user: null };
+    }
+  };
+
+  const signOut = async () => {
+    await supabase.auth.signOut();
+    setSession(null);
+    setUser(null);
+    setIsAdmin(false);
+    setRole("user");
+  };
+
+  const val = { user, session, isAdmin, role, loading, roleLoading, signIn, signOut };
+
+  if (!ready) return null;
+
+  return React.createElement(AuthCtx.Provider, { value: val }, children);
 };
 
-export default AdminRoute;
+export const useAuth = () => useContext(AuthCtx);
