@@ -541,87 +541,118 @@ function SiteHeader() {
         {mobileMenuOpen && (
           <>
             <div className="fixed inset-0 z-40 bg-black/30" onClick={function () { setMobileMenuOpen(false); }} />
-            <div className="fixed top-0 left-0 z-50 h-full w-72 bg-background shadow-2xl overflow-y-auto">
-              <div className="flex items-center justify-between px-5 h-14 border-b border-border">
+            <div className="fixed top-0 left-0 z-50 h-full w-72 bg-background shadow-2xl flex flex-col">
+              {/* Header */}
+              <div className="flex items-center justify-between px-5 h-14 border-b border-border shrink-0">
                 <Link to="/" className="shrink-0" onClick={function () { setMobileMenuOpen(false); }}><img src={logo} alt="EGJEU" className="h-9 w-auto" /></Link>
                 <button className="text-foreground hover:text-primary transition-colors" onClick={function () { setMobileMenuOpen(false); }}><X size={20} /></button>
               </div>
 
-              <div className="px-5 py-4 flex flex-col">
-                {/* Kategoritë me dropdown në mobile */}
-                {productLinks.map(function (item) {
-                  var children = getChildrenForHref(item.href);
-                  var isExpanded = mobileExpanded === item.href;
+              {/* Scroll area */}
+              <div className="flex-1 overflow-y-auto">
+                <div className="flex flex-col">
 
-                  if (children.length === 0) {
+                  {/* ── PRODUKTE accordion ── */}
+                  <div className="border-b border-border/40">
+                    <button
+                      onClick={function () { setMobileProductsOpen(!mobileProductsOpen); }}
+                      className="w-full flex items-center justify-between px-5 py-4 text-sm tracking-brand text-foreground uppercase font-medium"
+                    >
+                      <span>{isAl ? "Produkte" : "Products"}</span>
+                      {mobileProductsOpen ? <ChevronUp size={16} className="text-muted-foreground" /> : <ChevronDown size={16} className="text-muted-foreground" />}
+                    </button>
+
+                    {mobileProductsOpen && (
+                      <div className="pb-2">
+                        {/* Top-level categories from CMS (productLinks) */}
+                        {productLinks.map(function (item) {
+                          var slug = item.href.replace(/^\/koleksionet\/?/, "").split("/")[0];
+                          var parent = allCollections.find(function (c: any) { return c.slug === slug; });
+                          var children = parent
+                            ? allCollections.filter(function (c: any) { return c.parent_id === parent.id && c.visible !== false; })
+                            : [];
+                          var isExpanded = mobileExpanded === item.href;
+
+                          return (
+                            <div key={item.label}>
+                              {/* Kategoria kryesore */}
+                              <div className="flex items-center justify-between pl-5 pr-3 border-b border-border/20">
+                                <SlugLink
+                                  to={item.href}
+                                  onClick={function () { setMobileMenuOpen(false); setMobileProductsOpen(false); setMobileExpanded(null); }}
+                                  className="flex-1 text-sm tracking-brand text-foreground hover:text-primary transition-colors py-3 uppercase"
+                                >
+                                  {item.label}
+                                </SlugLink>
+                                {children.length > 0 && (
+                                  <button
+                                    onClick={function () { setMobileExpanded(isExpanded ? null : item.href); }}
+                                    className="p-2 text-muted-foreground hover:text-primary transition-colors"
+                                  >
+                                    {isExpanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+                                  </button>
+                                )}
+                              </div>
+
+                              {/* Nënkategoritë */}
+                              {isExpanded && children.length > 0 && (
+                                <div className="bg-muted/30">
+                                  {children.map(function (child: any) {
+                                    var title = isAl ? (child.title_al || child.title_en) : (child.title_en || child.title_al);
+                                    return (
+                                      <SlugLink
+                                        key={child.id}
+                                        to={"/koleksionet/" + child.slug}
+                                        onClick={function () { setMobileMenuOpen(false); setMobileProductsOpen(false); setMobileExpanded(null); }}
+                                        className="flex items-center gap-2 pl-8 pr-5 py-2.5 text-xs tracking-brand text-muted-foreground hover:text-primary transition-colors uppercase border-b border-border/20 last:border-b-0"
+                                      >
+                                        <span className="w-1 h-1 rounded-full bg-muted-foreground/40 shrink-0" />
+                                        {title}
+                                      </SlugLink>
+                                    );
+                                  })}
+                                </div>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* ── Main links ── */}
+                  {mainLinks.map(function (item: any) {
                     return (
                       <SlugLink
                         key={item.label}
                         to={item.href}
                         onClick={function () { setMobileMenuOpen(false); }}
-                        className="block text-sm tracking-brand text-foreground hover:text-primary transition-colors py-3.5 border-b border-border/30 w-full uppercase"
+                        className="block px-5 py-4 text-sm tracking-brand text-foreground hover:text-primary transition-colors uppercase border-b border-border/40"
                       >
                         {item.label}
                       </SlugLink>
                     );
-                  }
-
-                  return (
-                    <div key={item.label} className="border-b border-border/30">
-                      <div className="flex items-center justify-between">
-                        <SlugLink
-                          to={item.href}
-                          onClick={function () { setMobileMenuOpen(false); }}
-                          className="flex-1 text-sm tracking-brand text-foreground hover:text-primary transition-colors py-3.5 uppercase"
-                        >
-                          {item.label}
-                        </SlugLink>
-                        <button
-                          onClick={function () { setMobileExpanded(isExpanded ? null : item.href); }}
-                          className="p-2 text-muted-foreground hover:text-primary transition-colors"
-                        >
-                          {isExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-                        </button>
-                      </div>
-                      {isExpanded && (
-                        <div className="pb-2 pl-4 flex flex-col gap-0.5">
-                          {children.map(function (child: any) {
-                            var title = isAl ? (child.title_al || child.title_en) : (child.title_en || child.title_al);
-                            return (
-                              <SlugLink
-                                key={child.id}
-                                to={"/koleksionet/" + child.slug}
-                                onClick={function () { setMobileMenuOpen(false); setMobileExpanded(null); }}
-                                className="block text-xs tracking-brand text-muted-foreground hover:text-primary transition-colors py-2.5 uppercase border-b border-border/20 last:border-b-0"
-                              >
-                                {title}
-                              </SlugLink>
-                            );
-                          })}
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
-
-                {/* Main links */}
-                {mainLinks.map(function (item: any) {
-                  return (
-                    <SlugLink
-                      key={item.label}
-                      to={item.href}
-                      onClick={function () { setMobileMenuOpen(false); }}
-                      className="block text-sm tracking-brand text-foreground hover:text-primary transition-colors py-3.5 border-b border-border/30 w-full uppercase"
-                    >
-                      {item.label}
-                    </SlugLink>
-                  );
-                })}
+                  })}
+                </div>
               </div>
 
-              <div className="px-5 pb-6 flex items-center gap-3 text-xs text-muted-foreground">
-                <button onClick={function () { setLang("al"); setMobileMenuOpen(false); }} className={"px-3 py-1.5 border rounded-sm transition-colors " + (isAl ? "border-foreground text-foreground font-semibold" : "border-border")}>AL</button>
-                <button onClick={function () { setLang("en"); setMobileMenuOpen(false); }} className={"px-3 py-1.5 border rounded-sm transition-colors " + (!isAl ? "border-foreground text-foreground font-semibold" : "border-border")}>EN</button>
+              {/* ── Language switch (poshtë, sticky) ── */}
+              <div className="shrink-0 border-t border-border px-5 py-4 flex items-center gap-2">
+                <span className="text-xs text-muted-foreground tracking-brand uppercase mr-1">
+                  {isAl ? "Gjuha" : "Language"}
+                </span>
+                <button
+                  onClick={function () { setLang("al"); }}
+                  className={"px-3 py-1.5 text-xs border rounded-sm transition-colors " + (isAl ? "border-foreground text-foreground font-semibold bg-muted" : "border-border text-muted-foreground")}
+                >
+                  AL
+                </button>
+                <button
+                  onClick={function () { setLang("en"); }}
+                  className={"px-3 py-1.5 text-xs border rounded-sm transition-colors " + (!isAl ? "border-foreground text-foreground font-semibold bg-muted" : "border-border text-muted-foreground")}
+                >
+                  EN
+                </button>
               </div>
             </div>
           </>
