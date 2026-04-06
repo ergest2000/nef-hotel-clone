@@ -8,7 +8,7 @@ import { useLanguage } from "@/hooks/useLanguage";
 import { useProductSearch } from "@/hooks/useProductSearch";
 import { useCart } from "@/hooks/useCart";
 import { useAuth } from "@/hooks/useAuth";
-import { useWishlist } from "@/hooks/useCollections";
+import { useWishlist, useCollections } from "@/hooks/useCollections";
 import { useProfile } from "@/hooks/useProfile";
 import { useUserOffers } from "@/hooks/useOffers";
 import { usePageContent, getContentValue } from "@/hooks/useCms";
@@ -216,6 +216,90 @@ function ProfileDropdown(props: { onClose: () => void }) {
   );
 }
 
+// ── Collection Dropdown (desktop hover) ─────────────────────────
+function CollectionDropdown(props: {
+  label: string;
+  href: string;
+  isAl: boolean;
+  collections: any[];
+  onNavigate: () => void;
+}) {
+  var [open, setOpen] = useState(false);
+  var ref = useRef<HTMLDivElement>(null);
+  var navigate = useNavigate();
+  var timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Gjej parent collection që i korrespondon href-it
+  var parentSlug = props.href.replace(/^\/koleksionet\/?/, "").split("/")[0];
+  var parent = props.collections.find(function (c: any) { return c.slug === parentSlug; });
+  var children = parent
+    ? props.collections.filter(function (c: any) { return c.parent_id === parent.id && c.visible !== false; })
+    : [];
+
+  // Nëse nuk ka fëmijë, render link i thjeshtë
+  if (children.length === 0) {
+    return (
+      <SlugLink
+        to={props.href}
+        className="text-[10px] xl:text-xs tracking-brand text-muted-foreground hover:text-primary transition-colors uppercase whitespace-nowrap"
+      >
+        {props.label}
+      </SlugLink>
+    );
+  }
+
+  function openMenu() {
+    if (timerRef.current) clearTimeout(timerRef.current);
+    setOpen(true);
+  }
+  function closeMenu() {
+    timerRef.current = setTimeout(function () { setOpen(false); }, 120);
+  }
+
+  return (
+    <div
+      ref={ref}
+      className="relative"
+      onMouseEnter={openMenu}
+      onMouseLeave={closeMenu}
+    >
+      <button
+        onClick={function () { navigate(props.href); props.onNavigate(); setOpen(false); }}
+        className="flex items-center gap-0.5 text-[10px] xl:text-xs tracking-brand text-muted-foreground hover:text-primary transition-colors uppercase whitespace-nowrap"
+      >
+        {props.label}
+        <ChevronDown size={11} className={"transition-transform duration-200 " + (open ? "rotate-180" : "")} />
+      </button>
+
+      {open && (
+        <div
+          className="absolute top-full left-0 mt-1 bg-background border border-border shadow-xl z-50 min-w-[180px] py-1 rounded-sm"
+          onMouseEnter={openMenu}
+          onMouseLeave={closeMenu}
+        >
+          {children.map(function (child: any) {
+            var title = props.isAl ? (child.title_al || child.title_en) : (child.title_en || child.title_al);
+            return (
+              <button
+                key={child.id}
+                onClick={function () {
+                  navigate("/koleksionet/" + child.slug);
+                  props.onNavigate();
+                  setOpen(false);
+                }}
+                className="w-full text-left px-4 py-2.5 text-xs tracking-brand text-muted-foreground hover:text-primary hover:bg-muted/40 transition-colors uppercase whitespace-nowrap flex items-center justify-between gap-4"
+              >
+                {title}
+                <ChevronRight size={12} className="opacity-40 shrink-0" />
+              </button>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function SiteHeader() {
   var mobileMenuState = useState(false);
   var mobileMenuOpen = mobileMenuState[0];
@@ -226,6 +310,10 @@ function SiteHeader() {
   var mobileProductsState = useState(false);
   var mobileProductsOpen = mobileProductsState[0];
   var setMobileProductsOpen = mobileProductsState[1];
+  // Track which mobile category is expanded
+  var mobileExpandedState = useState<string | null>(null);
+  var mobileExpanded = mobileExpandedState[0];
+  var setMobileExpanded = mobileExpandedState[1];
   var searchQueryState = useState("");
   var searchQuery = searchQueryState[0];
   var setSearchQuery = searchQueryState[1];
@@ -265,11 +353,12 @@ function SiteHeader() {
   var offers = offersData.data;
   var cmsData = usePageContent("home", "al");
   var cmsContent = cmsData.data;
+  var collectionsData = useCollections();
+  var allCollections = collectionsData.data ?? [];
   var wishlistCount = wishlistItems ? wishlistItems.length : 0;
   var unseenOffersCount = offers ? offers.filter(function (o: any) { return !o.seen; }).length : 0;
   var isAl = lang === "al";
 
-  // Header CMS values
   function h(key: string, fallback: string) {
     return getContentValue(cmsContent, "header", key, fallback);
   }
@@ -277,10 +366,7 @@ function SiteHeader() {
   var contactLabel = isAl ? h("contact_text_al", "CONTACT:") : h("contact_text_en", "CONTACT:");
   var contactPhone = h("contact_phone", "+355 69 000 0000");
   var searchPlaceholder = isAl ? h("search_placeholder_al", "Kërko për produkte këtu") : h("search_placeholder_en", "Search for products here");
-  var registerBtnText = isAl ? h("register_text_al", "REGJISTROHU / HYR") : h("register_text_en", "REGISTER / LOGIN");
-  var mobileProductsLabel = isAl ? h("mobile_products_al", "Produkte") : h("mobile_products_en", "Products");
 
-  // Categories from CMS
   var catCountVal = h("cat_count", "7");
   var catCount = Math.min(10, Math.max(0, parseInt(catCountVal) || 7));
   var productLinks: { label: string; href: string }[] = [];
@@ -325,8 +411,17 @@ function SiteHeader() {
   function clearDesktopSearch() { setSearchQuery(""); setSearchFocused(false); }
   function clearMobileSearch() { setMobileSearchQuery(""); setMobileSearchFocused(false); }
 
+  // Helper: gjej fëmijët e një kategorie nga href
+  function getChildrenForHref(href: string) {
+    var slug = href.replace(/^\/koleksionet\/?/, "").split("/")[0];
+    var parent = allCollections.find(function (c: any) { return c.slug === slug; });
+    if (!parent) return [];
+    return allCollections.filter(function (c: any) { return c.parent_id === parent.id && c.visible !== false; });
+  }
+
   return (
     <header className="w-full sticky top-0 z-50 bg-background">
+      {/* ── DESKTOP ── */}
       <div className="hidden lg:block">
         <div className="border-b border-border">
           <div className="container flex items-center h-12 gap-8 text-[13px] tracking-brand">
@@ -373,8 +468,20 @@ function SiteHeader() {
           <div className="container flex items-center h-20 gap-4">
             <Link to="/" className="flex items-center gap-3 shrink-0"><img src={logo} alt="EGJEU" className="h-14 w-auto" /></Link>
             <button className="text-foreground hover:text-primary transition-colors shrink-0" onClick={function () { setDesktopMenuOpen(!desktopMenuOpen); }}>{desktopMenuOpen ? <X size={24} /> : <Menu size={24} />}</button>
+            {/* Nav me dropdown */}
             <nav className="flex items-center gap-4 xl:gap-5">
-              {productLinks.map(function (item) { return <SlugLink key={item.label} to={item.href} className="text-[10px] xl:text-xs tracking-brand text-muted-foreground hover:text-primary transition-colors uppercase whitespace-nowrap">{item.label}</SlugLink>; })}
+              {productLinks.map(function (item) {
+                return (
+                  <CollectionDropdown
+                    key={item.label}
+                    label={item.label}
+                    href={item.href}
+                    isAl={isAl}
+                    collections={allCollections}
+                    onNavigate={function () {}}
+                  />
+                );
+              })}
             </nav>
           </div>
         </div>
@@ -398,6 +505,7 @@ function SiteHeader() {
         )}
       </div>
 
+      {/* ── MOBILE ── */}
       <div className="lg:hidden">
         <div className="border-b border-border">
           <div className="container flex items-center justify-between h-14">
@@ -438,9 +546,79 @@ function SiteHeader() {
                 <Link to="/" className="shrink-0" onClick={function () { setMobileMenuOpen(false); }}><img src={logo} alt="EGJEU" className="h-9 w-auto" /></Link>
                 <button className="text-foreground hover:text-primary transition-colors" onClick={function () { setMobileMenuOpen(false); }}><X size={20} /></button>
               </div>
+
               <div className="px-5 py-4 flex flex-col">
-                {mainLinks.map(function (item: any) { return <SlugLink key={item.label} to={item.href} onClick={function () { setMobileMenuOpen(false); }} className="block text-sm tracking-brand text-foreground hover:text-primary transition-colors py-3.5 border-b border-border/30 w-full uppercase">{item.label}</SlugLink>; })}
+                {/* Kategoritë me dropdown në mobile */}
+                {productLinks.map(function (item) {
+                  var children = getChildrenForHref(item.href);
+                  var isExpanded = mobileExpanded === item.href;
+
+                  if (children.length === 0) {
+                    return (
+                      <SlugLink
+                        key={item.label}
+                        to={item.href}
+                        onClick={function () { setMobileMenuOpen(false); }}
+                        className="block text-sm tracking-brand text-foreground hover:text-primary transition-colors py-3.5 border-b border-border/30 w-full uppercase"
+                      >
+                        {item.label}
+                      </SlugLink>
+                    );
+                  }
+
+                  return (
+                    <div key={item.label} className="border-b border-border/30">
+                      <div className="flex items-center justify-between">
+                        <SlugLink
+                          to={item.href}
+                          onClick={function () { setMobileMenuOpen(false); }}
+                          className="flex-1 text-sm tracking-brand text-foreground hover:text-primary transition-colors py-3.5 uppercase"
+                        >
+                          {item.label}
+                        </SlugLink>
+                        <button
+                          onClick={function () { setMobileExpanded(isExpanded ? null : item.href); }}
+                          className="p-2 text-muted-foreground hover:text-primary transition-colors"
+                        >
+                          {isExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                        </button>
+                      </div>
+                      {isExpanded && (
+                        <div className="pb-2 pl-4 flex flex-col gap-0.5">
+                          {children.map(function (child: any) {
+                            var title = isAl ? (child.title_al || child.title_en) : (child.title_en || child.title_al);
+                            return (
+                              <SlugLink
+                                key={child.id}
+                                to={"/koleksionet/" + child.slug}
+                                onClick={function () { setMobileMenuOpen(false); setMobileExpanded(null); }}
+                                className="block text-xs tracking-brand text-muted-foreground hover:text-primary transition-colors py-2.5 uppercase border-b border-border/20 last:border-b-0"
+                              >
+                                {title}
+                              </SlugLink>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+
+                {/* Main links */}
+                {mainLinks.map(function (item: any) {
+                  return (
+                    <SlugLink
+                      key={item.label}
+                      to={item.href}
+                      onClick={function () { setMobileMenuOpen(false); }}
+                      className="block text-sm tracking-brand text-foreground hover:text-primary transition-colors py-3.5 border-b border-border/30 w-full uppercase"
+                    >
+                      {item.label}
+                    </SlugLink>
+                  );
+                })}
               </div>
+
               <div className="px-5 pb-6 flex items-center gap-3 text-xs text-muted-foreground">
                 <button onClick={function () { setLang("al"); setMobileMenuOpen(false); }} className={"px-3 py-1.5 border rounded-sm transition-colors " + (isAl ? "border-foreground text-foreground font-semibold" : "border-border")}>AL</button>
                 <button onClick={function () { setLang("en"); setMobileMenuOpen(false); }} className={"px-3 py-1.5 border rounded-sm transition-colors " + (!isAl ? "border-foreground text-foreground font-semibold" : "border-border")}>EN</button>
