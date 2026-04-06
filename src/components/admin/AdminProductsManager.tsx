@@ -1,120 +1,719 @@
-// ─── KOMPONENTI I RI — shto si import në AdminProductsManager.tsx ─────────────
-// Dhe shto këto imports në krye të AdminProductsManager.tsx:
-//
-//   import {
-//     useProductCollections,
-//     useAddProductCollection,
-//     useRemoveProductCollection,
-//   } from "@/hooks/useCollections";
-
-import { useCollections, useProductCollections, useAddProductCollection, useRemoveProductCollection } from "@/hooks/useCollections";
-import { X, FolderOpen, Plus } from "lucide-react";
+import { useState } from "react";
+import { useCollections } from "@/hooks/useCollections";
+import {
+  useProducts, useUpsertProduct, useDeleteProduct,
+  useProductImages, useAddProductImage, useDeleteProductImage, useUpdateProductImage,
+  useProductColors, useAddProductColor, useDeleteProductColor, useUpdateProductColor,
+  useProductSizes, useAddProductSize, useDeleteProductSize,
+  useGlobalColors,
+  type ProductColor, type ProductSize,
+} from "@/hooks/useCollections";
+import { useDuplicateProduct } from "@/hooks/useDuplicateProduct";
+import { useToast } from "@/hooks/use-toast";
+import { useAutoTranslate } from "@/hooks/useAutoTranslate";
+import { uploadCmsImage } from "@/hooks/useCms";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Switch } from "@/components/ui/switch";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { Plus, Trash2, Edit, Package, Image as ImageIcon, ExternalLink, X, Copy, Search } from "lucide-react";
+import { TranslateButton } from "./TranslateButton";
+import { ProductCategoriesManager } from "./ProductCategoriesManager";
+import type { Tables } from "@/integrations/supabase/types";
 
-// ─── Komponenti ───────────────────────────────────────────────────────────────
-export const ProductCategoriesManager = ({ productId, primaryCollectionId, onChangePrimary }: {
-  productId: string;
-  primaryCollectionId: string;
-  onChangePrimary: (id: string) => void;
-}) => {
-  const { data: collections } = useCollections();
-  const { data: assigned, isLoading } = useProductCollections(productId);
-  const add = useAddProductCollection();
-  const remove = useRemoveProductCollection();
+type Product = Tables<"products">;
 
-  const assignedIds = new Set(assigned?.map((pc) => pc.collection_id) ?? []);
-  const available = collections?.filter((c) => !assignedIds.has(c.id)) ?? [];
+const emptyProduct: Partial<Product> = {
+  title_al: "", title_en: "", description_al: "", description_en: "",
+  code: "",
+  composition_al: "", composition_en: "",
+  weight_gsm: 0, box_quantity: 1, pieces_per_box: 1,
+  in_stock: true, customizable: false,
+  product_info_al: "", product_info_en: "",
+  return_policy_al: "", return_policy_en: "",
+  image_url: "", visible: true, sort_order: 0,
+};
+
+const ProductImagesManager = ({ productId }: { productId: string }) => {
+  const { data: images, isLoading } = useProductImages(productId);
+  const { data: colors } = useProductColors(productId);
+  const addImage = useAddProductImage();
+  const removeImage = useDeleteProductImage();
+  const updateImage = useUpdateProductImage();
+  const { toast } = useToast();
+  const [uploadColorId, setUploadColorId] = useState<string>("");
+
+  const handleUpload = async (file: File) => {
+    if ((images?.length ?? 0) >= 10) {
+      toast({ title: "Limit", description: "Maksimumi 10 foto", variant: "destructive" });
+      return;
+    }
+    const path = `products/${productId}/${Date.now()}-${file.name}`;
+    const url = await uploadCmsImage(file, path);
+    addImage.mutate({
+      product_id: productId,
+      image_url: url,
+      sort_order: images?.length ?? 0,
+      color_id: uploadColorId || null,
+    });
+  };
+
+  const getColorName = (colorId: string | null) => {
+    if (!colorId || !colors) return null;
+    const c = colors.find((cl) => cl.id === colorId);
+    return c ? (c.color_name_al || c.color_name) : null;
+  };
+
+  const getColorHex = (colorId: string | null) => {
+    if (!colorId || !colors) return null;
+    const c = colors.find((cl) => cl.id === colorId);
+    return c?.color_hex ?? null;
+  };
 
   return (
-    <div className="space-y-4">
-      <div>
-        <label className="text-xs font-medium text-muted-foreground mb-2 block">
-          Kategoritë e caktuara
+    <div className="space-y-3">
+      <div className="flex items-center justify-between">
+        <label className="text-xs font-medium text-muted-foreground">
+          Foto shtesë ({images?.length ?? 0}/10)
         </label>
-        {isLoading ? (
-          <p className="text-xs text-muted-foreground">Duke ngarkuar...</p>
-        ) : assigned?.length === 0 ? (
-          <div className="flex items-center gap-2 text-xs text-muted-foreground bg-muted/50 rounded p-3">
-            <FolderOpen className="h-4 w-4" />
-            Asnjë kategori e caktuar ende.
+      </div>
+
+      <div className="flex items-center gap-2 flex-wrap bg-muted/50 p-3 rounded">
+        {colors && colors.length > 0 && (
+          <select
+            value={uploadColorId}
+            onChange={(e) => setUploadColorId(e.target.value)}
+            className="h-8 text-xs border border-border rounded px-2 bg-background"
+          >
+            <option value="">Pa ngjyrë (Gjenerale)</option>
+            {colors.map((c) => (
+              <option key={c.id} value={c.id}>{c.color_name_al || c.color_name}</option>
+            ))}
+          </select>
+        )}
+        <label className="cursor-pointer">
+          <div className="flex items-center gap-1 px-3 py-1.5 bg-background border border-border rounded text-xs hover:bg-muted">
+            <ImageIcon className="h-3 w-3" /> Ngarko foto
           </div>
-        ) : (
-          <div className="flex flex-wrap gap-2">
-            {assigned?.map((pc) => {
-              const col = collections?.find((c) => c.id === pc.collection_id);
-              if (!col) return null;
-              const isPrimary = pc.collection_id === primaryCollectionId;
-              return (
-                <div
-                  key={pc.id}
-                  className={`flex items-center gap-2 px-3 py-1.5 rounded-full border text-xs transition-colors ${
-                    isPrimary
-                      ? "bg-primary text-primary-foreground border-primary"
-                      : "bg-muted border-border text-foreground"
-                  }`}
-                >
-                  {isPrimary && (
-                    <span className="text-[9px] font-bold uppercase tracking-wider opacity-80">
-                      Kryesore
-                    </span>
-                  )}
-                  <span>{col.title_al || col.slug}</span>
-                  {!isPrimary && (
-                    <button
-                      onClick={() => onChangePrimary(pc.collection_id)}
-                      className="opacity-50 hover:opacity-100 transition-opacity text-[9px] border border-current rounded px-1"
-                      title="Bëje kategorinë kryesore"
-                    >
-                      ★
-                    </button>
-                  )}
-                  <button
-                    onClick={() => {
-                      if (assigned.length === 1) return; // duhet te kete se paku 1
-                      remove.mutate({ product_id: productId, collection_id: pc.collection_id });
-                      // nëse heqim primary, cakto tjetrën si primary
-                      if (isPrimary) {
-                        const next = assigned.find((a) => a.collection_id !== pc.collection_id);
-                        if (next) onChangePrimary(next.collection_id);
-                      }
-                    }}
-                    disabled={assigned.length === 1}
-                    className="opacity-50 hover:opacity-100 disabled:opacity-20 disabled:cursor-not-allowed transition-opacity"
-                    title={assigned.length === 1 ? "Duhet të ketë të paktën 1 kategori" : "Hiq"}
-                  >
-                    <X className="h-3 w-3" />
-                  </button>
-                </div>
-              );
-            })}
-          </div>
+          <input type="file" accept="image/*" className="hidden" onChange={(e) => {
+            if (e.target.files?.[0]) handleUpload(e.target.files[0]);
+          }} />
+        </label>
+        {uploadColorId && (
+          <span className="text-[10px] text-muted-foreground">
+            → do lidhet me: <strong>{getColorName(uploadColorId)}</strong>
+          </span>
         )}
       </div>
 
-      {available.length > 0 && (
-        <div>
-          <label className="text-xs font-medium text-muted-foreground mb-2 block">
-            Shto në kategori
-          </label>
-          <div className="flex flex-wrap gap-2">
-            {available.map((col) => (
+      {isLoading ? (
+        <div className="text-xs text-muted-foreground">Duke ngarkuar...</div>
+      ) : (
+        <div className="grid grid-cols-4 gap-2">
+          {images?.map((img) => (
+            <div key={img.id} className="relative group rounded overflow-hidden bg-muted">
+              <div className="aspect-square">
+                <img src={img.image_url} alt="" className="w-full h-full object-cover" />
+              </div>
+              <div className="absolute bottom-0 left-0 right-0 bg-black/60 px-1.5 py-1 flex items-center gap-1">
+                {(img as any).color_id ? (
+                  <>
+                    <div className="w-3 h-3 rounded-full border border-white/40 shrink-0" style={{ backgroundColor: getColorHex((img as any).color_id) || "#ccc" }} />
+                    <span className="text-[9px] text-white truncate">{getColorName((img as any).color_id)}</span>
+                  </>
+                ) : (
+                  <span className="text-[9px] text-white/60">Gjenerale</span>
+                )}
+              </div>
+              {colors && colors.length > 0 && (
+                <select
+                  value={(img as any).color_id || ""}
+                  onChange={(e) => updateImage.mutate({ id: img.id, product_id: productId, updates: { color_id: e.target.value || null } })}
+                  className="absolute top-1 left-1 w-[calc(100%-2.25rem)] h-5 text-[9px] bg-white/90 border-0 rounded opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+                >
+                  <option value="">Gjenerale</option>
+                  {colors.map((c) => (
+                    <option key={c.id} value={c.id}>{c.color_name_al || c.color_name}</option>
+                  ))}
+                </select>
+              )}
               <button
-                key={col.id}
-                onClick={() => add.mutate({ product_id: productId, collection_id: col.id })}
-                disabled={add.isPending}
-                className="flex items-center gap-1.5 px-3 py-1.5 border border-dashed border-border rounded-full text-xs text-muted-foreground hover:border-primary hover:text-primary transition-colors"
+                className="absolute top-1 right-1 w-5 h-5 bg-destructive/90 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                onClick={() => removeImage.mutate({ id: img.id, product_id: productId })}
               >
-                <Plus className="h-3 w-3" />
-                {col.title_al || col.slug}
+                <X className="h-3 w-3 text-destructive-foreground" />
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
+const ProductColorsManager = ({ productId }: { productId: string }) => {
+  const { data: colors } = useProductColors(productId);
+  const { data: globalColors } = useGlobalColors();
+  const addColor = useAddProductColor();
+  const removeColor = useDeleteProductColor();
+  const updateColor = useUpdateProductColor();
+  const { toast } = useToast();
+
+  const assignedHexes = new Set(colors?.map((c) => c.color_hex.toLowerCase()) ?? []);
+  const availableColors = globalColors?.filter((gc) => !assignedHexes.has(gc.hex.toLowerCase())) ?? [];
+
+  const handleSelectColor = (gc: { name_al: string; name_en: string; hex: string }) => {
+    addColor.mutate({
+      product_id: productId,
+      color_name: gc.name_al || gc.name_en,
+      color_name_al: gc.name_al,
+      color_name_en: gc.name_en,
+      color_hex: gc.hex,
+      image_url: "",
+      sort_order: colors?.length ?? 0,
+    });
+  };
+
+  const handleColorImageUpload = async (colorId: string, file: File) => {
+    try {
+      const path = `products/${productId}/colors/${Date.now()}-${file.name}`;
+      const url = await uploadCmsImage(file, path);
+      updateColor.mutate({ id: colorId, product_id: productId, updates: { image_url: url } });
+      toast({ title: "Imazhi i ngjyrës u ngarkua!" });
+    } catch (e: any) {
+      toast({ title: "Gabim", description: e.message, variant: "destructive" });
+    }
+  };
+
+  return (
+    <div className="space-y-3">
+      <label className="text-xs font-medium text-muted-foreground">Ngjyrat e produktit</label>
+      <div className="space-y-2">
+        {colors?.map((c) => (
+          <div key={c.id} className="flex items-center gap-3 bg-muted px-3 py-2 rounded">
+            <div className="w-8 h-8 rounded-full border border-border shrink-0" style={{ backgroundColor: c.color_hex }} />
+            <div className="flex-1 min-w-0">
+              <span className="text-xs font-medium">{c.color_name_al || c.color_name}</span>
+              <span className="text-xs text-muted-foreground"> / {c.color_name_en || c.color_name}</span>
+            </div>
+            {(c as any).image_url ? (
+              <div className="relative group w-10 h-10 rounded overflow-hidden bg-secondary shrink-0">
+                <img src={(c as any).image_url} alt="" className="w-full h-full object-cover" />
+                <label className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center cursor-pointer transition-opacity">
+                  <ImageIcon className="h-3 w-3 text-white" />
+                  <input type="file" accept="image/*" className="hidden" onChange={(e) => {
+                    if (e.target.files?.[0]) handleColorImageUpload(c.id, e.target.files[0]);
+                  }} />
+                </label>
+              </div>
+            ) : (
+              <label className="cursor-pointer shrink-0">
+                <div className="flex items-center gap-1 px-2 py-1 bg-secondary rounded text-[10px] hover:bg-secondary/80 text-muted-foreground">
+                  <ImageIcon className="h-3 w-3" /> Foto
+                </div>
+                <input type="file" accept="image/*" className="hidden" onChange={(e) => {
+                  if (e.target.files?.[0]) handleColorImageUpload(c.id, e.target.files[0]);
+                }} />
+              </label>
+            )}
+            <button onClick={() => removeColor.mutate({ id: c.id, product_id: productId })}>
+              <X className="h-3 w-3 text-muted-foreground hover:text-destructive" />
+            </button>
+          </div>
+        ))}
+      </div>
+      {availableColors.length > 0 ? (
+        <div>
+          <p className="text-[10px] text-muted-foreground mb-2">Zgjidh nga ngjyrat e paracaktuara:</p>
+          <div className="flex flex-wrap gap-2">
+            {availableColors.map((gc) => (
+              <button
+                key={gc.id}
+                onClick={() => handleSelectColor(gc)}
+                className="flex items-center gap-2 px-3 py-1.5 border border-border rounded-sm hover:border-primary hover:bg-primary/5 transition-colors"
+                title={`${gc.name_al} / ${gc.name_en}`}
+              >
+                <div className="w-5 h-5 rounded-full border border-border shrink-0" style={{ backgroundColor: gc.hex }} />
+                <span className="text-xs text-foreground">{gc.name_al || gc.name_en}</span>
               </button>
             ))}
           </div>
         </div>
+      ) : globalColors && globalColors.length === 0 ? (
+        <p className="text-[10px] text-muted-foreground">
+          Nuk ka ngjyra globale. Shto nga Dashboard → Ngjyrat e Produktit.
+        </p>
+      ) : null}
+    </div>
+  );
+};
+
+const ProductSizesManager = ({ productId }: { productId: string }) => {
+  const { data: sizes } = useProductSizes(productId);
+  const addSize = useAddProductSize();
+  const removeSize = useDeleteProductSize();
+  const [newLabel, setNewLabel] = useState("");
+
+  const handleAdd = () => {
+    if (!newLabel.trim()) return;
+    addSize.mutate({ product_id: productId, size_label: newLabel, sort_order: sizes?.length ?? 0 });
+    setNewLabel("");
+  };
+
+  return (
+    <div className="space-y-3">
+      <label className="text-xs font-medium text-muted-foreground">Përmasat e produktit</label>
+      <div className="flex flex-wrap gap-2">
+        {sizes?.map((s) => (
+          <div key={s.id} className="flex items-center gap-1.5 bg-muted px-2 py-1 rounded text-xs">
+            {s.size_label}
+            <button onClick={() => removeSize.mutate({ id: s.id, product_id: productId })}>
+              <X className="h-3 w-3 text-muted-foreground hover:text-destructive" />
+            </button>
+          </div>
+        ))}
+      </div>
+      <div className="flex items-center gap-2">
+        <Input value={newLabel} onChange={(e) => setNewLabel(e.target.value)} placeholder="p.sh. 50x100, 80x150" className="h-8 text-xs flex-1"
+          onKeyDown={(e) => { if (e.key === "Enter") handleAdd(); }}
+        />
+        <Button size="sm" variant="outline" className="h-8 text-xs" onClick={handleAdd}>
+          <Plus className="h-3 w-3 mr-1" /> Shto
+        </Button>
+      </div>
+    </div>
+  );
+};
+
+export const AdminProductsManager = () => {
+  const { data: collections } = useCollections();
+  const [selectedCollection, setSelectedCollection] = useState<string>("");
+  const { data: products, isLoading } = useProducts(
+    selectedCollection && selectedCollection !== "all" ? selectedCollection : undefined
+  );
+  const upsert = useUpsertProduct();
+  const remove = useDeleteProduct();
+  const duplicate = useDuplicateProduct();
+  const { toast } = useToast();
+  const { translateField, translating } = useAutoTranslate();
+  const [editItem, setEditItem] = useState<Partial<Product> | null>(null);
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+
+  const handleSave = () => {
+    if (!editItem?.collection_id) {
+      toast({ title: "Gabim", description: "Zgjidh koleksionin", variant: "destructive" });
+      return;
+    }
+    upsert.mutate(editItem as any, {
+      onSuccess: () => {
+        toast({ title: "U ruajt!" });
+        setDialogOpen(false);
+        setEditItem(null);
+      },
+      onError: (e) => toast({ title: "Gabim", description: e.message, variant: "destructive" }),
+    });
+  };
+
+  const handleDelete = (id: string) => {
+    if (!confirm("Jeni i sigurt?")) return;
+    remove.mutate(id, {
+      onSuccess: () => toast({ title: "U fshi!" }),
+    });
+  };
+
+  const handleDuplicate = (id: string) => {
+    duplicate.mutate(id);
+  };
+
+  const handleImageUpload = async (file: File) => {
+    const path = `products/${Date.now()}-${file.name}`;
+    const url = await uploadCmsImage(file, path);
+    setEditItem((prev) => prev ? { ...prev, image_url: url } : prev);
+  };
+
+  const openNew = () => {
+    setEditItem({
+      ...emptyProduct,
+      collection_id: selectedCollection || (collections?.[0]?.id ?? ""),
+      sort_order: products?.length ?? 0,
+    });
+    setDialogOpen(true);
+  };
+
+  const openEdit = (item: Product) => {
+    setEditItem({ ...item });
+    setDialogOpen(true);
+  };
+
+  const getCollectionSlug = (collectionId: string) => {
+    return collections?.find(c => c.id === collectionId)?.slug;
+  };
+
+  const filteredProducts = products?.filter((p) => {
+    const matchesCollection = !selectedCollection || selectedCollection === "all"
+      ? true
+      : p.collection_id === selectedCollection;
+    const q = searchTerm.toLowerCase().trim();
+    const matchesSearch = !q
+      ? true
+      : (p.title_al?.toLowerCase().includes(q) ||
+         p.title_en?.toLowerCase().includes(q) ||
+         p.code?.toLowerCase().includes(q) ||
+         p.slug?.toLowerCase().includes(q));
+    return matchesCollection && matchesSearch;
+  });
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <h2 className="text-xl font-semibold text-foreground">
+          Produktet
+          {searchTerm && filteredProducts !== undefined && (
+            <span className="text-sm font-normal text-muted-foreground ml-2">
+              ({filteredProducts.length} rezultate)
+            </span>
+          )}
+        </h2>
+        <Button onClick={openNew} size="sm" disabled={!collections?.length}>
+          <Plus className="h-4 w-4 mr-1" /> Shto Produkt
+        </Button>
+      </div>
+
+      <div className="flex items-center gap-3 flex-wrap">
+        <label className="text-sm font-medium text-muted-foreground">Koleksioni:</label>
+        <Select value={selectedCollection} onValueChange={setSelectedCollection}>
+          <SelectTrigger className="w-64"><SelectValue placeholder="Të gjitha" /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Të gjitha</SelectItem>
+            {collections?.map((c) => (
+              <SelectItem key={c.id} value={c.id}>{c.title_al || c.slug}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <div className="relative flex-1 min-w-[200px] max-w-xs">
+          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+          <Input
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            placeholder="Kërko sipas titullit, kodit..."
+            className="pl-8 h-9 text-sm"
+          />
+          {searchTerm && (
+            <button
+              onClick={() => setSearchTerm("")}
+              className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+            >
+              <X className="h-3.5 w-3.5" />
+            </button>
+          )}
+        </div>
+      </div>
+
+      {isLoading ? (
+        <div className="flex items-center justify-center py-12">
+          <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+        </div>
+      ) : !filteredProducts?.length ? (
+        <div className="border-2 border-dashed border-border rounded-lg p-12 text-center">
+          <Package className="h-12 w-12 mx-auto text-muted-foreground mb-3" />
+          <p className="text-muted-foreground">Nuk ka produkte.</p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          {filteredProducts.map((product) => (
+            <Card key={product.id} className="overflow-hidden group hover:shadow-md transition-shadow">
+              <div className="relative aspect-square bg-muted">
+                {product.image_url ? (
+                  <img src={product.image_url} alt={product.title_al} className="w-full h-full object-cover" />
+                ) : (
+                  <div className="flex items-center justify-center h-full">
+                    <Package className="h-12 w-12 text-muted-foreground/30" />
+                  </div>
+                )}
+                <div className="absolute top-2 right-2 flex gap-1">
+                  {!product.in_stock && <Badge variant="destructive" className="text-[10px]">Jo në stok</Badge>}
+                  {product.customizable && <Badge className="text-[10px] bg-primary">Personalizuar</Badge>}
+                </div>
+              </div>
+              <CardContent className="p-3">
+                <h4 className="font-medium text-sm truncate">{product.title_al || product.code || "Pa titull"}</h4>
+                <p className="text-xs text-muted-foreground mt-0.5">{product.code}</p>
+                {product.slug && (
+                  <p className="text-[10px] text-muted-foreground/60 mt-0.5 truncate font-mono">/{product.slug}</p>
+                )}
+                <div className="flex items-center justify-between mt-3">
+                  <Badge variant={product.visible ? "default" : "secondary"} className="text-[10px]">
+                    {product.visible ? "Aktiv" : "Fshehur"}
+                  </Badge>
+                  <div className="flex gap-1">
+                    {getCollectionSlug(product.collection_id) && (
+                      <Button
+                        variant="ghost" size="icon" className="h-7 w-7"
+                        onClick={() => window.open(`/koleksionet/${getCollectionSlug(product.collection_id)}/${product.slug || product.id}`, '_blank')}
+                        title="Shiko në faqe"
+                      >
+                        <ExternalLink className="h-3.5 w-3.5" />
+                      </Button>
+                    )}
+                    <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openEdit(product)} title="Ndrysho">
+                      <Edit className="h-3.5 w-3.5" />
+                    </Button>
+                    <Button
+                      variant="ghost" size="icon" className="h-7 w-7"
+                      onClick={() => handleDuplicate(product.id)}
+                      disabled={duplicate.isPending}
+                      title="Duplikо"
+                    >
+                      <Copy className="h-3.5 w-3.5" />
+                    </Button>
+                    <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleDelete(product.id)} title="Fshi">
+                      <Trash2 className="h-3.5 w-3.5 text-destructive" />
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
       )}
 
-      <p className="text-[10px] text-muted-foreground">
-        Kategoria <strong>Kryesore</strong> përdoret për URL-in e produktit. Kategoritë e tjera e shfaqin produktin edhe atje.
-      </p>
+      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center justify-between">
+              <span>{editItem?.id ? "Ndrysho Produktin" : "Produkt i Ri"}</span>
+              {editItem?.id && getCollectionSlug(editItem.collection_id ?? "") && (
+                <Button
+                  variant="outline" size="sm"
+                  onClick={() => window.open(`/koleksionet/${getCollectionSlug(editItem.collection_id ?? "")}/${editItem.slug || editItem.id}`, '_blank')}
+                >
+                  <ExternalLink className="h-3.5 w-3.5 mr-1" /> Shiko live
+                </Button>
+              )}
+            </DialogTitle>
+          </DialogHeader>
+          {editItem && (
+            <Tabs defaultValue="general" className="w-full">
+              <TabsList className="w-full grid grid-cols-4">
+                <TabsTrigger value="general">Përgjithshme</TabsTrigger>
+                <TabsTrigger value="details">Detaje</TabsTrigger>
+                <TabsTrigger value="variants">Variante</TabsTrigger>
+                <TabsTrigger value="media">Media</TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="general" className="space-y-4 mt-4">
+                {/* Kategoritë */}
+                <div>
+                  <label className="text-xs font-medium text-muted-foreground mb-2 block">Kategoritë</label>
+                  {editItem.id ? (
+                    <ProductCategoriesManager
+                      productId={editItem.id}
+                      primaryCollectionId={editItem.collection_id ?? ""}
+                      onChangePrimary={(id) => setEditItem({ ...editItem, collection_id: id })}
+                    />
+                  ) : (
+                    <>
+                      <Select
+                        value={editItem.collection_id ?? ""}
+                        onValueChange={(v) => setEditItem({ ...editItem, collection_id: v })}
+                      >
+                        <SelectTrigger><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          {collections?.map((c) => (
+                            <SelectItem key={c.id} value={c.id}>{c.title_al || c.slug}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <p className="text-[10px] text-muted-foreground mt-1">
+                        Kategori shtesë mund të shtohen pasi të ruhet produkti.
+                      </p>
+                    </>
+                  )}
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <div className="flex items-center justify-between">
+                      <label className="text-xs font-medium text-muted-foreground">Titulli (AL)</label>
+                      <TranslateButton direction="al_to_en" loading={translating === "p_title"} onClick={() => translateField("p_title", editItem.title_al ?? "", "al_to_en", (t) => setEditItem((p) => p ? { ...p, title_en: t } : p))} />
+                    </div>
+                    <Input value={editItem.title_al ?? ""} onChange={(e) => setEditItem({ ...editItem, title_al: e.target.value })} />
+                  </div>
+                  <div>
+                    <div className="flex items-center justify-between">
+                      <label className="text-xs font-medium text-muted-foreground">Title (EN)</label>
+                      <TranslateButton direction="en_to_al" loading={translating === "p_title_r"} onClick={() => translateField("p_title_r", editItem.title_en ?? "", "en_to_al", (t) => setEditItem((p) => p ? { ...p, title_al: t } : p))} />
+                    </div>
+                    <Input value={editItem.title_en ?? ""} onChange={(e) => setEditItem({ ...editItem, title_en: e.target.value })} />
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <div className="flex items-center justify-between">
+                      <label className="text-xs font-medium text-muted-foreground">Përshkrimi (AL)</label>
+                      <TranslateButton direction="al_to_en" loading={translating === "p_desc"} onClick={() => translateField("p_desc", editItem.description_al ?? "", "al_to_en", (t) => setEditItem((p) => p ? { ...p, description_en: t } : p))} />
+                    </div>
+                    <Textarea value={editItem.description_al ?? ""} onChange={(e) => setEditItem({ ...editItem, description_al: e.target.value })} rows={3} />
+                  </div>
+                  <div>
+                    <div className="flex items-center justify-between">
+                      <label className="text-xs font-medium text-muted-foreground">Description (EN)</label>
+                      <TranslateButton direction="en_to_al" loading={translating === "p_desc_r"} onClick={() => translateField("p_desc_r", editItem.description_en ?? "", "en_to_al", (t) => setEditItem((p) => p ? { ...p, description_al: t } : p))} />
+                    </div>
+                    <Textarea value={editItem.description_en ?? ""} onChange={(e) => setEditItem({ ...editItem, description_en: e.target.value })} rows={3} />
+                  </div>
+                </div>
+                <div>
+                  <label className="text-xs font-medium text-muted-foreground">Kodi</label>
+                  <Input value={editItem.code ?? ""} onChange={(e) => setEditItem({ ...editItem, code: e.target.value })} />
+                </div>
+                <div>
+                  <label className="text-xs font-medium text-muted-foreground">Slug (URL)</label>
+                  <Input
+                    value={editItem.slug ?? ""}
+                    onChange={(e) => setEditItem({ ...editItem, slug: e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '') })}
+                    placeholder="Gjenerohet automatikisht nga titulli"
+                    className="font-mono text-xs"
+                  />
+                  <p className="text-[10px] text-muted-foreground mt-1">
+                    Lëre bosh për gjenerim automatik. Ndrysho vetëm nëse ke arsye specifike.
+                  </p>
+                </div>
+                <div className="flex items-center gap-6">
+                  <div className="flex items-center gap-2">
+                    <Switch checked={editItem.in_stock ?? true} onCheckedChange={(v) => setEditItem({ ...editItem, in_stock: v })} />
+                    <span className="text-sm">Në stok</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Switch checked={editItem.customizable ?? false} onCheckedChange={(v) => setEditItem({ ...editItem, customizable: v })} />
+                    <span className="text-sm">I personalizueshëm</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Switch checked={editItem.visible ?? true} onCheckedChange={(v) => setEditItem({ ...editItem, visible: v })} />
+                    <span className="text-sm">I dukshëm</span>
+                  </div>
+                </div>
+                <Accordion type="multiple" className="w-full">
+                  <AccordionItem value="product-info">
+                    <AccordionTrigger className="text-sm">Informacion mbi Produktin</AccordionTrigger>
+                    <AccordionContent>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <div className="flex items-center justify-between">
+                            <label className="text-xs font-medium text-muted-foreground">AL</label>
+                            <TranslateButton direction="al_to_en" loading={translating === "p_info"} onClick={() => translateField("p_info", editItem.product_info_al ?? "", "al_to_en", (t) => setEditItem((p) => p ? { ...p, product_info_en: t } : p))} />
+                          </div>
+                          <Textarea value={editItem.product_info_al ?? ""} onChange={(e) => setEditItem({ ...editItem, product_info_al: e.target.value })} rows={4} />
+                        </div>
+                        <div>
+                          <div className="flex items-center justify-between">
+                            <label className="text-xs font-medium text-muted-foreground">EN</label>
+                            <TranslateButton direction="en_to_al" loading={translating === "p_info_r"} onClick={() => translateField("p_info_r", editItem.product_info_en ?? "", "en_to_al", (t) => setEditItem((p) => p ? { ...p, product_info_al: t } : p))} />
+                          </div>
+                          <Textarea value={editItem.product_info_en ?? ""} onChange={(e) => setEditItem({ ...editItem, product_info_en: e.target.value })} rows={4} />
+                        </div>
+                      </div>
+                    </AccordionContent>
+                  </AccordionItem>
+                </Accordion>
+              </TabsContent>
+
+              <TabsContent value="details" className="space-y-4 mt-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-xs font-medium text-muted-foreground">KUTI (Box Quantity)</label>
+                    <Input type="number" min={0} value={editItem.box_quantity ?? 1} onChange={(e) => setEditItem({ ...editItem, box_quantity: parseInt(e.target.value) || 0 })} />
+                  </div>
+                  <div>
+                    <label className="text-xs font-medium text-muted-foreground">COPË PËR KUTI (Pieces per Box)</label>
+                    <Input type="number" min={0} value={editItem.pieces_per_box ?? 1} onChange={(e) => setEditItem({ ...editItem, pieces_per_box: parseInt(e.target.value) || 0 })} />
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-xs font-medium text-muted-foreground">Pesha (GSM)</label>
+                    <Input type="number" min={0} value={editItem.weight_gsm ?? 0} onChange={(e) => setEditItem({ ...editItem, weight_gsm: parseInt(e.target.value) || 0 })} />
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <div className="flex items-center justify-between">
+                      <label className="text-xs font-medium text-muted-foreground">Përbërja (AL)</label>
+                      <TranslateButton direction="al_to_en" loading={translating === "p_comp"} onClick={() => translateField("p_comp", editItem.composition_al ?? "", "al_to_en", (t) => setEditItem((p) => p ? { ...p, composition_en: t } : p))} />
+                    </div>
+                    <Input value={editItem.composition_al ?? ""} onChange={(e) => setEditItem({ ...editItem, composition_al: e.target.value })} />
+                  </div>
+                  <div>
+                    <div className="flex items-center justify-between">
+                      <label className="text-xs font-medium text-muted-foreground">Composition (EN)</label>
+                      <TranslateButton direction="en_to_al" loading={translating === "p_comp_r"} onClick={() => translateField("p_comp_r", editItem.composition_en ?? "", "en_to_al", (t) => setEditItem((p) => p ? { ...p, composition_al: t } : p))} />
+                    </div>
+                    <Input value={editItem.composition_en ?? ""} onChange={(e) => setEditItem({ ...editItem, composition_en: e.target.value })} />
+                  </div>
+                </div>
+              </TabsContent>
+
+              <TabsContent value="variants" className="space-y-6 mt-4">
+                {editItem.id ? (
+                  <>
+                    <ProductColorsManager productId={editItem.id} />
+                    <div className="border-t border-border pt-4" />
+                    <ProductSizesManager productId={editItem.id} />
+                  </>
+                ) : (
+                  <p className="text-sm text-muted-foreground">Ruaj produktin fillimisht për të menaxhuar variantet.</p>
+                )}
+              </TabsContent>
+
+              <TabsContent value="media" className="space-y-6 mt-4">
+                <div>
+                  <label className="text-xs font-medium text-muted-foreground">Imazhi kryesor</label>
+                  <div className="flex items-center gap-3 mt-1">
+                    {editItem.image_url && (
+                      <div className="relative group">
+                        <img src={editItem.image_url} alt="" className="h-24 w-24 object-cover rounded" />
+                        <button
+                          onClick={() => setEditItem((p) => p ? { ...p, image_url: "" } : p)}
+                          className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-destructive rounded-full flex items-center justify-center shadow opacity-0 group-hover:opacity-100 transition-opacity"
+                        >
+                          <X className="h-3 w-3 text-white" />
+                        </button>
+                      </div>
+                    )}
+                    <label className="cursor-pointer">
+                      <div className="flex items-center gap-2 px-3 py-2 bg-muted rounded text-sm hover:bg-muted/80">
+                        <ImageIcon className="h-4 w-4" /> Ngarko imazh
+                      </div>
+                      <input type="file" accept="image/*" className="hidden" onChange={(e) => {
+                        if (e.target.files?.[0]) handleImageUpload(e.target.files[0]);
+                      }} />
+                    </label>
+                  </div>
+                </div>
+                {editItem.id ? (
+                  <ProductImagesManager productId={editItem.id} />
+                ) : (
+                  <p className="text-xs text-muted-foreground">Ruaj produktin fillimisht për të shtuar foto shtesë.</p>
+                )}
+              </TabsContent>
+
+              <div className="flex justify-end gap-2 mt-6 pt-4 border-t">
+                <Button variant="outline" onClick={() => setDialogOpen(false)}>Anulo</Button>
+                <Button onClick={handleSave} disabled={upsert.isPending}>
+                  {upsert.isPending ? "Duke ruajtur..." : "Ruaj"}
+                </Button>
+              </div>
+            </Tabs>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
