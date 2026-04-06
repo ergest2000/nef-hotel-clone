@@ -22,7 +22,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { Plus, Trash2, Edit, Package, Image as ImageIcon, ExternalLink, X, Copy } from "lucide-react";
+import { Plus, Trash2, Edit, Package, Image as ImageIcon, ExternalLink, X, Copy, Search } from "lucide-react";
 import { TranslateButton } from "./TranslateButton";
 import type { Tables } from "@/integrations/supabase/types";
 
@@ -293,7 +293,9 @@ const ProductSizesManager = ({ productId }: { productId: string }) => {
 export const AdminProductsManager = () => {
   const { data: collections } = useCollections();
   const [selectedCollection, setSelectedCollection] = useState<string>("");
-  const { data: products, isLoading } = useProducts(selectedCollection || undefined);
+  const { data: products, isLoading } = useProducts(
+    selectedCollection && selectedCollection !== "all" ? selectedCollection : undefined
+  );
   const upsert = useUpsertProduct();
   const remove = useDeleteProduct();
   const duplicate = useDuplicateProduct();
@@ -301,6 +303,7 @@ export const AdminProductsManager = () => {
   const { translateField, translating } = useAutoTranslate();
   const [editItem, setEditItem] = useState<Partial<Product> | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
 
   const handleSave = () => {
     if (!editItem?.collection_id) {
@@ -352,20 +355,37 @@ export const AdminProductsManager = () => {
     return collections?.find(c => c.id === collectionId)?.slug;
   };
 
-  const filteredProducts = selectedCollection
-    ? products?.filter((p) => p.collection_id === selectedCollection)
-    : products;
+  const filteredProducts = products?.filter((p) => {
+    const matchesCollection = !selectedCollection || selectedCollection === "all"
+      ? true
+      : p.collection_id === selectedCollection;
+    const q = searchTerm.toLowerCase().trim();
+    const matchesSearch = !q
+      ? true
+      : (p.title_al?.toLowerCase().includes(q) ||
+         p.title_en?.toLowerCase().includes(q) ||
+         p.code?.toLowerCase().includes(q) ||
+         p.slug?.toLowerCase().includes(q));
+    return matchesCollection && matchesSearch;
+  });
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h2 className="text-xl font-semibold text-foreground">Produktet</h2>
+        <h2 className="text-xl font-semibold text-foreground">
+          Produktet
+          {searchTerm && filteredProducts !== undefined && (
+            <span className="text-sm font-normal text-muted-foreground ml-2">
+              ({filteredProducts.length} rezultate)
+            </span>
+          )}
+        </h2>
         <Button onClick={openNew} size="sm" disabled={!collections?.length}>
           <Plus className="h-4 w-4 mr-1" /> Shto Produkt
         </Button>
       </div>
 
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-3 flex-wrap">
         <label className="text-sm font-medium text-muted-foreground">Koleksioni:</label>
         <Select value={selectedCollection} onValueChange={setSelectedCollection}>
           <SelectTrigger className="w-64"><SelectValue placeholder="Të gjitha" /></SelectTrigger>
@@ -376,6 +396,23 @@ export const AdminProductsManager = () => {
             ))}
           </SelectContent>
         </Select>
+        <div className="relative flex-1 min-w-[200px] max-w-xs">
+          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+          <Input
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            placeholder="Kërko sipas titullit, kodit..."
+            className="pl-8 h-9 text-sm"
+          />
+          {searchTerm && (
+            <button
+              onClick={() => setSearchTerm("")}
+              className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+            >
+              <X className="h-3.5 w-3.5" />
+            </button>
+          )}
+        </div>
       </div>
 
       {isLoading ? (
