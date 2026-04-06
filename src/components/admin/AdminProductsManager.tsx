@@ -669,7 +669,16 @@ export const AdminProductsManager = () => {
                   <label className="text-xs font-medium text-muted-foreground">Imazhi kryesor</label>
                   <div className="flex items-center gap-3 mt-1">
                     {editItem.image_url && (
-                      <img src={editItem.image_url} alt="" className="h-24 w-24 object-cover rounded" />
+                      <div className="relative group">
+                        <img src={editItem.image_url} alt="" className="h-24 w-24 object-cover rounded" />
+                        <button
+                          onClick={() => setEditItem((p) => p ? { ...p, image_url: "" } : p)}
+                          className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-destructive rounded-full flex items-center justify-center shadow opacity-0 group-hover:opacity-100 transition-opacity"
+                          title="Fshi imazhin"
+                        >
+                          <X className="h-3 w-3 text-white" />
+                        </button>
+                      </div>
                     )}
                     <label className="cursor-pointer">
                       <div className="flex items-center gap-2 px-3 py-2 bg-muted rounded text-sm hover:bg-muted/80">
