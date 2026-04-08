@@ -176,6 +176,12 @@ const FilterSidebar = ({
   onToggleColor,
   onToggleSize,
   onToggleComposition,
+  outerFabrics,
+  fillingMaterials,
+  selectedOuterFabrics,
+  selectedFillingMaterials,
+  onToggleOuterFabric,
+  onToggleFillingMaterial,
 }: {
   collections: Collection[];
   activeSlug: string | undefined;
@@ -189,6 +195,12 @@ const FilterSidebar = ({
   onToggleColor: (id: string) => void;
   onToggleSize: (id: string) => void;
   onToggleComposition: (value: string) => void;
+  outerFabrics: string[];
+  fillingMaterials: string[];
+  selectedOuterFabrics: string[];
+  selectedFillingMaterials: string[];
+  onToggleOuterFabric: (value: string) => void;
+  onToggleFillingMaterial: (value: string) => void;
 }) => {
   const navigate = useNavigate();
 
@@ -394,6 +406,54 @@ const FilterSidebar = ({
           </div>
         </div>
       )}
+
+      {/* Outer fabric filter — Jorgan/Jastëk only */}
+      {outerFabrics.length > 0 && (
+        <div>
+          <h3 className="text-xs font-bold tracking-brand uppercase text-foreground mb-3">
+            {isAl ? "Copa e jashtme" : "Outer fabric"}
+          </h3>
+          <div className="space-y-2">
+            {outerFabrics.map((val) => (
+              <label key={val} className="flex items-center gap-2 cursor-pointer group/filter">
+                <input
+                  type="checkbox"
+                  checked={selectedOuterFabrics.includes(val)}
+                  onChange={() => onToggleOuterFabric(val)}
+                  className="w-4 h-4 rounded border-border text-primary focus:ring-primary/30 cursor-pointer"
+                />
+                <span className="text-sm text-muted-foreground group-hover/filter:text-foreground transition-colors">
+                  {val}
+                </span>
+              </label>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Filling material filter — Jorgan/Jastëk only */}
+      {fillingMaterials.length > 0 && (
+        <div>
+          <h3 className="text-xs font-bold tracking-brand uppercase text-foreground mb-3">
+            {isAl ? "Materiali i mbushësit" : "Filling material"}
+          </h3>
+          <div className="space-y-2">
+            {fillingMaterials.map((val) => (
+              <label key={val} className="flex items-center gap-2 cursor-pointer group/filter">
+                <input
+                  type="checkbox"
+                  checked={selectedFillingMaterials.includes(val)}
+                  onChange={() => onToggleFillingMaterial(val)}
+                  className="w-4 h-4 rounded border-border text-primary focus:ring-primary/30 cursor-pointer"
+                />
+                <span className="text-sm text-muted-foreground group-hover/filter:text-foreground transition-colors">
+                  {val}
+                </span>
+              </label>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 };
@@ -490,6 +550,12 @@ const Collections = () => {
     setSelectedCompositions((prev) =>
       prev.includes(value) ? prev.filter((c) => c !== value) : [...prev, value]
     );
+  const [selectedOuterFabrics, setSelectedOuterFabrics] = useState<string[]>([]);
+  const [selectedFillingMaterials, setSelectedFillingMaterials] = useState<string[]>([]);
+  const toggleOuterFabric = (val: string) =>
+    setSelectedOuterFabrics((prev) => prev.includes(val) ? prev.filter((v) => v !== val) : [...prev, val]);
+  const toggleFillingMaterial = (val: string) =>
+    setSelectedFillingMaterials((prev) => prev.includes(val) ? prev.filter((v) => v !== val) : [...prev, val]);
 
   // Active collection
   const activeCollection = useMemo(
@@ -554,11 +620,40 @@ const Collections = () => {
     return Array.from(compSet).sort();
   }, [scopedProducts, isAl]);
 
+  // Detect Jorgan/Jastëk category for conditional filters
+  const isJorganOrJastek = useMemo(() => {
+    if (!activeCollection) return false;
+    const text = `${activeCollection.title_al ?? ""} ${activeCollection.title_en ?? ""} ${activeCollection.slug ?? ""}`.toLowerCase();
+    return /jorgan|jastek|jast[eë]k|duvet|pillow/.test(text);
+  }, [activeCollection]);
+
+  const outerFabrics = useMemo(() => {
+    if (!isJorganOrJastek) return [];
+    const set = new Set<string>();
+    scopedProducts.forEach((p) => {
+      const v = isAl ? (p as any).outer_fabric_al : (p as any).outer_fabric_en;
+      if (v?.trim()) set.add(v.trim());
+    });
+    return Array.from(set).sort();
+  }, [scopedProducts, isJorganOrJastek, isAl]);
+
+  const fillingMaterials = useMemo(() => {
+    if (!isJorganOrJastek) return [];
+    const set = new Set<string>();
+    scopedProducts.forEach((p) => {
+      const v = isAl ? (p as any).filling_material_al : (p as any).filling_material_en;
+      if (v?.trim()) set.add(v.trim());
+    });
+    return Array.from(set).sort();
+  }, [scopedProducts, isJorganOrJastek, isAl]);
+
   // Clear all attribute filters when the category changes
   useEffect(() => {
     setSelectedColors([]);
     setSelectedSizes([]);
     setSelectedCompositions([]);
+    setSelectedOuterFabrics([]);
+    setSelectedFillingMaterials([]);
   }, [slug]);
 
   // Final product list: scoped products + attribute filters applied
@@ -598,12 +693,28 @@ const Collections = () => {
       });
     }
 
+    if (selectedOuterFabrics.length > 0) {
+      products = products.filter((p) => {
+        const v = isAl ? (p as any).outer_fabric_al : (p as any).outer_fabric_en;
+        return v && selectedOuterFabrics.includes(v.trim());
+      });
+    }
+
+    if (selectedFillingMaterials.length > 0) {
+      products = products.filter((p) => {
+        const v = isAl ? (p as any).filling_material_al : (p as any).filling_material_en;
+        return v && selectedFillingMaterials.includes(v.trim());
+      });
+    }
+
     return products;
   }, [
     scopedProducts,
     selectedColors,
     selectedSizes,
     selectedCompositions,
+    selectedOuterFabrics,
+    selectedFillingMaterials,
     allColors,
     allSizes,
     isAl,
@@ -719,6 +830,12 @@ const Collections = () => {
                   onToggleColor={toggleColor}
                   onToggleSize={toggleSize}
                   onToggleComposition={toggleComposition}
+                  outerFabrics={outerFabrics}
+                  fillingMaterials={fillingMaterials}
+                  selectedOuterFabrics={selectedOuterFabrics}
+                  selectedFillingMaterials={selectedFillingMaterials}
+                  onToggleOuterFabric={toggleOuterFabric}
+                  onToggleFillingMaterial={toggleFillingMaterial}
                 />
               </div>
             </aside>
@@ -736,12 +853,14 @@ const Collections = () => {
                       ? "Nuk u gjetën produkte në këtë koleksion."
                       : "No products found in this collection."}
                   </p>
-                  {(selectedColors.length > 0 || selectedSizes.length > 0 || selectedCompositions.length > 0) && (
+                  {(selectedColors.length > 0 || selectedSizes.length > 0 || selectedCompositions.length > 0 || selectedOuterFabrics.length > 0 || selectedFillingMaterials.length > 0) && (
                     <button
                       onClick={() => {
                         setSelectedColors([]);
                         setSelectedSizes([]);
                         setSelectedCompositions([]);
+                        setSelectedOuterFabrics([]);
+                        setSelectedFillingMaterials([]);
                       }}
                       className="mt-4 text-xs tracking-brand uppercase text-primary hover:underline"
                     >
