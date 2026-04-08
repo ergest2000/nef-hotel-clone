@@ -88,21 +88,10 @@ const ImageLightbox = ({ images, startIndex, onClose }: { images: string[]; star
 const ProductGallery = ({ mainImage, productId, selectedColorId, colorImageUrl, onOpenLightbox }: { mainImage?: string | null; productId: string; selectedColorId?: string | null; colorImageUrl?: string | null; onOpenLightbox: (images: string[], index: number) => void }) => {
   const { data: extraImages } = useProductImages(productId);
 
-  // Build image list: if a color is selected, show only that color's images + general images.
-  // If the selected color has its own image (colorImageUrl), place it first.
+  // Build image list: if a color is selected, show only that color's images + general images
   const allImages = useMemo(() => {
     const imgs: string[] = [];
-
-    // Put the color's featured image first when a color is selected
-    if (colorImageUrl && !imgs.includes(colorImageUrl)) {
-      imgs.push(colorImageUrl);
-    }
-
-    // Add main product image (skip if already added as color image)
-    if (mainImage && !imgs.includes(mainImage)) {
-      imgs.push(mainImage);
-    }
-
+    if (mainImage) imgs.push(mainImage);
     extraImages?.forEach((img) => {
       if (!img.image_url || imgs.includes(img.image_url)) return;
       // If a color is selected, show only images for that color or images with no color (general)
@@ -112,18 +101,18 @@ const ProductGallery = ({ mainImage, productId, selectedColorId, colorImageUrl, 
       }
       imgs.push(img.image_url);
     });
-
     return imgs;
-  }, [mainImage, extraImages, selectedColorId, colorImageUrl]);
+  }, [mainImage, extraImages, selectedColorId]);
 
   const [selected, setSelected] = useState(0);
 
-  // When color changes, jump to index 0 (which is now the color's featured image)
-  useEffect(() => { setSelected(0); }, [selectedColorId]);
+  // Reset selection when color changes
+  useMemo(() => { setSelected(0); }, [selectedColorId]);
 
-  const displayImage = allImages[selected] ?? allImages[0];
+  // When a color image is set (from color swatch), show it as the active image
+  const displayImage = colorImageUrl || allImages[selected] || allImages[0];
 
-  if (!allImages.length) {
+  if (!allImages.length && !colorImageUrl) {
     return (
       <div className="aspect-square bg-muted flex items-center justify-center">
         <Package className="h-24 w-24 text-muted-foreground/20" />
@@ -134,23 +123,26 @@ const ProductGallery = ({ mainImage, productId, selectedColorId, colorImageUrl, 
   const goPrev = () => setSelected((s) => (s > 0 ? s - 1 : allImages.length - 1));
   const goNext = () => setSelected((s) => (s < allImages.length - 1 ? s + 1 : 0));
 
+  const lightboxImages = colorImageUrl && !allImages.includes(colorImageUrl)
+    ? [colorImageUrl, ...allImages]
+    : allImages;
+
   return (
     <div className="space-y-4">
       <div className="relative aspect-square bg-muted overflow-hidden group">
         <img
-          key={displayImage}
-          src={displayImage}
+          src={displayImage || allImages[0]}
           alt=""
           className="w-full h-full object-cover transition-opacity duration-300"
         />
         {/* Zoom icon */}
         <button
-          onClick={() => onOpenLightbox(allImages, selected)}
+          onClick={() => onOpenLightbox(lightboxImages, colorImageUrl ? 0 : selected)}
           className="absolute top-3 right-3 w-9 h-9 rounded-full bg-background/80 border border-border flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-background"
         >
           <Search className="h-4 w-4 text-foreground" />
         </button>
-        {allImages.length > 1 && (
+        {allImages.length > 1 && !colorImageUrl && (
           <>
             <button onClick={goPrev} className="absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-background/80 border border-border flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
               <ChevronLeft className="h-4 w-4 text-foreground" />
@@ -165,10 +157,10 @@ const ProductGallery = ({ mainImage, productId, selectedColorId, colorImageUrl, 
         <div className="flex gap-2 overflow-x-auto pb-1 snap-x">
           {allImages.map((img, i) => (
             <button
-              key={img}
-              onClick={() => setSelected(i)}
+              key={i}
+              onClick={() => { setSelected(i); }}
               className={`flex-shrink-0 w-16 h-16 md:w-20 md:h-20 overflow-hidden border-2 transition-colors snap-start ${
-                i === selected ? "border-primary" : "border-transparent hover:border-border"
+                !colorImageUrl && i === selected ? "border-primary" : "border-transparent hover:border-border"
               }`}
             >
               <img src={img} alt="" className="w-full h-full object-cover" />
@@ -570,6 +562,12 @@ const ProductDetail = () => {
                     )}
                     {(isAl ? product.composition_al : product.composition_en) && (
                       <p><span className="font-medium text-foreground">{t("Përbërja:", "Composition:")}</span> {isAl ? product.composition_al : product.composition_en}</p>
+                    )}
+                    {(isAl ? (product as any).outer_fabric_al : (product as any).outer_fabric_en) && (
+                      <p><span className="font-medium text-foreground">{t("Copa e jashtme:", "Outer fabric:")}</span> {isAl ? (product as any).outer_fabric_al : (product as any).outer_fabric_en}</p>
+                    )}
+                    {(isAl ? (product as any).filling_material_al : (product as any).filling_material_en) && (
+                      <p><span className="font-medium text-foreground">{t("Materiali i mbushësit:", "Filling material:")}</span> {isAl ? (product as any).filling_material_al : (product as any).filling_material_en}</p>
                     )}
                     {(isAl ? product.dimensions_al : product.dimensions_en) && (
                       <p><span className="font-medium text-foreground">{t("Përmasat:", "Sizes:")}</span> {isAl ? product.dimensions_al : product.dimensions_en}</p>
