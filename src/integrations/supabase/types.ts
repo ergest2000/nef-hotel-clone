@@ -490,6 +490,8 @@ export type Database = {
           composition_al: string | null
           composition_en: string | null
           created_at: string
+          filling_material_al: string | null
+          filling_material_en: string | null
           customizable: boolean
           description_al: string
           description_en: string
@@ -498,6 +500,8 @@ export type Database = {
           id: string
           image_url: string | null
           in_stock: boolean
+          outer_fabric_al: string | null
+          outer_fabric_en: string | null
           pieces_per_box: number | null
           product_info_al: string | null
           product_info_en: string | null
@@ -522,6 +526,8 @@ export type Database = {
           composition_al?: string | null
           composition_en?: string | null
           created_at?: string
+          filling_material_al?: string | null
+          filling_material_en?: string | null
           customizable?: boolean
           description_al?: string
           description_en?: string
@@ -530,6 +536,8 @@ export type Database = {
           id?: string
           image_url?: string | null
           in_stock?: boolean
+          outer_fabric_al?: string | null
+          outer_fabric_en?: string | null
           pieces_per_box?: number | null
           product_info_al?: string | null
           product_info_en?: string | null
@@ -554,6 +562,8 @@ export type Database = {
           composition_al?: string | null
           composition_en?: string | null
           created_at?: string
+          filling_material_al?: string | null
+          filling_material_en?: string | null
           customizable?: boolean
           description_al?: string
           description_en?: string
@@ -562,6 +572,8 @@ export type Database = {
           id?: string
           image_url?: string | null
           in_stock?: boolean
+          outer_fabric_al?: string | null
+          outer_fabric_en?: string | null
           pieces_per_box?: number | null
           product_info_al?: string | null
           product_info_en?: string | null
