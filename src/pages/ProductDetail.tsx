@@ -88,17 +88,11 @@ const ImageLightbox = ({ images, startIndex, onClose }: { images: string[]; star
 const ProductGallery = ({ mainImage, productId, selectedColorId, colorImageUrl, onOpenLightbox }: { mainImage?: string | null; productId: string; selectedColorId?: string | null; colorImageUrl?: string | null; onOpenLightbox: (images: string[], index: number) => void }) => {
   const { data: extraImages } = useProductImages(productId);
 
-  // Build image list: colorImageUrl goes first (featured image of selected variant),
-  // then mainImage, then extra images filtered to this color.
+  // colorImageUrl (imazhi i ngjyrës) shkon PARE në listë, pastaj mainImage, pastaj të tjerat
   const allImages = useMemo(() => {
     const imgs: string[] = [];
-
-    // Color's featured image always comes first
-    if (colorImageUrl && !imgs.includes(colorImageUrl)) imgs.push(colorImageUrl);
-
-    // Main product image (skip if already added)
+    if (colorImageUrl) imgs.push(colorImageUrl);
     if (mainImage && !imgs.includes(mainImage)) imgs.push(mainImage);
-
     extraImages?.forEach((img) => {
       if (!img.image_url || imgs.includes(img.image_url)) return;
       if (selectedColorId) {
@@ -112,7 +106,7 @@ const ProductGallery = ({ mainImage, productId, selectedColorId, colorImageUrl, 
 
   const [selected, setSelected] = useState(0);
 
-  // When color changes, jump to index 0 (color's featured image)
+  // Kur ndryshon ngjyra → kalo te index 0 (imazhi i ngjyrës)
   useEffect(() => { setSelected(0); }, [selectedColorId]);
 
   const displayImage = allImages[selected] ?? allImages[0];
@@ -564,12 +558,6 @@ const ProductDetail = () => {
                     )}
                     {(isAl ? product.composition_al : product.composition_en) && (
                       <p><span className="font-medium text-foreground">{t("Përbërja:", "Composition:")}</span> {isAl ? product.composition_al : product.composition_en}</p>
-                    )}
-                    {(isAl ? (product as any).outer_fabric_al : (product as any).outer_fabric_en) && (
-                      <p><span className="font-medium text-foreground">{t("Copa e jashtme:", "Outer fabric:")}</span> {isAl ? (product as any).outer_fabric_al : (product as any).outer_fabric_en}</p>
-                    )}
-                    {(isAl ? (product as any).filling_material_al : (product as any).filling_material_en) && (
-                      <p><span className="font-medium text-foreground">{t("Materiali i mbushësit:", "Filling material:")}</span> {isAl ? (product as any).filling_material_al : (product as any).filling_material_en}</p>
                     )}
                     {(isAl ? product.dimensions_al : product.dimensions_en) && (
                       <p><span className="font-medium text-foreground">{t("Përmasat:", "Sizes:")}</span> {isAl ? product.dimensions_al : product.dimensions_en}</p>
