@@ -88,13 +88,19 @@ const ImageLightbox = ({ images, startIndex, onClose }: { images: string[]; star
 const ProductGallery = ({ mainImage, productId, selectedColorId, colorImageUrl, onOpenLightbox }: { mainImage?: string | null; productId: string; selectedColorId?: string | null; colorImageUrl?: string | null; onOpenLightbox: (images: string[], index: number) => void }) => {
   const { data: extraImages } = useProductImages(productId);
 
-  // Build image list: if a color is selected, show only that color's images + general images
+  // Build image list: colorImageUrl goes first (featured image of selected variant),
+  // then mainImage, then extra images filtered to this color.
   const allImages = useMemo(() => {
     const imgs: string[] = [];
-    if (mainImage) imgs.push(mainImage);
+
+    // Color's featured image always comes first
+    if (colorImageUrl && !imgs.includes(colorImageUrl)) imgs.push(colorImageUrl);
+
+    // Main product image (skip if already added)
+    if (mainImage && !imgs.includes(mainImage)) imgs.push(mainImage);
+
     extraImages?.forEach((img) => {
       if (!img.image_url || imgs.includes(img.image_url)) return;
-      // If a color is selected, show only images for that color or images with no color (general)
       if (selectedColorId) {
         const imgColorId = (img as any).color_id;
         if (imgColorId && imgColorId !== selectedColorId) return;
@@ -102,17 +108,16 @@ const ProductGallery = ({ mainImage, productId, selectedColorId, colorImageUrl, 
       imgs.push(img.image_url);
     });
     return imgs;
-  }, [mainImage, extraImages, selectedColorId]);
+  }, [mainImage, extraImages, selectedColorId, colorImageUrl]);
 
   const [selected, setSelected] = useState(0);
 
-  // Reset selection when color changes
-  useMemo(() => { setSelected(0); }, [selectedColorId]);
+  // When color changes, jump to index 0 (color's featured image)
+  useEffect(() => { setSelected(0); }, [selectedColorId]);
 
-  // When a color image is set (from color swatch), show it as the active image
-  const displayImage = colorImageUrl || allImages[selected] || allImages[0];
+  const displayImage = allImages[selected] ?? allImages[0];
 
-  if (!allImages.length && !colorImageUrl) {
+  if (!allImages.length) {
     return (
       <div className="aspect-square bg-muted flex items-center justify-center">
         <Package className="h-24 w-24 text-muted-foreground/20" />
@@ -123,26 +128,23 @@ const ProductGallery = ({ mainImage, productId, selectedColorId, colorImageUrl, 
   const goPrev = () => setSelected((s) => (s > 0 ? s - 1 : allImages.length - 1));
   const goNext = () => setSelected((s) => (s < allImages.length - 1 ? s + 1 : 0));
 
-  const lightboxImages = colorImageUrl && !allImages.includes(colorImageUrl)
-    ? [colorImageUrl, ...allImages]
-    : allImages;
-
   return (
     <div className="space-y-4">
       <div className="relative aspect-square bg-muted overflow-hidden group">
         <img
-          src={displayImage || allImages[0]}
+          key={displayImage}
+          src={displayImage}
           alt=""
           className="w-full h-full object-cover transition-opacity duration-300"
         />
         {/* Zoom icon */}
         <button
-          onClick={() => onOpenLightbox(lightboxImages, colorImageUrl ? 0 : selected)}
+          onClick={() => onOpenLightbox(allImages, selected)}
           className="absolute top-3 right-3 w-9 h-9 rounded-full bg-background/80 border border-border flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-background"
         >
           <Search className="h-4 w-4 text-foreground" />
         </button>
-        {allImages.length > 1 && !colorImageUrl && (
+        {allImages.length > 1 && (
           <>
             <button onClick={goPrev} className="absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-background/80 border border-border flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
               <ChevronLeft className="h-4 w-4 text-foreground" />
@@ -157,10 +159,10 @@ const ProductGallery = ({ mainImage, productId, selectedColorId, colorImageUrl, 
         <div className="flex gap-2 overflow-x-auto pb-1 snap-x">
           {allImages.map((img, i) => (
             <button
-              key={i}
-              onClick={() => { setSelected(i); }}
+              key={img}
+              onClick={() => setSelected(i)}
               className={`flex-shrink-0 w-16 h-16 md:w-20 md:h-20 overflow-hidden border-2 transition-colors snap-start ${
-                !colorImageUrl && i === selected ? "border-primary" : "border-transparent hover:border-border"
+                i === selected ? "border-primary" : "border-transparent hover:border-border"
               }`}
             >
               <img src={img} alt="" className="w-full h-full object-cover" />
