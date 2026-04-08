@@ -568,6 +568,12 @@ const ProductDetail = () => {
                     {(isAl ? product.composition_al : product.composition_en) && (
                       <p><span className="font-medium text-foreground">{t("Përbërja:", "Composition:")}</span> {isAl ? product.composition_al : product.composition_en}</p>
                     )}
+                    {(isAl ? (product as any).outer_fabric_al : (product as any).outer_fabric_en) && (
+                      <p><span className="font-medium text-foreground">{t("Copa e jashtme:", "Outer fabric:")}</span> {isAl ? (product as any).outer_fabric_al : (product as any).outer_fabric_en}</p>
+                    )}
+                    {(isAl ? (product as any).filling_material_al : (product as any).filling_material_en) && (
+                      <p><span className="font-medium text-foreground">{t("Materiali i mbushësit:", "Filling material:")}</span> {isAl ? (product as any).filling_material_al : (product as any).filling_material_en}</p>
+                    )}
                     {(isAl ? product.dimensions_al : product.dimensions_en) && (
                       <p><span className="font-medium text-foreground">{t("Përmasat:", "Sizes:")}</span> {isAl ? product.dimensions_al : product.dimensions_en}</p>
                     )}
