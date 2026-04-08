@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import SiteHeader from "@/components/SiteHeader";
 import SiteFooter from "@/components/SiteFooter";
@@ -506,16 +506,44 @@ const Collections = () => {
     [activeCollection, collections]
   );
 
-  // Extract unique composition values from all products
-  const compositions = useMemo(() => {
+  // Products scoped to the active collection (before attribute filters)
+  // This drives both the sidebar filter options AND the final filtered list.
+  const scopedProducts = useMemo(() => {
     if (!allProducts) return [];
+    if (!activeCollection) return allProducts;
+    const childIds =
+      collections
+        ?.filter((c) => c.parent_id === activeCollection.id)
+        .map((c) => c.id) ?? [];
+    const relevantIds = [activeCollection.id, ...childIds];
+    return allProducts.filter((p) => relevantIds.includes(p.collection_id));
+  }, [allProducts, activeCollection, collections]);
+
+  const scopedProductIds = useMemo(
+    () => new Set(scopedProducts.map((p) => p.id)),
+    [scopedProducts]
+  );
+
+  // Colors only for products in the active category
+  const scopedColors = useMemo(() => {
+    if (!allColors) return [];
+    return allColors.filter((c) => scopedProductIds.has(c.product_id));
+  }, [allColors, scopedProductIds]);
+
+  // Sizes only for products in the active category
+  const scopedSizes = useMemo(() => {
+    if (!allSizes) return [];
+    return allSizes.filter((s) => scopedProductIds.has(s.product_id));
+  }, [allSizes, scopedProductIds]);
+
+  // Compositions only for products in the active category
+  const compositions = useMemo(() => {
     const compSet = new Set<string>();
-    allProducts.forEach((p) => {
+    scopedProducts.forEach((p) => {
       const comp = isAl
         ? p.composition_al || p.composition_en
         : p.composition_en || p.composition_al;
       if (comp) {
-        // Split by common separators (comma, /, &) to get individual materials
         comp
           .split(/[,\/&]/)
           .map((s) => s.trim())
@@ -524,23 +552,18 @@ const Collections = () => {
       }
     });
     return Array.from(compSet).sort();
-  }, [allProducts, isAl]);
+  }, [scopedProducts, isAl]);
 
-  // Filter products
+  // Clear all attribute filters when the category changes
+  useEffect(() => {
+    setSelectedColors([]);
+    setSelectedSizes([]);
+    setSelectedCompositions([]);
+  }, [slug]);
+
+  // Final product list: scoped products + attribute filters applied
   const filteredProducts = useMemo(() => {
-    if (!allProducts) return [];
-
-    let products = allProducts;
-
-    // Filter by collection
-    if (activeCollection) {
-      const childIds =
-        collections
-          ?.filter((c) => c.parent_id === activeCollection.id)
-          .map((c) => c.id) ?? [];
-      const relevantIds = [activeCollection.id, ...childIds];
-      products = products.filter((p) => relevantIds.includes(p.collection_id));
-    }
+    let products = scopedProducts;
 
     // Filter by color
     if (selectedColors.length > 0 && allColors) {
@@ -577,9 +600,7 @@ const Collections = () => {
 
     return products;
   }, [
-    allProducts,
-    activeCollection,
-    collections,
+    scopedProducts,
     selectedColors,
     selectedSizes,
     selectedCompositions,
@@ -689,8 +710,8 @@ const Collections = () => {
                   collections={collections || []}
                   activeSlug={slug}
                   isAl={isAl}
-                  allColors={allColors || []}
-                  allSizes={allSizes || []}
+                  allColors={scopedColors}
+                  allSizes={scopedSizes}
                   compositions={compositions}
                   selectedColors={selectedColors}
                   selectedSizes={selectedSizes}
