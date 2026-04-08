@@ -88,10 +88,19 @@ const ImageLightbox = ({ images, startIndex, onClose }: { images: string[]; star
 const ProductGallery = ({ mainImage, productId, selectedColorId, colorImageUrl, onOpenLightbox }: { mainImage?: string | null; productId: string; selectedColorId?: string | null; colorImageUrl?: string | null; onOpenLightbox: (images: string[], index: number) => void }) => {
   const { data: extraImages } = useProductImages(productId);
 
-  // colorImageUrl (imazhi i ngjyrës) shkon PARE në listë, pastaj mainImage, pastaj të tjerat
+  // Nëse ngjyra ka image_url direkt (product_colors.image_url), përdore atë.
+  // Fallback: merr imazhin e parë nga product_images ku color_id përputhet.
+  const colorFeaturedImage = useMemo(() => {
+    if (!selectedColorId) return null;
+    if (colorImageUrl) return colorImageUrl;
+    const first = extraImages?.find((img) => (img as any).color_id === selectedColorId && img.image_url);
+    return first?.image_url ?? null;
+  }, [selectedColorId, colorImageUrl, extraImages]);
+
+  // Ndërto listën: imazhi i ngjyrës i pari, pastaj mainImage, pastaj të tjerat e kësaj ngjyre
   const allImages = useMemo(() => {
     const imgs: string[] = [];
-    if (colorImageUrl) imgs.push(colorImageUrl);
+    if (colorFeaturedImage) imgs.push(colorFeaturedImage);
     if (mainImage && !imgs.includes(mainImage)) imgs.push(mainImage);
     extraImages?.forEach((img) => {
       if (!img.image_url || imgs.includes(img.image_url)) return;
@@ -102,11 +111,11 @@ const ProductGallery = ({ mainImage, productId, selectedColorId, colorImageUrl, 
       imgs.push(img.image_url);
     });
     return imgs;
-  }, [mainImage, extraImages, selectedColorId, colorImageUrl]);
+  }, [mainImage, extraImages, selectedColorId, colorFeaturedImage]);
 
   const [selected, setSelected] = useState(0);
 
-  // Kur ndryshon ngjyra → kalo te index 0 (imazhi i ngjyrës)
+  // Kur ndryshon ngjyra → kalo te index 0 (imazhi featured i ngjyrës)
   useEffect(() => { setSelected(0); }, [selectedColorId]);
 
   const displayImage = allImages[selected] ?? allImages[0];
