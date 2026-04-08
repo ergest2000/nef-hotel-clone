@@ -127,11 +127,38 @@ export const useToggleSectionVisibility = () => {
   });
 };
 
-// Upload image to cms-images bucket
+// ─── Convert any image to WebP in-browser before upload ────────
+const convertToWebP = (file: File, quality = 0.85): Promise<Blob> =>
+  new Promise((resolve, reject) => {
+    const img = new Image();
+    const objectUrl = URL.createObjectURL(file);
+    img.onload = () => {
+      URL.revokeObjectURL(objectUrl);
+      const canvas = document.createElement("canvas");
+      canvas.width = img.naturalWidth;
+      canvas.height = img.naturalHeight;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) return reject(new Error("Canvas context unavailable"));
+      ctx.drawImage(img, 0, 0);
+      canvas.toBlob(
+        (blob) => (blob ? resolve(blob) : reject(new Error("WebP conversion failed"))),
+        "image/webp",
+        quality
+      );
+    };
+    img.onerror = () => { URL.revokeObjectURL(objectUrl); reject(new Error("Image load failed")); };
+    img.src = objectUrl;
+  });
+
+// Upload image to cms-images bucket (always stores as .webp)
 export const uploadCmsImage = async (file: File, path: string) => {
+  const webpPath = path.replace(/\.[^.]+$/, "") + ".webp";
+  const blob = await convertToWebP(file);
+  const webpFile = new File([blob], webpPath.split("/").pop()!, { type: "image/webp" });
+
   const { data, error } = await supabase.storage
     .from("cms-images")
-    .upload(path, file, { upsert: true });
+    .upload(webpPath, webpFile, { upsert: true, contentType: "image/webp" });
   if (error) throw error;
   const { data: urlData } = supabase.storage.from("cms-images").getPublicUrl(data.path);
   return urlData.publicUrl;
