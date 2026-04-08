@@ -33,6 +33,8 @@ const emptyProduct: Partial<Product> = {
   title_al: "", title_en: "", description_al: "", description_en: "",
   code: "",
   composition_al: "", composition_en: "",
+  outer_fabric_al: "", outer_fabric_en: "",
+  filling_material_al: "", filling_material_en: "",
   weight_gsm: 0, box_quantity: 1, pieces_per_box: 1,
   in_stock: true, customizable: false,
   product_info_al: "", product_info_en: "",
@@ -356,6 +358,15 @@ export const AdminProductsManager = () => {
     return collections?.find(c => c.id === collectionId)?.slug;
   };
 
+  // Detect if the currently edited product belongs to Jorgan or Jastëk category
+  const isJorganOrJastek = (() => {
+    const colId = editItem?.collection_id;
+    if (!colId || !collections) return false;
+    const col = collections.find(c => c.id === colId);
+    const text = `${col?.title_al ?? ""} ${col?.title_en ?? ""} ${col?.slug ?? ""}`.toLowerCase();
+    return /jorgan|jastek|jast[eë]k|duvet|pillow/.test(text);
+  })();
+
   const filteredProducts = products?.filter((p) => {
     const matchesCollection = !selectedCollection || selectedCollection === "all"
       ? true
@@ -658,6 +669,44 @@ export const AdminProductsManager = () => {
                     <Input value={editItem.composition_en ?? ""} onChange={(e) => setEditItem({ ...editItem, composition_en: e.target.value })} />
                   </div>
                 </div>
+
+                {/* Copa e jashtme + Materiali i mbushësit — vetëm Jorgan/Jastëk */}
+                {isJorganOrJastek && (
+                  <>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <div className="flex items-center justify-between">
+                          <label className="text-xs font-medium text-muted-foreground">Copa e jashtme (AL)</label>
+                          <TranslateButton direction="al_to_en" loading={translating === "p_outer_al"} onClick={() => translateField("p_outer_al", editItem.outer_fabric_al ?? "", "al_to_en", (t) => setEditItem((p) => p ? { ...p, outer_fabric_en: t } : p))} />
+                        </div>
+                        <Input value={editItem.outer_fabric_al ?? ""} onChange={(e) => setEditItem({ ...editItem, outer_fabric_al: e.target.value })} />
+                      </div>
+                      <div>
+                        <div className="flex items-center justify-between">
+                          <label className="text-xs font-medium text-muted-foreground">Outer fabric (EN)</label>
+                          <TranslateButton direction="en_to_al" loading={translating === "p_outer_en"} onClick={() => translateField("p_outer_en", editItem.outer_fabric_en ?? "", "en_to_al", (t) => setEditItem((p) => p ? { ...p, outer_fabric_al: t } : p))} />
+                        </div>
+                        <Input value={editItem.outer_fabric_en ?? ""} onChange={(e) => setEditItem({ ...editItem, outer_fabric_en: e.target.value })} />
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <div className="flex items-center justify-between">
+                          <label className="text-xs font-medium text-muted-foreground">Materiali i mbushësit (AL)</label>
+                          <TranslateButton direction="al_to_en" loading={translating === "p_fill_al"} onClick={() => translateField("p_fill_al", editItem.filling_material_al ?? "", "al_to_en", (t) => setEditItem((p) => p ? { ...p, filling_material_en: t } : p))} />
+                        </div>
+                        <Input value={editItem.filling_material_al ?? ""} onChange={(e) => setEditItem({ ...editItem, filling_material_al: e.target.value })} />
+                      </div>
+                      <div>
+                        <div className="flex items-center justify-between">
+                          <label className="text-xs font-medium text-muted-foreground">Filling material (EN)</label>
+                          <TranslateButton direction="en_to_al" loading={translating === "p_fill_en"} onClick={() => translateField("p_fill_en", editItem.filling_material_en ?? "", "en_to_al", (t) => setEditItem((p) => p ? { ...p, filling_material_al: t } : p))} />
+                        </div>
+                        <Input value={editItem.filling_material_en ?? ""} onChange={(e) => setEditItem({ ...editItem, filling_material_en: e.target.value })} />
+                      </div>
+                    </div>
+                  </>
+                )}
               </TabsContent>
 
               <TabsContent value="variants" className="space-y-6 mt-4">
