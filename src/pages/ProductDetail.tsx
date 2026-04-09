@@ -18,17 +18,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { Heart, ShoppingBag, Package, ChevronLeft, ChevronRight, Search, X } from "lucide-react";
 import { useDesign } from "@/hooks/useDesignSettings";
 import ProductColorPicker from "@/components/ProductColorPicker";
-
-// ── Supabase Image Transform helper ───────────────────────────
-// Resize + WebP on-the-fly via Supabase Storage Transform API
-const SUPABASE_URL = "https://yvkwkrumopgspyohrgio.supabase.co";
-const imgUrl = (src: string | null | undefined, width: number, quality = 80): string => {
-  if (!src) return "";
-  // Only transform Supabase Storage URLs
-  if (!src.includes(SUPABASE_URL + "/storage")) return src;
-  const separator = src.includes("?") ? "&" : "?";
-  return `${src}${separator}width=${width}&quality=${quality}&format=webp&resize=contain`;
-};
+import { optimizeImage } from "@/lib/optimizeImage";
 
 
 
@@ -149,7 +139,7 @@ const ProductGallery = ({ mainImage, productId, selectedColorId, colorImageUrl, 
       <div className="relative aspect-square bg-muted overflow-hidden group">
         <img
           key={displayImage}
-          src={imgUrl(displayImage, 800)}
+          src={optimizeImage(displayImage, { width: 800 })}
           alt=""
           className="w-full h-full object-cover transition-opacity duration-300"
         />
@@ -181,7 +171,7 @@ const ProductGallery = ({ mainImage, productId, selectedColorId, colorImageUrl, 
                 i === selected ? "border-primary" : "border-transparent hover:border-border"
               }`}
             >
-              <img src={imgUrl(img, 200)} alt="" className="w-full h-full object-cover" />
+              <img src={optimizeImage(img, { width: 200 })} alt="" className="w-full h-full object-cover" />
             </button>
           ))}
         </div>
@@ -218,7 +208,7 @@ const RelatedProducts = ({ collectionId, currentProductId, isAl, collectionSlug,
                 <Link to={`/koleksionet/${collectionSlug}/${p.slug || p.id}`}>
                   <div className="aspect-square bg-muted overflow-hidden mb-3">
                     {p.image_url ? (
-                      <img src={imgUrl(p.image_url, 400)} alt={isAl ? p.title_al : p.title_en} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" />
+                      <img src={optimizeImage(p.image_url, { width: 400 })} alt={isAl ? p.title_al : p.title_en} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" />
                     ) : (
                       <div className="flex items-center justify-center h-full">
                         <Package className="h-10 w-10 text-muted-foreground/20" />
