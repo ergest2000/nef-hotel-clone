@@ -19,6 +19,19 @@ import { Heart, ShoppingBag, Package, ChevronLeft, ChevronRight, Search, X } fro
 import { useDesign } from "@/hooks/useDesignSettings";
 import ProductColorPicker from "@/components/ProductColorPicker";
 
+// ── Supabase Image Transform helper ───────────────────────────
+// Resize + WebP on-the-fly via Supabase Storage Transform API
+const SUPABASE_URL = "https://yvkwkrumopgspyohrgio.supabase.co";
+const imgUrl = (src: string | null | undefined, width: number, quality = 80): string => {
+  if (!src) return "";
+  // Only transform Supabase Storage URLs
+  if (!src.includes(SUPABASE_URL + "/storage")) return src;
+  const separator = src.includes("?") ? "&" : "?";
+  return `${src}${separator}width=${width}&quality=${quality}&format=webp&resize=contain`;
+};
+
+
+
 /* Default SVG icon for "Customizable" badge — overridable from Dashboard > Design Settings > customizable_icon_url */
 const DefaultCustomizeIcon = ({ className }: { className?: string }) => (
   <svg viewBox="0 0 297 297" fill="currentColor" className={className} xmlns="http://www.w3.org/2000/svg">
@@ -136,7 +149,7 @@ const ProductGallery = ({ mainImage, productId, selectedColorId, colorImageUrl, 
       <div className="relative aspect-square bg-muted overflow-hidden group">
         <img
           key={displayImage}
-          src={displayImage}
+          src={imgUrl(displayImage, 800)}
           alt=""
           className="w-full h-full object-cover transition-opacity duration-300"
         />
@@ -168,7 +181,7 @@ const ProductGallery = ({ mainImage, productId, selectedColorId, colorImageUrl, 
                 i === selected ? "border-primary" : "border-transparent hover:border-border"
               }`}
             >
-              <img src={img} alt="" className="w-full h-full object-cover" />
+              <img src={imgUrl(img, 200)} alt="" className="w-full h-full object-cover" />
             </button>
           ))}
         </div>
@@ -205,7 +218,7 @@ const RelatedProducts = ({ collectionId, currentProductId, isAl, collectionSlug,
                 <Link to={`/koleksionet/${collectionSlug}/${p.slug || p.id}`}>
                   <div className="aspect-square bg-muted overflow-hidden mb-3">
                     {p.image_url ? (
-                      <img src={p.image_url} alt={isAl ? p.title_al : p.title_en} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" />
+                      <img src={imgUrl(p.image_url, 400)} alt={isAl ? p.title_al : p.title_en} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" />
                     ) : (
                       <div className="flex items-center justify-center h-full">
                         <Package className="h-10 w-10 text-muted-foreground/20" />
