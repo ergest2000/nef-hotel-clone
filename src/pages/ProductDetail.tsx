@@ -18,7 +18,6 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { Heart, ShoppingBag, Package, ChevronLeft, ChevronRight, Search, X } from "lucide-react";
 import { useDesign } from "@/hooks/useDesignSettings";
 import ProductColorPicker from "@/components/ProductColorPicker";
-import { optimizeImage } from "@/lib/optimizeImage";
 
 
 
@@ -139,7 +138,7 @@ const ProductGallery = ({ mainImage, productId, selectedColorId, colorImageUrl, 
       <div className="relative aspect-square bg-muted overflow-hidden group">
         <img
           key={displayImage}
-          src={optimizeImage(displayImage, { width: 800 })}
+          src={displayImage}
           alt=""
           className="w-full h-full object-cover transition-opacity duration-300"
         />
@@ -171,7 +170,7 @@ const ProductGallery = ({ mainImage, productId, selectedColorId, colorImageUrl, 
                 i === selected ? "border-primary" : "border-transparent hover:border-border"
               }`}
             >
-              <img src={optimizeImage(img, { width: 200 })} alt="" className="w-full h-full object-cover" />
+              <img src={img} alt="" className="w-full h-full object-cover" />
             </button>
           ))}
         </div>
@@ -208,7 +207,7 @@ const RelatedProducts = ({ collectionId, currentProductId, isAl, collectionSlug,
                 <Link to={`/koleksionet/${collectionSlug}/${p.slug || p.id}`}>
                   <div className="aspect-square bg-muted overflow-hidden mb-3">
                     {p.image_url ? (
-                      <img src={optimizeImage(p.image_url, { width: 400 })} alt={isAl ? p.title_al : p.title_en} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" />
+                      <img src={p.image_url} alt={isAl ? p.title_al : p.title_en} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" />
                     ) : (
                       <div className="flex items-center justify-center h-full">
                         <Package className="h-10 w-10 text-muted-foreground/20" />
