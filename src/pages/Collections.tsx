@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import SiteHeader from "@/components/SiteHeader";
 import SiteFooter from "@/components/SiteFooter";
@@ -18,6 +18,17 @@ import { usePageContent, getContentValue } from "@/hooks/useCms";
 import { Heart, ChevronRight } from "lucide-react";
 import ProductColorPicker from "@/components/ProductColorPicker";
 import type { Tables } from "@/integrations/supabase/types";
+
+// ── Supabase Image Transform helper ──────────────────────────
+const SUPABASE_URL = "https://yvkwkrumopgspyohrgio.supabase.co";
+const imgUrl = (src: string | null | undefined, width: number, quality = 80): string => {
+  if (!src) return "";
+  if (!src.includes(SUPABASE_URL + "/storage")) return src;
+  const separator = src.includes("?") ? "&" : "?";
+  return `${src}${separator}width=${width}&quality=${quality}&format=webp&resize=contain`;
+};
+
+
 
 type Collection = Tables<"collections">;
 type Product = Tables<"products">;
@@ -85,7 +96,7 @@ const ProductCard = ({
         <div className="relative aspect-square overflow-hidden bg-secondary">
           {image ? (
             <img
-              src={image}
+              src={imgUrl(image, 400)}
               alt={title}
               className="w-full h-full object-cover transition-all duration-300 group-hover:scale-105"
               loading="lazy"
@@ -176,12 +187,6 @@ const FilterSidebar = ({
   onToggleColor,
   onToggleSize,
   onToggleComposition,
-  outerFabrics,
-  fillingMaterials,
-  selectedOuterFabrics,
-  selectedFillingMaterials,
-  onToggleOuterFabric,
-  onToggleFillingMaterial,
 }: {
   collections: Collection[];
   activeSlug: string | undefined;
@@ -195,12 +200,6 @@ const FilterSidebar = ({
   onToggleColor: (id: string) => void;
   onToggleSize: (id: string) => void;
   onToggleComposition: (value: string) => void;
-  outerFabrics: string[];
-  fillingMaterials: string[];
-  selectedOuterFabrics: string[];
-  selectedFillingMaterials: string[];
-  onToggleOuterFabric: (value: string) => void;
-  onToggleFillingMaterial: (value: string) => void;
 }) => {
   const navigate = useNavigate();
 
@@ -406,54 +405,6 @@ const FilterSidebar = ({
           </div>
         </div>
       )}
-
-      {/* Outer fabric filter — Jorgan/Jastëk only */}
-      {outerFabrics.length > 0 && (
-        <div>
-          <h3 className="text-xs font-bold tracking-brand uppercase text-foreground mb-3">
-            {isAl ? "Copa e jashtme" : "Outer fabric"}
-          </h3>
-          <div className="space-y-2">
-            {outerFabrics.map((val) => (
-              <label key={val} className="flex items-center gap-2 cursor-pointer group/filter">
-                <input
-                  type="checkbox"
-                  checked={selectedOuterFabrics.includes(val)}
-                  onChange={() => onToggleOuterFabric(val)}
-                  className="w-4 h-4 rounded border-border text-primary focus:ring-primary/30 cursor-pointer"
-                />
-                <span className="text-sm text-muted-foreground group-hover/filter:text-foreground transition-colors">
-                  {val}
-                </span>
-              </label>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Filling material filter — Jorgan/Jastëk only */}
-      {fillingMaterials.length > 0 && (
-        <div>
-          <h3 className="text-xs font-bold tracking-brand uppercase text-foreground mb-3">
-            {isAl ? "Materiali i mbushësit" : "Filling material"}
-          </h3>
-          <div className="space-y-2">
-            {fillingMaterials.map((val) => (
-              <label key={val} className="flex items-center gap-2 cursor-pointer group/filter">
-                <input
-                  type="checkbox"
-                  checked={selectedFillingMaterials.includes(val)}
-                  onChange={() => onToggleFillingMaterial(val)}
-                  className="w-4 h-4 rounded border-border text-primary focus:ring-primary/30 cursor-pointer"
-                />
-                <span className="text-sm text-muted-foreground group-hover/filter:text-foreground transition-colors">
-                  {val}
-                </span>
-              </label>
-            ))}
-          </div>
-        </div>
-      )}
     </div>
   );
 };
@@ -550,12 +501,6 @@ const Collections = () => {
     setSelectedCompositions((prev) =>
       prev.includes(value) ? prev.filter((c) => c !== value) : [...prev, value]
     );
-  const [selectedOuterFabrics, setSelectedOuterFabrics] = useState<string[]>([]);
-  const [selectedFillingMaterials, setSelectedFillingMaterials] = useState<string[]>([]);
-  const toggleOuterFabric = (val: string) =>
-    setSelectedOuterFabrics((prev) => prev.includes(val) ? prev.filter((v) => v !== val) : [...prev, val]);
-  const toggleFillingMaterial = (val: string) =>
-    setSelectedFillingMaterials((prev) => prev.includes(val) ? prev.filter((v) => v !== val) : [...prev, val]);
 
   // Active collection
   const activeCollection = useMemo(
@@ -572,44 +517,16 @@ const Collections = () => {
     [activeCollection, collections]
   );
 
-  // Products scoped to the active collection (before attribute filters)
-  // This drives both the sidebar filter options AND the final filtered list.
-  const scopedProducts = useMemo(() => {
-    if (!allProducts) return [];
-    if (!activeCollection) return allProducts;
-    const childIds =
-      collections
-        ?.filter((c) => c.parent_id === activeCollection.id)
-        .map((c) => c.id) ?? [];
-    const relevantIds = [activeCollection.id, ...childIds];
-    return allProducts.filter((p) => relevantIds.includes(p.collection_id));
-  }, [allProducts, activeCollection, collections]);
-
-  const scopedProductIds = useMemo(
-    () => new Set(scopedProducts.map((p) => p.id)),
-    [scopedProducts]
-  );
-
-  // Colors only for products in the active category
-  const scopedColors = useMemo(() => {
-    if (!allColors) return [];
-    return allColors.filter((c) => scopedProductIds.has(c.product_id));
-  }, [allColors, scopedProductIds]);
-
-  // Sizes only for products in the active category
-  const scopedSizes = useMemo(() => {
-    if (!allSizes) return [];
-    return allSizes.filter((s) => scopedProductIds.has(s.product_id));
-  }, [allSizes, scopedProductIds]);
-
-  // Compositions only for products in the active category
+  // Extract unique composition values from all products
   const compositions = useMemo(() => {
+    if (!allProducts) return [];
     const compSet = new Set<string>();
-    scopedProducts.forEach((p) => {
+    allProducts.forEach((p) => {
       const comp = isAl
         ? p.composition_al || p.composition_en
         : p.composition_en || p.composition_al;
       if (comp) {
+        // Split by common separators (comma, /, &) to get individual materials
         comp
           .split(/[,\/&]/)
           .map((s) => s.trim())
@@ -618,47 +535,23 @@ const Collections = () => {
       }
     });
     return Array.from(compSet).sort();
-  }, [scopedProducts, isAl]);
+  }, [allProducts, isAl]);
 
-  // Detect Jorgan/Jastëk category for conditional filters
-  const isJorganOrJastek = useMemo(() => {
-    if (!activeCollection) return false;
-    const text = `${activeCollection.title_al ?? ""} ${activeCollection.title_en ?? ""} ${activeCollection.slug ?? ""}`.toLowerCase();
-    return /jorgan|jastek|jast[eë]k|duvet|pillow/.test(text);
-  }, [activeCollection]);
-
-  const outerFabrics = useMemo(() => {
-    if (!isJorganOrJastek) return [];
-    const set = new Set<string>();
-    scopedProducts.forEach((p) => {
-      const v = isAl ? (p as any).outer_fabric_al : (p as any).outer_fabric_en;
-      if (v?.trim()) set.add(v.trim());
-    });
-    return Array.from(set).sort();
-  }, [scopedProducts, isJorganOrJastek, isAl]);
-
-  const fillingMaterials = useMemo(() => {
-    if (!isJorganOrJastek) return [];
-    const set = new Set<string>();
-    scopedProducts.forEach((p) => {
-      const v = isAl ? (p as any).filling_material_al : (p as any).filling_material_en;
-      if (v?.trim()) set.add(v.trim());
-    });
-    return Array.from(set).sort();
-  }, [scopedProducts, isJorganOrJastek, isAl]);
-
-  // Clear all attribute filters when the category changes
-  useEffect(() => {
-    setSelectedColors([]);
-    setSelectedSizes([]);
-    setSelectedCompositions([]);
-    setSelectedOuterFabrics([]);
-    setSelectedFillingMaterials([]);
-  }, [slug]);
-
-  // Final product list: scoped products + attribute filters applied
+  // Filter products
   const filteredProducts = useMemo(() => {
-    let products = scopedProducts;
+    if (!allProducts) return [];
+
+    let products = allProducts;
+
+    // Filter by collection
+    if (activeCollection) {
+      const childIds =
+        collections
+          ?.filter((c) => c.parent_id === activeCollection.id)
+          .map((c) => c.id) ?? [];
+      const relevantIds = [activeCollection.id, ...childIds];
+      products = products.filter((p) => relevantIds.includes(p.collection_id));
+    }
 
     // Filter by color
     if (selectedColors.length > 0 && allColors) {
@@ -693,28 +586,14 @@ const Collections = () => {
       });
     }
 
-    if (selectedOuterFabrics.length > 0) {
-      products = products.filter((p) => {
-        const v = isAl ? (p as any).outer_fabric_al : (p as any).outer_fabric_en;
-        return v && selectedOuterFabrics.includes(v.trim());
-      });
-    }
-
-    if (selectedFillingMaterials.length > 0) {
-      products = products.filter((p) => {
-        const v = isAl ? (p as any).filling_material_al : (p as any).filling_material_en;
-        return v && selectedFillingMaterials.includes(v.trim());
-      });
-    }
-
     return products;
   }, [
-    scopedProducts,
+    allProducts,
+    activeCollection,
+    collections,
     selectedColors,
     selectedSizes,
     selectedCompositions,
-    selectedOuterFabrics,
-    selectedFillingMaterials,
     allColors,
     allSizes,
     isAl,
@@ -758,7 +637,7 @@ const Collections = () => {
         {/* Background image — same on mobile and desktop */}
         {heroImage ? (
           <img
-            src={heroImage}
+            src={imgUrl(heroImage, 1200, 85)}
             alt={pageTitle}
             className="absolute inset-0 w-full h-full object-cover"
           />
@@ -821,8 +700,8 @@ const Collections = () => {
                   collections={collections || []}
                   activeSlug={slug}
                   isAl={isAl}
-                  allColors={scopedColors}
-                  allSizes={scopedSizes}
+                  allColors={allColors || []}
+                  allSizes={allSizes || []}
                   compositions={compositions}
                   selectedColors={selectedColors}
                   selectedSizes={selectedSizes}
@@ -830,12 +709,6 @@ const Collections = () => {
                   onToggleColor={toggleColor}
                   onToggleSize={toggleSize}
                   onToggleComposition={toggleComposition}
-                  outerFabrics={outerFabrics}
-                  fillingMaterials={fillingMaterials}
-                  selectedOuterFabrics={selectedOuterFabrics}
-                  selectedFillingMaterials={selectedFillingMaterials}
-                  onToggleOuterFabric={toggleOuterFabric}
-                  onToggleFillingMaterial={toggleFillingMaterial}
                 />
               </div>
             </aside>
@@ -853,14 +726,12 @@ const Collections = () => {
                       ? "Nuk u gjetën produkte në këtë koleksion."
                       : "No products found in this collection."}
                   </p>
-                  {(selectedColors.length > 0 || selectedSizes.length > 0 || selectedCompositions.length > 0 || selectedOuterFabrics.length > 0 || selectedFillingMaterials.length > 0) && (
+                  {(selectedColors.length > 0 || selectedSizes.length > 0 || selectedCompositions.length > 0) && (
                     <button
                       onClick={() => {
                         setSelectedColors([]);
                         setSelectedSizes([]);
                         setSelectedCompositions([]);
-                        setSelectedOuterFabrics([]);
-                        setSelectedFillingMaterials([]);
                       }}
                       className="mt-4 text-xs tracking-brand uppercase text-primary hover:underline"
                     >
