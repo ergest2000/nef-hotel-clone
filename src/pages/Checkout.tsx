@@ -14,7 +14,7 @@ import { logAuthEvent } from "@/hooks/useAuthTexts";
 import { ShoppingBag } from "lucide-react";
 
 const Checkout = () => {
-  const { items } = useCart();
+  const { items, clearCart } = useCart();
   const { user, signIn } = useAuth();
   const { isAl } = useLanguage();
   const { settings } = useDesign();
@@ -42,6 +42,21 @@ const Checkout = () => {
   const [newPassword, setNewPassword] = useState("");
   const [registerLoading, setRegisterLoading] = useState(false);
   const [requestLoading, setRequestLoading] = useState(false);
+
+  const sendQuoteEmail = async (payload: {
+    customerEmail: string;
+    customerName: string;
+    businessName?: string;
+    city?: string;
+    phone?: string;
+    items: Array<{ title: string; color: string; boxes: number; pieces: number }>;
+  }) => {
+    try {
+      await supabase.functions.invoke("send-quote-email", { body: payload });
+    } catch (err) {
+      console.error("Email error:", err);
+    }
+  };
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -73,6 +88,22 @@ const Checkout = () => {
         emailRedirectTo: window.location.origin,
       },
     });
+    if (!error) {
+      // Send email notification for new client registration with cart items
+      await sendQuoteEmail({
+        customerEmail: newEmail,
+        customerName: newName,
+        businessName: newHotel,
+        city: newCity,
+        phone: newPhone,
+        items: items.map((item) => ({
+          title: item.title || item.title_al || item.title_en || "",
+          color: item.color || "",
+          boxes: item.boxes || 0,
+          pieces: (item.pieces || 0) * (item.boxes || 0),
+        })),
+      });
+    }
     setRegisterLoading(false);
     if (error) {
       toast({ title: "Gabim", description: error.message, variant: "destructive" });
@@ -102,6 +133,22 @@ const Checkout = () => {
           })),
         },
       });
+
+      // Send email notification
+      await sendQuoteEmail({
+        customerEmail: user.email || "",
+        customerName: user.user_metadata?.full_name || user.email || "",
+        businessName: user.user_metadata?.business_name || "",
+        city: user.user_metadata?.city || "",
+        phone: user.user_metadata?.phone || "",
+        items: items.map((item) => ({
+          title: item.title || item.title_al || item.title_en || "",
+          color: item.color || "",
+          boxes: item.boxes || 0,
+          pieces: (item.pieces || 0) * (item.boxes || 0),
+        })),
+      });
+
       toast({ title: "Sukses", description: t("checkout_request_sent", "Kërkesa u dërgua!", "Request sent!") });
     } catch {
       toast({ title: "Gabim", variant: "destructive" });
