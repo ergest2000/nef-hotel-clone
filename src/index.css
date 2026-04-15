@@ -1,23 +1,168 @@
-<!doctype html>
-<html lang="sq">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>EGJEU - Hotel Collection</title>
-    <meta name="description" content="EGJEU hotel collection - Premium textiles and supplies for the hospitality industry.">
-    <meta name="author" content="EGJEU" />
-    <meta property="og:type" content="website" />
-    <meta property="og:title" content="EGJEU - Hotel Collection">
-    <meta property="og:description" content="EGJEU hotel collection - Premium textiles and supplies for the hospitality industry.">
-    <meta property="og:image" content="https://hotel.egjeu.al/assets/egjeu-logo-D1581xfH.png">
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="EGJEU - Hotel Collection">
-    <meta name="twitter:description" content="EGJEU hotel collection - Premium textiles and supplies for the hospitality industry.">
-    <meta name="twitter:image" content="https://hotel.egjeu.al/assets/egjeu-logo-D1581xfH.png">
-    <link rel="preconnect" href="https://hctrxoibpvxdrthyzwpk.supabase.co" crossorigin />
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
-  </body>
-</html>
+@font-face {
+  font-family: 'Century Gothic';
+  src: url('@/assets/fonts/CenturyGothicPaneuropeanLight.woff') format('woff');
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Century Gothic';
+  src: url('@/assets/fonts/CenturyGothicPaneuropeanLightItalic.woff') format('woff');
+  font-weight: 300;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Century Gothic';
+  src: url('@/assets/fonts/CenturyGothicPaneuropeanRegular.woff') format('woff');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Century Gothic';
+  src: url('@/assets/fonts/CenturyGothicPaneuropeanItalic.woff') format('woff');
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Century Gothic';
+  src: url('@/assets/fonts/CenturyGothicPaneuropeanSemiBold.woff') format('woff');
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Century Gothic';
+  src: url('@/assets/fonts/CenturyGothicPaneuropeanBold.woff') format('woff');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 210 29% 20%;
+    --card: 0 0% 100%;
+    --card-foreground: 210 29% 20%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 210 29% 20%;
+    --primary: 207 56% 28%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 210 20% 96%;
+    --secondary-foreground: 210 29% 20%;
+    --muted: 210 20% 96%;
+    --muted-foreground: 210 10% 50%;
+    --accent: 207 56% 28%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 210 20% 90%;
+    --input: 210 20% 90%;
+    --ring: 207 56% 28%;
+    --radius: 0px;
+    --navy: 207 56% 28%;
+    --navy-light: 207 40% 40%;
+    --navy-dark: 207 60% 18%;
+    --warm-gray: 30 10% 96%;
+    --warm-gray-dark: 30 5% 88%;
+    --newsletter-bg: 207 35% 35%;
+    --gold: 40 60% 50%;
+    --sidebar-background: 0 0% 98%;
+    --sidebar-foreground: 240 5.3% 26.1%;
+    --sidebar-primary: 240 5.9% 10%;
+    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-accent: 240 4.8% 95.9%;
+    --sidebar-accent-foreground: 240 5.9% 10%;
+    --sidebar-border: 220 13% 91%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  html, body {
+    overscroll-behavior: none;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-family: var(--ds-font-family, 'Century Gothic', 'Avantgarde', 'CenturyGothic', 'AppleGothic', sans-serif);
+    font-size: var(--ds-font-size-body, 16px);
+    font-weight: 400;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--ds-font-family, 'Century Gothic', 'Avantgarde', 'CenturyGothic', 'AppleGothic', sans-serif);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    font-weight: 700;
+  }
+
+  h1 { font-size: var(--ds-font-size-h1, 36px); }
+  h2 { font-size: var(--ds-font-size-h2, 24px); }
+  h3 { font-size: var(--ds-font-size-h3, 20px); }
+
+  input, textarea, select, button[type="submit"] {
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif !important;
+  }
+
+  .rounded, .rounded-md {
+    border-radius: var(--ds-btn-radius, 4px) !important;
+  }
+}
+
+@layer utilities {
+  .font-display {
+    font-family: 'Cinzel', serif;
+  }
+
+  .tracking-brand {
+    letter-spacing: 0.2em;
+  }
+
+  .tracking-wide-brand {
+    letter-spacing: 0.3em;
+  }
+}
+
+@keyframes slide-hero {
+  0% { opacity: 0; transform: scale(1.05); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+@keyframes scroll-clients {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+@keyframes scroll-clients-reverse {
+  0% { transform: translateX(-50%); }
+  100% { transform: translateX(0); }
+}
+
+.animate-hero-in {
+  animation: slide-hero 1s ease-out forwards;
+}
+
+.animate-scroll-clients {
+  animation: scroll-clients 80s linear infinite;
+}
+
+.animate-scroll-clients-reverse {
+  animation: scroll-clients-reverse 80s linear infinite;
+}
