@@ -35,6 +35,7 @@ import { AdminStaticPages } from "@/components/admin/AdminStaticPages";
 import { AdminNewsletter } from "@/components/admin/AdminNewsletter";
 import { AdminOfferRequests } from "@/components/admin/AdminOfferRequests";
 import { AdminContactSubmissions } from "@/components/admin/AdminContactSubmissions";
+import { AdminWebpConverter } from "@/components/admin/AdminWebpConverter";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import type { Tables } from "@/integrations/supabase/types";
 
@@ -51,6 +52,7 @@ var pageTitles: Record<string, string> = {
   blog: "Blog",
   "blog-posts": "Blog Posts",
   media: "Media",
+  "webp-convert": "Konverto në WebP",
   menus: "Menaxhimi i Menuve",
   "clients-logos": "Logot e Klientëve",
   "certifications-logos": "Logot e Certifikimeve",
@@ -308,6 +310,8 @@ function AdminDashboard() {
         return <AdminNewsletter />;
       case "offers":
         return <AdminOfferRequests />;
+      case "webp-convert":
+        return <AdminWebpConverter />;
       case "media":
         return (
           <div>
@@ -363,7 +367,6 @@ function AdminDashboard() {
 
   var mainRef = useRef<HTMLDivElement>(null);
 
-  // Save scroll position continuously
   useEffect(() => {
     var el = mainRef.current;
     if (!el) return;
@@ -374,7 +377,6 @@ function AdminDashboard() {
     return function () { el.removeEventListener("scroll", handler); };
   }, [activePage]);
 
-  // Restore scroll position after content renders
   useEffect(() => {
     var el = mainRef.current;
     if (!el || isFirstLoad) return;
@@ -383,7 +385,6 @@ function AdminDashboard() {
       var scrollTarget = Number(saved);
       var attempts = 0;
       var maxAttempts = 10;
-      // Retry until content is tall enough or max attempts reached
       function tryRestore() {
         if (!el || attempts >= maxAttempts) return;
         attempts++;
@@ -393,7 +394,6 @@ function AdminDashboard() {
           requestAnimationFrame(tryRestore);
         }
       }
-      // Initial delay to let React render, then try restoring
       var timer = setTimeout(tryRestore, 100);
       return function () { clearTimeout(timer); };
     }
