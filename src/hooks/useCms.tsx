@@ -5,10 +5,13 @@ import type { Tables } from "@/integrations/supabase/types";
 type SiteContent = Tables<"site_content">;
 type SiteSection = Tables<"site_sections">;
 
-// Fetch all content for a page & language
+const CONTENT_STALE = 5 * 60 * 1000;  // 5 minuta
+const SECTION_STALE = 10 * 60 * 1000; // 10 minuta
+
 export const usePageContent = (page: string, lang: string = "al") => {
   return useQuery({
     queryKey: ["site_content", page, lang],
+    staleTime: CONTENT_STALE,
     queryFn: async () => {
       const { data, error } = await supabase
         .from("site_content")
@@ -22,10 +25,10 @@ export const usePageContent = (page: string, lang: string = "al") => {
   });
 };
 
-// Fetch all content for all pages (admin dashboard) - optionally filter by lang
 export const useAllContent = (lang?: string) => {
   return useQuery({
     queryKey: ["site_content", "all", lang ?? "all"],
+    staleTime: CONTENT_STALE,
     queryFn: async () => {
       let query = supabase
         .from("site_content")
@@ -43,10 +46,10 @@ export const useAllContent = (lang?: string) => {
   });
 };
 
-// Fetch sections for a page
 export const usePageSections = (page: string) => {
   return useQuery({
     queryKey: ["site_sections", page],
+    staleTime: SECTION_STALE,
     queryFn: async () => {
       const { data, error } = await supabase
         .from("site_sections")
@@ -59,10 +62,10 @@ export const usePageSections = (page: string) => {
   });
 };
 
-// All sections (admin)
 export const useAllSections = () => {
   return useQuery({
     queryKey: ["site_sections", "all"],
+    staleTime: SECTION_STALE,
     queryFn: async () => {
       const { data, error } = await supabase
         .from("site_sections")
@@ -75,7 +78,6 @@ export const useAllSections = () => {
   });
 };
 
-// Upsert content
 export const useUpsertContent = () => {
   const qc = useQueryClient();
   return useMutation({
@@ -94,7 +96,6 @@ export const useUpsertContent = () => {
   });
 };
 
-// Update section order
 export const useUpdateSectionOrder = () => {
   const qc = useQueryClient();
   return useMutation({
@@ -110,7 +111,6 @@ export const useUpdateSectionOrder = () => {
   });
 };
 
-// Toggle section visibility
 export const useToggleSectionVisibility = () => {
   const qc = useQueryClient();
   return useMutation({
@@ -127,7 +127,6 @@ export const useToggleSectionVisibility = () => {
   });
 };
 
-// ─── Convert any image to WebP in-browser before upload ────────
 const convertToWebP = (file: File, quality = 0.85): Promise<Blob> =>
   new Promise((resolve, reject) => {
     const img = new Image();
@@ -150,7 +149,6 @@ const convertToWebP = (file: File, quality = 0.85): Promise<Blob> =>
     img.src = objectUrl;
   });
 
-// Upload image to cms-images bucket (always stores as .webp)
 export const uploadCmsImage = async (file: File, path: string) => {
   const webpPath = path.replace(/\.[^.]+$/, "") + ".webp";
   const blob = await convertToWebP(file);
@@ -164,7 +162,6 @@ export const uploadCmsImage = async (file: File, path: string) => {
   return urlData.publicUrl;
 };
 
-// Helper: get content value by section + field
 export const getContentValue = (
   content: SiteContent[] | undefined,
   sectionKey: string,
