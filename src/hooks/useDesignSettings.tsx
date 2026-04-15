@@ -46,15 +46,13 @@ const getFontStack = (family: string) => {
   if (family === "Century Gothic") {
     return "'Century Gothic', 'Avantgarde', 'CenturyGothic', 'AppleGothic', sans-serif";
   }
-  if (systemFonts.includes(family)) {
-    return `'${family}', sans-serif`;
-  }
   return `'${family}', sans-serif`;
 };
 
 export const useDesignSettings = () => {
   return useQuery({
     queryKey: ["design_settings"],
+    staleTime: 10 * 60 * 1000, // 10 minuta
     queryFn: async () => {
       const { data, error } = await supabase
         .from("design_settings")
@@ -74,31 +72,26 @@ export const DesignProvider = ({ children }: { children: ReactNode }) => {
     settings[s.setting_key] = s.setting_value;
   });
 
-  // Apply CSS variables whenever settings change
   useEffect(() => {
     if (!data || data.length === 0) return;
     const root = document.documentElement;
 
-    // Font
     const fontFamily = settings.font_family || "Century Gothic";
     loadGoogleFont(fontFamily);
     const fontStack = getFontStack(fontFamily);
     root.style.setProperty("--ds-font-family", fontStack);
 
-    // Font sizes
     root.style.setProperty("--ds-font-size-h1", `${settings.font_size_h1 || 36}px`);
     root.style.setProperty("--ds-font-size-h2", `${settings.font_size_h2 || 24}px`);
     root.style.setProperty("--ds-font-size-h3", `${settings.font_size_h3 || 20}px`);
     root.style.setProperty("--ds-font-size-body", `${settings.font_size_body || 16}px`);
     root.style.setProperty("--ds-font-weight", settings.font_weight || "400");
 
-    // Button
     root.style.setProperty("--ds-btn-radius", `${settings.btn_border_radius || 4}px`);
     if (settings.btn_bg_color) root.style.setProperty("--primary", settings.btn_bg_color);
     if (settings.btn_text_color) root.style.setProperty("--primary-foreground", settings.btn_text_color);
     if (settings.btn_hover_color) root.style.setProperty("--ds-btn-hover", settings.btn_hover_color);
 
-    // Colors
     if (settings.color_primary) root.style.setProperty("--primary", settings.color_primary);
     if (settings.color_secondary) root.style.setProperty("--secondary", settings.color_secondary);
     if (settings.color_text) root.style.setProperty("--foreground", settings.color_text);
@@ -106,7 +99,6 @@ export const DesignProvider = ({ children }: { children: ReactNode }) => {
     if (settings.color_link) root.style.setProperty("--ds-link-color", settings.color_link);
     if (settings.color_hover) root.style.setProperty("--ds-hover-color", settings.color_hover);
 
-    // Also update card/popover to match
     if (settings.color_background) {
       root.style.setProperty("--card", settings.color_background);
       root.style.setProperty("--popover", settings.color_background);
