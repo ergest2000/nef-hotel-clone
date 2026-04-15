@@ -1,7 +1,7 @@
 import {
   LayoutDashboard, Home, Building2, Users, Scissors, Phone, FileText, PenSquare,
   Image, Settings, Menu as MenuIcon, Award, ImageIcon, Link as LinkIcon, Paintbrush,
-  UserCog, ScrollText, Type, FolderOpen, Package, Star, Grid3X3, BookOpen, Gift, Mail, Palette,
+  UserCog, ScrollText, Type, FolderOpen, Package, Star, Grid3X3, BookOpen, Gift, Mail, Palette, RefreshCw,
 } from "lucide-react";
 import {
   Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel,
@@ -32,6 +32,7 @@ const menuItems: { key: string; label: string; icon: any; group: string; roles?:
   { key: "suggested-products", label: "Sugjerime Homepage", icon: Star, group: "products", roles: ["admin"] },
   { key: "homepage-categories", label: "Kategoritë Homepage", icon: Grid3X3, group: "products", roles: ["admin"] },
   { key: "media", label: "Media", icon: Image, group: "products", roles: ["admin"] },
+  { key: "webp-convert", label: "Konverto në WebP", icon: RefreshCw, group: "products", roles: ["admin"] },
   { key: "registrations", label: "Regjistrimet", icon: Users, group: "manage", roles: ["admin", "manager"] },
   { key: "registration-form", label: "Kontaktet", icon: FileText, group: "manage", roles: ["admin", "manager"] },
   { key: "newsletter", label: "Newsletter", icon: Mail, group: "manage", roles: ["admin", "manager"] },
