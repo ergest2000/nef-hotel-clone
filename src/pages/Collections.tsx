@@ -834,7 +834,7 @@ const Collections = () => {
                         {/* Text - right */}
                         <div
                           className="w-full md:w-2/5 flex flex-col items-center justify-center text-center px-8 py-8 md:px-12"
-                          style={{ backgroundColor: 'hsl(var(--primary) / 0.08)', borderLeft: '3px solid hsl(var(--primary))' }}
+                          style={{ backgroundColor: '#EBF2F8' }}
                         >
                           <h2 className="text-xl md:text-2xl font-semibold mb-5" style={{ color: 'hsl(var(--primary))', letterSpacing: 'normal' }}>
                             {title}
