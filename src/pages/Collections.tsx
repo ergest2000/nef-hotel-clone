@@ -816,24 +816,25 @@ const Collections = () => {
                 const imageLeft = idx % 2 === 0;
                 return (
                   <div key={sub.id} className="border-b border-border last:border-0">
-                    <div className={`flex flex-col ${imageLeft ? "md:flex-row" : "md:flex-row-reverse"}`}>
+                    <div className={`flex flex-col ${imageLeft ? "md:flex-row" : "md:flex-row-reverse"}`} style={{ minHeight: '500px' }}>
                       {/* Image */}
-                      <div className="w-full md:w-1/2 aspect-[4/3] md:aspect-auto md:min-h-[380px] overflow-hidden bg-secondary">
+                      <div className="w-full md:w-3/5 overflow-hidden bg-secondary" style={{ minHeight: '320px' }}>
                         {sub.image_url ? (
                           <img
                             src={sub.image_url}
                             alt={title}
                             className="w-full h-full object-cover"
+                            style={{ minHeight: '320px' }}
                           />
                         ) : (
-                          <div className="w-full h-full flex items-center justify-center text-muted-foreground text-sm">
+                          <div className="w-full h-full flex items-center justify-center text-muted-foreground text-sm" style={{ minHeight: '320px' }}>
                             {isAl ? "Pa imazh" : "No image"}
                           </div>
                         )}
                       </div>
                       {/* Text */}
-                      <div className="w-full md:w-1/2 flex flex-col items-center justify-center text-center px-8 py-12 md:px-16 bg-background">
-                        <h2 className="text-2xl md:text-3xl font-light text-foreground mb-4" style={{ letterSpacing: 'normal' }}>
+                      <div className="w-full md:w-2/5 flex flex-col items-center justify-center text-center px-8 py-12 md:px-16 bg-muted">
+                        <h2 className="text-2xl md:text-3xl font-semibold text-foreground mb-6" style={{ letterSpacing: 'normal' }}>
                           {title}
                         </h2>
                         {desc && (
@@ -843,9 +844,9 @@ const Collections = () => {
                         )}
                         <Link
                           to={`/koleksionet/${sub.slug}`}
-                          className="inline-block border border-foreground text-foreground text-xs tracking-widest uppercase px-8 py-3 hover:bg-foreground hover:text-background transition-colors"
+                          className="inline-block border border-foreground text-foreground text-xs tracking-widest uppercase px-10 py-3 hover:bg-foreground hover:text-background transition-colors font-medium"
                         >
-                          {isAl ? "Shiko të gjitha" : "View all"}
+                          {isAl ? "SHIKO TË GJITHA" : "VIEW ALL"}
                         </Link>
                       </div>
                     </div>
