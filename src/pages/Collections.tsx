@@ -805,8 +805,8 @@ const Collections = () => {
         // ── PARENT VIEW: show subcategories as large sections (NEF-NEF style) ──
         if (subCollections.length > 0) {
           return (
-            <section className="flex-1">
-              {subCollections.map((sub) => {
+            <section className="flex-1 py-10 md:py-14">
+              <div className="container space-y-4">
                 const title = isAl
                   ? sub.title_al || sub.title_en
                   : sub.title_en || sub.title_al;
@@ -814,10 +814,10 @@ const Collections = () => {
                   ? sub.description_al || sub.description_en
                   : sub.description_en || sub.description_al;
                 return (
-                  <div key={sub.id} className="border-b border-border last:border-0">
-                    <div className="flex flex-col md:flex-row" style={{ height: '600px' }}>
+                  <div key={sub.id} className="mb-4 last:mb-0">
+                    <div className="flex flex-col md:flex-row" style={{ height: '300px' }}>
                       {/* Image - left */}
-                      <div className="w-full md:w-3/5 h-64 md:h-full overflow-hidden bg-secondary">
+                      <div className="w-full md:w-3/5 h-48 md:h-full overflow-hidden bg-secondary">
                         {sub.image_url ? (
                           <img
                             src={sub.image_url}
@@ -831,18 +831,19 @@ const Collections = () => {
                         )}
                       </div>
                       {/* Text - right */}
-                      <div className="w-full md:w-2/5 flex flex-col items-center justify-center text-center px-8 py-10 md:px-16 bg-muted">
-                        <h2 className="text-2xl md:text-3xl font-semibold text-foreground mb-6" style={{ letterSpacing: 'normal' }}>
+                      <div className="w-full md:w-2/5 flex flex-col items-center justify-center text-center px-8 py-8 md:px-12" style={{ backgroundColor: 'hsl(var(--primary) / 0.08)', borderLeft: '3px solid hsl(var(--primary))' }}>
+                        <h2 className="text-xl md:text-2xl font-semibold mb-5" style={{ color: 'hsl(var(--primary))', letterSpacing: 'normal' }}>
                           {title}
                         </h2>
                         {desc && (
-                          <p className="text-sm text-muted-foreground mb-8 max-w-xs leading-relaxed">
+                          <p className="text-sm text-muted-foreground mb-6 max-w-xs leading-relaxed">
                             {desc}
                           </p>
                         )}
                         <Link
                           to={`/koleksionet/${sub.slug}`}
-                          className="inline-block border border-foreground text-foreground text-xs tracking-widest uppercase px-10 py-3 hover:bg-foreground hover:text-background transition-colors font-medium"
+                          className="inline-block text-xs tracking-widest uppercase px-8 py-2.5 font-medium transition-colors"
+                          style={{ backgroundColor: 'hsl(var(--primary))', color: 'hsl(var(--primary-foreground))' }}
                         >
                           {isAl ? "SHIKO TË GJITHA" : "VIEW ALL"}
                         </Link>
@@ -851,6 +852,7 @@ const Collections = () => {
                   </div>
                 );
               })}
+              </div>
             </section>
           );
         }
