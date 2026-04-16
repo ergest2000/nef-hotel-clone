@@ -794,146 +794,162 @@ const Collections = () => {
         </div>
       </section>
 
-      {/* ── Content: Sidebar + Products ── */}
-      <section className="py-10 md:py-14 flex-1">
-        <div className="container">
-          {/* Mobile filter toggle button */}
-          <button
-            onClick={() => setShowMobileFilters(!showMobileFilters)}
-            className="md:hidden flex items-center gap-2 text-xs tracking-brand uppercase text-foreground border border-border rounded px-4 py-2.5 mb-6 hover:bg-muted/50 transition-colors"
-          >
-            {isAl ? "Filtra" : "Filters"}
-            <ChevronRight
-              size={14}
-              className={`transition-transform ${showMobileFilters ? "rotate-90" : ""}`}
-            />
-          </button>
+      {/* ── Content: Subcategories OR Sidebar + Products ── */}
+      {(() => {
+        const subCollections = activeCollection
+          ? (collections || []).filter(
+              (c) => c.parent_id === activeCollection.id && c.visible !== false
+            )
+          : [];
 
-          <div className="flex flex-col md:flex-row gap-8 md:gap-10 lg:gap-14">
-            {/* Sidebar */}
-            <aside
-              className={`md:w-52 lg:w-60 shrink-0 ${
-                showMobileFilters ? "block" : "hidden md:block"
-              }`}
-            >
-              <div className="md:sticky md:top-28">
-                <FilterSidebar
-                  collections={collections || []}
-                  activeSlug={slug}
-                  isAl={isAl}
-                  allColors={scopedColors}
-                  allSizes={scopedSizes}
-                  compositions={compositions}
-                  selectedColors={selectedColors}
-                  selectedSizes={selectedSizes}
-                  selectedCompositions={selectedCompositions}
-                  onToggleColor={toggleColor}
-                  onToggleSize={toggleSize}
-                  onToggleComposition={toggleComposition}
-                  outerFabrics={outerFabrics}
-                  fillingMaterials={fillingMaterials}
-                  selectedOuterFabrics={selectedOuterFabrics}
-                  selectedFillingMaterials={selectedFillingMaterials}
-                  onToggleOuterFabric={toggleOuterFabric}
-                  onToggleFillingMaterial={toggleFillingMaterial}
-                />
-              </div>
-            </aside>
-
-            {/* Product grid */}
-            <div className="flex-1 min-w-0">
-              {/* Subcategories — shown only on parent collection pages */}
-              {(() => {
-                const subCollections = activeCollection
-                  ? (collections || []).filter(
-                      (c) => c.parent_id === activeCollection.id && c.visible !== false
-                    )
-                  : [];
-                if (subCollections.length === 0) return null;
+        // ── PARENT VIEW: show subcategories as large sections (NEF-NEF style) ──
+        if (subCollections.length > 0) {
+          return (
+            <section className="flex-1">
+              {subCollections.map((sub, idx) => {
+                const title = isAl
+                  ? sub.title_al || sub.title_en
+                  : sub.title_en || sub.title_al;
+                const desc = isAl
+                  ? sub.description_al || sub.description_en
+                  : sub.description_en || sub.description_al;
+                const imageLeft = idx % 2 === 0;
                 return (
-                  <div className="mb-10">
-                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
-                      {subCollections.map((sub) => {
-                        const title = isAl
-                          ? sub.title_al || sub.title_en
-                          : sub.title_en || sub.title_al;
-                        return (
-                          <Link
-                            key={sub.id}
-                            to={`/koleksionet/${sub.slug}`}
-                            className="group block"
-                          >
-                            <div className="relative aspect-square overflow-hidden bg-secondary rounded">
-                              {sub.image_url ? (
-                                <img
-                                  src={sub.image_url}
-                                  alt={title}
-                                  className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-                                />
-                              ) : (
-                                <div className="w-full h-full flex items-center justify-center text-muted-foreground text-xs">
-                                  {isAl ? "Pa imazh" : "No image"}
-                                </div>
-                              )}
-                              <div className="absolute inset-0 bg-black/20 group-hover:bg-black/30 transition-colors" />
-                              <div className="absolute bottom-0 left-0 right-0 p-3">
-                                <p className="text-white text-sm font-medium leading-tight">
-                                  {title}
-                                </p>
-                              </div>
-                            </div>
-                          </Link>
-                        );
-                      })}
+                  <div key={sub.id} className="border-b border-border last:border-0">
+                    <div className={`flex flex-col ${imageLeft ? "md:flex-row" : "md:flex-row-reverse"}`}>
+                      {/* Image */}
+                      <div className="w-full md:w-1/2 aspect-[4/3] md:aspect-auto md:min-h-[380px] overflow-hidden bg-secondary">
+                        {sub.image_url ? (
+                          <img
+                            src={sub.image_url}
+                            alt={title}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center text-muted-foreground text-sm">
+                            {isAl ? "Pa imazh" : "No image"}
+                          </div>
+                        )}
+                      </div>
+                      {/* Text */}
+                      <div className="w-full md:w-1/2 flex flex-col items-center justify-center text-center px-8 py-12 md:px-16 bg-background">
+                        <h2 className="text-2xl md:text-3xl font-light text-foreground mb-4" style={{ letterSpacing: 'normal' }}>
+                          {title}
+                        </h2>
+                        {desc && (
+                          <p className="text-sm text-muted-foreground mb-8 max-w-xs leading-relaxed">
+                            {desc}
+                          </p>
+                        )}
+                        <Link
+                          to={`/koleksionet/${sub.slug}`}
+                          className="inline-block border border-foreground text-foreground text-xs tracking-widest uppercase px-8 py-3 hover:bg-foreground hover:text-background transition-colors"
+                        >
+                          {isAl ? "Shiko të gjitha" : "View all"}
+                        </Link>
+                      </div>
                     </div>
-                    <hr className="border-border mt-8" />
                   </div>
                 );
-              })()}
+              })}
+            </section>
+          );
+        }
 
-              {isLoading ? (
-                <div className="flex items-center justify-center py-20">
-                  <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-                </div>
-              ) : filteredProducts.length === 0 ? (
-                <div className="text-center py-20">
-                  <p className="text-sm text-muted-foreground">
-                    {isAl
-                      ? "Nuk u gjetën produkte në këtë koleksion."
-                      : "No products found in this collection."}
-                  </p>
-                  {(selectedColors.length > 0 || selectedSizes.length > 0 || selectedCompositions.length > 0 || selectedOuterFabrics.length > 0 || selectedFillingMaterials.length > 0) && (
-                    <button
-                      onClick={() => {
-                        setSelectedColors([]);
-                        setSelectedSizes([]);
-                        setSelectedCompositions([]);
-                        setSelectedOuterFabrics([]);
-                        setSelectedFillingMaterials([]);
-                      }}
-                      className="mt-4 text-xs tracking-brand uppercase text-primary hover:underline"
-                    >
-                      {isAl ? "Pastro filtrat" : "Clear filters"}
-                    </button>
+        // ── CHILD/LEAF VIEW: sidebar + product grid ──
+        return (
+          <section className="py-10 md:py-14 flex-1">
+            <div className="container">
+              {/* Mobile filter toggle button */}
+              <button
+                onClick={() => setShowMobileFilters(!showMobileFilters)}
+                className="md:hidden flex items-center gap-2 text-xs tracking-brand uppercase text-foreground border border-border rounded px-4 py-2.5 mb-6 hover:bg-muted/50 transition-colors"
+              >
+                {isAl ? "Filtra" : "Filters"}
+                <ChevronRight
+                  size={14}
+                  className={`transition-transform ${showMobileFilters ? "rotate-90" : ""}`}
+                />
+              </button>
+
+              <div className="flex flex-col md:flex-row gap-8 md:gap-10 lg:gap-14">
+                {/* Sidebar */}
+                <aside
+                  className={`md:w-52 lg:w-60 shrink-0 ${
+                    showMobileFilters ? "block" : "hidden md:block"
+                  }`}
+                >
+                  <div className="md:sticky md:top-28">
+                    <FilterSidebar
+                      collections={collections || []}
+                      activeSlug={slug}
+                      isAl={isAl}
+                      allColors={scopedColors}
+                      allSizes={scopedSizes}
+                      compositions={compositions}
+                      selectedColors={selectedColors}
+                      selectedSizes={selectedSizes}
+                      selectedCompositions={selectedCompositions}
+                      onToggleColor={toggleColor}
+                      onToggleSize={toggleSize}
+                      onToggleComposition={toggleComposition}
+                      outerFabrics={outerFabrics}
+                      fillingMaterials={fillingMaterials}
+                      selectedOuterFabrics={selectedOuterFabrics}
+                      selectedFillingMaterials={selectedFillingMaterials}
+                      onToggleOuterFabric={toggleOuterFabric}
+                      onToggleFillingMaterial={toggleFillingMaterial}
+                    />
+                  </div>
+                </aside>
+
+                {/* Product grid */}
+                <div className="flex-1 min-w-0">
+                  {isLoading ? (
+                    <div className="flex items-center justify-center py-20">
+                      <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                    </div>
+                  ) : filteredProducts.length === 0 ? (
+                    <div className="text-center py-20">
+                      <p className="text-sm text-muted-foreground">
+                        {isAl
+                          ? "Nuk u gjetën produkte në këtë koleksion."
+                          : "No products found in this collection."}
+                      </p>
+                      {(selectedColors.length > 0 || selectedSizes.length > 0 || selectedCompositions.length > 0 || selectedOuterFabrics.length > 0 || selectedFillingMaterials.length > 0) && (
+                        <button
+                          onClick={() => {
+                            setSelectedColors([]);
+                            setSelectedSizes([]);
+                            setSelectedCompositions([]);
+                            setSelectedOuterFabrics([]);
+                            setSelectedFillingMaterials([]);
+                          }}
+                          className="mt-4 text-xs tracking-brand uppercase text-primary hover:underline"
+                        >
+                          {isAl ? "Pastro filtrat" : "Clear filters"}
+                        </button>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-6 lg:gap-8">
+                      {filteredProducts.map((product) => (
+                        <ProductCard
+                          key={product.id}
+                          product={product}
+                          collectionSlug={getCollectionSlug(product)}
+                          isAl={isAl}
+                          productColors={allColors || []}
+                        />
+                      ))}
+                    </div>
                   )}
                 </div>
-              ) : (
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-6 lg:gap-8">
-                  {filteredProducts.map((product) => (
-                    <ProductCard
-                      key={product.id}
-                      product={product}
-                      collectionSlug={getCollectionSlug(product)}
-                      isAl={isAl}
-                      productColors={allColors || []}
-                    />
-                  ))}
-                </div>
-              )}
+              </div>
             </div>
-          </div>
-        </div>
-      </section>
+          </section>
+        );
+      })()}
 
       <SiteFooter />
     </div>
