@@ -842,6 +842,55 @@ const Collections = () => {
 
             {/* Product grid */}
             <div className="flex-1 min-w-0">
+              {/* Subcategories — shown only on parent collection pages */}
+              {(() => {
+                const subCollections = activeCollection
+                  ? (collections || []).filter(
+                      (c) => c.parent_id === activeCollection.id && c.visible !== false
+                    )
+                  : [];
+                if (subCollections.length === 0) return null;
+                return (
+                  <div className="mb-10">
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
+                      {subCollections.map((sub) => {
+                        const title = isAl
+                          ? sub.title_al || sub.title_en
+                          : sub.title_en || sub.title_al;
+                        return (
+                          <Link
+                            key={sub.id}
+                            to={`/koleksionet/${sub.slug}`}
+                            className="group block"
+                          >
+                            <div className="relative aspect-square overflow-hidden bg-secondary rounded">
+                              {sub.image_url ? (
+                                <img
+                                  src={sub.image_url}
+                                  alt={title}
+                                  className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                                />
+                              ) : (
+                                <div className="w-full h-full flex items-center justify-center text-muted-foreground text-xs">
+                                  {isAl ? "Pa imazh" : "No image"}
+                                </div>
+                              )}
+                              <div className="absolute inset-0 bg-black/20 group-hover:bg-black/30 transition-colors" />
+                              <div className="absolute bottom-0 left-0 right-0 p-3">
+                                <p className="text-white text-sm font-medium leading-tight">
+                                  {title}
+                                </p>
+                              </div>
+                            </div>
+                          </Link>
+                        );
+                      })}
+                    </div>
+                    <hr className="border-border mt-8" />
+                  </div>
+                );
+              })()}
+
               {isLoading ? (
                 <div className="flex items-center justify-center py-20">
                   <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
