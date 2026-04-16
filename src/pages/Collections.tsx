@@ -806,34 +806,32 @@ const Collections = () => {
         if (subCollections.length > 0) {
           return (
             <section className="flex-1">
-              {subCollections.map((sub, idx) => {
+              {subCollections.map((sub) => {
                 const title = isAl
                   ? sub.title_al || sub.title_en
                   : sub.title_en || sub.title_al;
                 const desc = isAl
                   ? sub.description_al || sub.description_en
                   : sub.description_en || sub.description_al;
-                const imageLeft = idx % 2 === 0;
                 return (
                   <div key={sub.id} className="border-b border-border last:border-0">
-                    <div className={`flex flex-col ${imageLeft ? "md:flex-row" : "md:flex-row-reverse"}`} style={{ minHeight: '500px' }}>
-                      {/* Image */}
-                      <div className="w-full md:w-3/5 overflow-hidden bg-secondary" style={{ minHeight: '320px' }}>
+                    <div className="flex flex-col md:flex-row" style={{ height: '600px' }}>
+                      {/* Image - left */}
+                      <div className="w-full md:w-3/5 h-64 md:h-full overflow-hidden bg-secondary">
                         {sub.image_url ? (
                           <img
                             src={sub.image_url}
                             alt={title}
                             className="w-full h-full object-cover"
-                            style={{ minHeight: '320px' }}
                           />
                         ) : (
-                          <div className="w-full h-full flex items-center justify-center text-muted-foreground text-sm" style={{ minHeight: '320px' }}>
+                          <div className="w-full h-full flex items-center justify-center text-muted-foreground text-sm">
                             {isAl ? "Pa imazh" : "No image"}
                           </div>
                         )}
                       </div>
-                      {/* Text */}
-                      <div className="w-full md:w-2/5 flex flex-col items-center justify-center text-center px-8 py-12 md:px-16 bg-muted">
+                      {/* Text - right */}
+                      <div className="w-full md:w-2/5 flex flex-col items-center justify-center text-center px-8 py-10 md:px-16 bg-muted">
                         <h2 className="text-2xl md:text-3xl font-semibold text-foreground mb-6" style={{ letterSpacing: 'normal' }}>
                           {title}
                         </h2>
