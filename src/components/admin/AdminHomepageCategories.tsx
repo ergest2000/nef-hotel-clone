@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useHomepageCategories, useUpsertHomepageCategory, useDeleteHomepageCategory, type HomepageCategory } from "@/hooks/useHomepageCategories";
+import { useCollections } from "@/hooks/useCollections";
 import { useToast } from "@/hooks/use-toast";
 import { useAutoTranslate } from "@/hooks/useAutoTranslate";
 import { uploadCmsImage } from "@/hooks/useCms";
@@ -16,6 +17,7 @@ const empty: Partial<HomepageCategory> = { title_al: "", title_en: "", image_url
 
 export const AdminHomepageCategories = () => {
   const { data: categories, isLoading } = useHomepageCategories();
+  const { data: collections } = useCollections();
   const upsert = useUpsertHomepageCategory();
   const remove = useDeleteHomepageCategory();
   const { toast } = useToast();
@@ -43,6 +45,28 @@ export const AdminHomepageCategories = () => {
     const path = `categories/${Date.now()}-${file.name}`;
     const url = await uploadCmsImage(file, path);
     setEditItem((p) => p ? { ...p, image_url: url } : p);
+  };
+
+  const handleCollectionSelect = (collectionId: string) => {
+    if (collectionId === "none") {
+      setEditItem((p) => p ? { ...p, link_url: "#" } : p);
+      return;
+    }
+    const col = collections?.find((c) => c.id === collectionId);
+    if (!col) return;
+    setEditItem((p) => p ? {
+      ...p,
+      link_url: `/koleksionet/${col.slug}`,
+      title_al: p.title_al || col.title_al || "",
+      title_en: p.title_en || col.title_en || "",
+      image_url: col.image_url || p.image_url || "",
+    } : p);
+  };
+
+  const getSelectedCollection = () => {
+    if (!editItem?.link_url || !editItem.link_url.startsWith("/koleksionet/")) return "none";
+    const slug = editItem.link_url.replace("/koleksionet/", "");
+    return collections?.find((c) => c.slug === slug)?.id ?? "none";
   };
 
   if (isLoading) return <div className="text-sm text-muted-foreground">Duke ngarkuar...</div>;
@@ -83,6 +107,20 @@ export const AdminHomepageCategories = () => {
           <DialogHeader><DialogTitle>{editItem?.id ? "Ndrysho Kategorinë" : "Kategori e Re"}</DialogTitle></DialogHeader>
           {editItem && (
             <div className="space-y-4">
+              <div>
+                <label className="text-xs font-medium text-muted-foreground">Koleksioni</label>
+                <Select value={getSelectedCollection()} onValueChange={handleCollectionSelect}>
+                  <SelectTrigger className="h-9 text-xs"><SelectValue placeholder="Zgjidh koleksionin..." /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">— Pa koleksion —</SelectItem>
+                    {collections?.filter((c) => !c.parent_id).map((c) => (
+                      <SelectItem key={c.id} value={c.id}>{c.title_al || c.slug}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-muted-foreground mt-1">Zgjidhja e koleksionit auto-plotëson imazhin dhe titullin</p>
+              </div>
+
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <div className="flex items-center justify-between">
@@ -99,30 +137,23 @@ export const AdminHomepageCategories = () => {
                   <Input value={editItem.title_en ?? ""} onChange={(e) => setEditItem({ ...editItem, title_en: e.target.value })} />
                 </div>
               </div>
+
               <div>
-                <label className="text-xs font-medium text-muted-foreground">Tipi i linkut</label>
-                <Select value={editItem.link_url?.startsWith("/koleksionet/") ? "collection" : "custom"} onValueChange={(v) => {
-                  if (v === "custom") setEditItem({ ...editItem, link_url: "#" });
-                  else setEditItem({ ...editItem, link_url: "/koleksionet/" });
-                }}>
-                  <SelectTrigger className="h-9 text-xs"><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="collection">Link në kategori</SelectItem>
-                    <SelectItem value="custom">Link custom (manual URL)</SelectItem>
-                  </SelectContent>
-                </Select>
-                <Input value={editItem.link_url ?? "#"} onChange={(e) => setEditItem({ ...editItem, link_url: e.target.value })} placeholder="/koleksionet/bedroom ose https://..." className="mt-2" />
+                <label className="text-xs font-medium text-muted-foreground">Link URL</label>
+                <Input value={editItem.link_url ?? "#"} onChange={(e) => setEditItem({ ...editItem, link_url: e.target.value })} placeholder="/koleksionet/bedroom ose https://..." />
               </div>
+
               <div>
                 <label className="text-xs font-medium text-muted-foreground">Imazhi</label>
                 <div className="flex items-center gap-3 mt-1">
                   {editItem.image_url && <img src={editItem.image_url} className="h-20 w-20 object-cover rounded" />}
                   <label className="cursor-pointer">
-                    <div className="flex items-center gap-2 px-3 py-2 bg-muted rounded text-sm hover:bg-muted/80"><ImageIcon className="h-4 w-4" /> Ngarko</div>
+                    <div className="flex items-center gap-2 px-3 py-2 bg-muted rounded text-sm hover:bg-muted/80"><ImageIcon className="h-4 w-4" /> Ngarko imazh tjetër</div>
                     <input type="file" accept="image/*" className="hidden" onChange={(e) => { if (e.target.files?.[0]) handleImageUpload(e.target.files[0]); }} />
                   </label>
                 </div>
               </div>
+
               <div className="flex items-center gap-3">
                 <Switch checked={editItem.visible ?? true} onCheckedChange={(v) => setEditItem({ ...editItem, visible: v })} />
                 <span className="text-sm">I dukshëm</span>
