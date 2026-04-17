@@ -28,7 +28,7 @@ const menuItems: { key: string; label: string; icon: any; group: string; roles?:
   { key: "static-pages", label: "Faqet Statike", icon: BookOpen, group: "content", roles: ["admin"] },
   { key: "collections", label: "Koleksionet", icon: FolderOpen, group: "products", roles: ["admin", "editor"] },
   { key: "products", label: "Produktet", icon: Package, group: "products", roles: ["admin", "editor"] },
-  { key: "colors", label: "Ngjyrat e Produktit", icon: Palette, group: "products", roles: ["admin"] },
+  { key: "colors", label: "Ngjyrat e Produktit", icon: Palette, group: "products", roles: ["admin", "editor"] },
   { key: "suggested-products", label: "Sugjerime Homepage", icon: Star, group: "products", roles: ["admin"] },
   { key: "homepage-categories", label: "Kategoritë Homepage", icon: Grid3X3, group: "products", roles: ["admin"] },
   { key: "media", label: "Media", icon: Image, group: "products", roles: ["admin"] },
