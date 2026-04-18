@@ -56,7 +56,7 @@ const ProductImagesManager = ({ productId }: { productId: string }) => {
       toast({ title: "Limit", description: "Maksimumi 10 foto", variant: "destructive" });
       return;
     }
-    const path = `products/${productId}/${Date.now()}-${file.name}`;
+    const path = `products/${productId}/${Date.now()}-${file.name.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-zA-Z0-9._-]/g, "-")}`;
     const url = await uploadCmsImage(file, path);
     addImage.mutate({
       product_id: productId,
@@ -184,7 +184,7 @@ const ProductColorsManager = ({ productId }: { productId: string }) => {
 
   const handleColorImageUpload = async (colorId: string, file: File) => {
     try {
-      const path = `products/${productId}/colors/${Date.now()}-${file.name}`;
+      const path = `products/${productId}/colors/${Date.now()}-${file.name.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-zA-Z0-9._-]/g, "-")}`;
       const url = await uploadCmsImage(file, path);
       updateColor.mutate({ id: colorId, product_id: productId, updates: { image_url: url } });
       toast({ title: "Imazhi i ngjyrës u ngarkua!" });
@@ -335,7 +335,8 @@ export const AdminProductsManager = () => {
   };
 
   const handleImageUpload = async (file: File) => {
-    const path = `products/${Date.now()}-${file.name}`;
+    const safeName = file.name.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-zA-Z0-9._-]/g, "-");
+    const path = `products/${Date.now()}-${safeName}`;
     const url = await uploadCmsImage(file, path);
     setEditItem((prev) => prev ? { ...prev, image_url: url } : prev);
   };
