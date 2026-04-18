@@ -51,19 +51,30 @@ const ProductImagesManager = ({ productId }: { productId: string }) => {
   const { toast } = useToast();
   const [uploadColorId, setUploadColorId] = useState<string>("");
 
-  const handleUpload = async (file: File) => {
-    if ((images?.length ?? 0) >= 10) {
+  const [uploading, setUploading] = useState(false);
+
+  const handleUpload = async (files: FileList) => {
+    const current = images?.length ?? 0;
+    const remaining = 10 - current;
+    if (remaining <= 0) {
       toast({ title: "Limit", description: "Maksimumi 10 foto", variant: "destructive" });
       return;
     }
-    const path = `products/${productId}/${Date.now()}-${file.name.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-zA-Z0-9._-]/g, "-")}`;
-    const url = await uploadCmsImage(file, path);
-    addImage.mutate({
-      product_id: productId,
-      image_url: url,
-      sort_order: images?.length ?? 0,
-      color_id: uploadColorId || null,
-    });
+    const toUpload = Array.from(files).slice(0, remaining);
+    setUploading(true);
+    for (let i = 0; i < toUpload.length; i++) {
+      const file = toUpload[i];
+      const path = `products/${productId}/${Date.now()}-${file.name.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-zA-Z0-9._-]/g, "-")}`;
+      const url = await uploadCmsImage(file, path);
+      addImage.mutate({
+        product_id: productId,
+        image_url: url,
+        sort_order: current + i,
+        color_id: uploadColorId || null,
+      });
+    }
+    setUploading(false);
+    toast({ title: `U ngarkuan ${toUpload.length} foto!` });
   };
 
   const getColorName = (colorId: string | null) => {
@@ -101,10 +112,10 @@ const ProductImagesManager = ({ productId }: { productId: string }) => {
         )}
         <label className="cursor-pointer">
           <div className="flex items-center gap-1 px-3 py-1.5 bg-background border border-border rounded text-xs hover:bg-muted">
-            <ImageIcon className="h-3 w-3" /> Ngarko foto
+            <ImageIcon className="h-3 w-3" /> {uploading ? "Duke ngarkuar..." : "Ngarko foto"}
           </div>
-          <input type="file" accept="image/*" className="hidden" onChange={(e) => {
-            if (e.target.files?.[0]) handleUpload(e.target.files[0]);
+          <input type="file" accept="image/*" multiple className="hidden" onChange={(e) => {
+            if (e.target.files && e.target.files.length > 0) handleUpload(e.target.files);
           }} />
         </label>
         {uploadColorId && (
