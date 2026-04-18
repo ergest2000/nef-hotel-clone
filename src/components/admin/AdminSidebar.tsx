@@ -23,7 +23,7 @@ const menuItems: { key: string; label: string; icon: any; group: string; roles?:
   { key: "blog", label: "Blog", icon: FileText, group: "pages", roles: ["admin"] },
   { key: "blog-posts", label: "Blog Posts", icon: PenSquare, group: "content", roles: ["admin", "editor"] },
   { key: "menus", label: "Menus", icon: MenuIcon, group: "content", roles: ["admin"] },
-  { key: "clients-logos", label: "Clients Logos", icon: ImageIcon, group: "content", roles: ["admin"] },
+  { key: "clients-logos", label: "Clients Logos", icon: ImageIcon, group: "content", roles: ["admin", "editor"] },
   { key: "certifications-logos", label: "Certifications Logos", icon: Award, group: "content", roles: ["admin"] },
   { key: "static-pages", label: "Faqet Statike", icon: BookOpen, group: "content", roles: ["admin"] },
   { key: "collections", label: "Koleksionet", icon: FolderOpen, group: "products", roles: ["admin", "editor"] },
