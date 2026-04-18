@@ -22,23 +22,25 @@ const ClientsCarousel = ({ content }: { content?: SiteContent[] }) => {
       <div className="relative w-full overflow-hidden">
         <div className="flex animate-scroll-clients w-max mb-4">
           {doubledClients.map((client, i) => (
-            <div key={`r1-${i}`} className="flex items-center justify-center px-6 md:px-10 py-4 mx-2 bg-background border border-border shrink-0 hover:shadow-md transition-shadow min-w-[140px]">
+            <div key={`r1-${i}`} className="flex flex-col items-center justify-center px-6 md:px-8 py-5 mx-2 bg-background border border-border shrink-0 hover:shadow-md transition-shadow min-w-[160px] gap-3">
               {client.logo ? (
-                <img src={client.logo} alt={client.name} className="max-h-8 max-w-[100px] object-contain" />
+                <img src={client.logo} alt={client.name} className="max-h-14 max-w-[120px] object-contain" />
               ) : (
-                <span className="text-[9px] md:text-[11px] tracking-brand text-muted-foreground text-center font-semibold uppercase whitespace-nowrap">{client.name}</span>
+                <Building2 className="h-8 w-8 text-muted-foreground/30" />
               )}
+              <span className="text-[9px] md:text-[10px] tracking-brand text-muted-foreground text-center font-semibold uppercase whitespace-nowrap">{client.name}</span>
             </div>
           ))}
         </div>
         <div className="flex animate-scroll-clients-reverse w-max">
           {[...doubledClients].reverse().map((client, i) => (
-            <div key={`r2-${i}`} className="flex items-center justify-center px-6 md:px-10 py-4 mx-2 bg-background border border-border shrink-0 hover:shadow-md transition-shadow min-w-[140px]">
+            <div key={`r2-${i}`} className="flex flex-col items-center justify-center px-6 md:px-8 py-5 mx-2 bg-background border border-border shrink-0 hover:shadow-md transition-shadow min-w-[160px] gap-3">
               {client.logo ? (
-                <img src={client.logo} alt={client.name} className="max-h-8 max-w-[100px] object-contain" />
+                <img src={client.logo} alt={client.name} className="max-h-14 max-w-[120px] object-contain" />
               ) : (
-                <span className="text-[9px] md:text-[11px] tracking-brand text-muted-foreground text-center font-semibold uppercase whitespace-nowrap">{client.name}</span>
+                <Building2 className="h-8 w-8 text-muted-foreground/30" />
               )}
+              <span className="text-[9px] md:text-[10px] tracking-brand text-muted-foreground text-center font-semibold uppercase whitespace-nowrap">{client.name}</span>
             </div>
           ))}
         </div>
