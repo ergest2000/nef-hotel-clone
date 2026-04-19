@@ -86,13 +86,18 @@ const MediaPickerModal = ({
 
   if (!open) return null;
   return createPortal(
-    <div className="fixed inset-0 z-[9999] bg-black/70 flex items-center justify-center p-4" onClick={onClose}>
+    <div
+      className="fixed inset-0 z-[9999] bg-black/70 flex items-center justify-center p-4"
+      onClick={onClose}
+      style={{ overscrollBehavior: "contain" }}
+    >
       <div
-        className="bg-background rounded-xl shadow-2xl w-full max-w-6xl h-[92vh] flex flex-col overflow-hidden border border-border"
+        className="bg-background rounded-xl shadow-2xl w-full max-w-6xl border border-border overflow-hidden"
+        style={{ height: "92vh", display: "grid", gridTemplateRows: "auto 1fr" }}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-5 py-4 border-b border-border shrink-0">
+        <div className="flex items-center justify-between px-5 py-4 border-b border-border">
           <h3 className="font-semibold">Zgjidh nga Media</h3>
           <div className="flex items-center gap-2">
             {picked.size > 0 && (
@@ -109,10 +114,17 @@ const MediaPickerModal = ({
           </div>
         </div>
 
-        {/* Body: sidebar + main */}
-        <div className="flex flex-1 min-h-0 overflow-hidden">
+        {/* Body: sidebar + main using grid */}
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: preview ? "160px 1fr 224px" : "160px 1fr",
+            minHeight: 0,
+            height: "100%",
+          }}
+        >
           {/* Sidebar folders */}
-          <div className="w-40 shrink-0 border-r border-border bg-muted/20 overflow-y-auto py-2">
+          <div className="border-r border-border bg-muted/20 overflow-y-auto py-2">
             {MEDIA_FOLDERS.map((f) => (
               <button
                 key={f}
@@ -127,10 +139,18 @@ const MediaPickerModal = ({
             ))}
           </div>
 
-          {/* Main area */}
-          <div className="flex flex-1 min-w-0 min-h-0 flex-col">
+          {/* Main area: toolbar + grid */}
+          <div
+            style={{
+              display: "grid",
+              gridTemplateRows: "auto 1fr",
+              minHeight: 0,
+              minWidth: 0,
+              height: "100%",
+            }}
+          >
             {/* Toolbar */}
-            <div className="flex items-center gap-3 p-3 border-b border-border bg-background shrink-0">
+            <div className="flex items-center gap-3 p-3 border-b border-border bg-background">
               <div className="relative flex-1 max-w-sm">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <input
@@ -151,77 +171,74 @@ const MediaPickerModal = ({
               </button>
             </div>
 
-            {/* Grid + preview */}
-            <div className="flex flex-1 min-h-0 min-w-0 overflow-hidden">
-              {/* Image grid */}
-              <div className="flex-1 min-w-0 min-h-0 overflow-y-auto p-4">
-                {loading ? (
-                  <div className="flex items-center justify-center h-48 gap-3 flex-col">
-                    <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-                    <p className="text-sm text-muted-foreground">Duke ngarkuar...</p>
-                  </div>
-                ) : filtered.length === 0 ? (
-                  <div className="flex flex-col items-center justify-center h-48 text-muted-foreground gap-2">
-                    <ImageIcon className="h-10 w-10 opacity-20" />
-                    <p className="text-sm">Nuk ka imazhe</p>
-                  </div>
-                ) : (
-                  <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-3">
-                    {filtered.map((file) => {
-                      const isPicked = picked.has(file.url);
-                      const isPreview = preview?.url === file.url;
-                      return (
-                        <div
-                          key={file.url}
-                          onClick={() => togglePick(file)}
-                          className={`relative aspect-square rounded-xl overflow-hidden cursor-pointer transition-all duration-150 ${
-                            isPicked
-                              ? "ring-2 ring-primary ring-offset-2 scale-[0.96]"
-                              : isPreview
-                              ? "ring-2 ring-primary/50"
-                              : "hover:scale-[1.03] hover:shadow-md"
-                          }`}
-                        >
-                          <img src={file.url} alt={file.name} className="w-full h-full object-cover bg-muted" loading="lazy" />
-                          {isPicked && (
-                            <div className="absolute inset-0 bg-primary/15">
-                              <div className="absolute top-2 right-2 w-7 h-7 bg-primary rounded-full flex items-center justify-center shadow">
-                                <Check className="h-4 w-4 text-white" />
-                              </div>
+            {/* Image grid — direct overflow container */}
+            <div className="overflow-y-auto p-4" style={{ minHeight: 0 }}>
+              {loading ? (
+                <div className="flex items-center justify-center h-48 gap-3 flex-col">
+                  <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                  <p className="text-sm text-muted-foreground">Duke ngarkuar...</p>
+                </div>
+              ) : filtered.length === 0 ? (
+                <div className="flex flex-col items-center justify-center h-48 text-muted-foreground gap-2">
+                  <ImageIcon className="h-10 w-10 opacity-20" />
+                  <p className="text-sm">Nuk ka imazhe</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-3">
+                  {filtered.map((file) => {
+                    const isPicked = picked.has(file.url);
+                    const isPreview = preview?.url === file.url;
+                    return (
+                      <div
+                        key={file.url}
+                        onClick={() => togglePick(file)}
+                        className={`relative aspect-square rounded-xl overflow-hidden cursor-pointer transition-all duration-150 ${
+                          isPicked
+                            ? "ring-2 ring-primary ring-offset-2 scale-[0.96]"
+                            : isPreview
+                            ? "ring-2 ring-primary/50"
+                            : "hover:scale-[1.03] hover:shadow-md"
+                        }`}
+                      >
+                        <img src={file.url} alt={file.name} className="w-full h-full object-cover bg-muted" loading="lazy" />
+                        {isPicked && (
+                          <div className="absolute inset-0 bg-primary/15">
+                            <div className="absolute top-2 right-2 w-7 h-7 bg-primary rounded-full flex items-center justify-center shadow">
+                              <Check className="h-4 w-4 text-white" />
                             </div>
-                          )}
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
-              </div>
-
-              {/* Preview panel */}
-              {preview && (
-                <div className="w-56 shrink-0 border-l border-border bg-muted/10 flex flex-col p-4 gap-3 overflow-y-auto">
-                  <div className="aspect-square rounded-xl overflow-hidden bg-muted border border-border shadow">
-                    <img src={preview.url} alt={preview.name} className="w-full h-full object-cover" />
-                  </div>
-                  <div className="space-y-1">
-                    <p className="text-xs font-medium break-all leading-snug">{preview.name}</p>
-                  </div>
-                  <Button
-                    variant={picked.has(preview.url) ? "default" : "outline"}
-                    size="sm"
-                    className="w-full gap-1.5"
-                    onClick={() => togglePick(preview)}
-                  >
-                    {picked.has(preview.url) ? (
-                      <><Check className="h-3.5 w-3.5" /> E zgjedhur</>
-                    ) : (
-                      "Zgjidh"
-                    )}
-                  </Button>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
                 </div>
               )}
             </div>
           </div>
+
+          {/* Preview panel */}
+          {preview && (
+            <div className="border-l border-border bg-muted/10 flex flex-col p-4 gap-3 overflow-y-auto">
+              <div className="aspect-square rounded-xl overflow-hidden bg-muted border border-border shadow shrink-0">
+                <img src={preview.url} alt={preview.name} className="w-full h-full object-cover" />
+              </div>
+              <div className="space-y-1">
+                <p className="text-xs font-medium break-all leading-snug">{preview.name}</p>
+              </div>
+              <Button
+                variant={picked.has(preview.url) ? "default" : "outline"}
+                size="sm"
+                className="w-full gap-1.5"
+                onClick={() => togglePick(preview)}
+              >
+                {picked.has(preview.url) ? (
+                  <><Check className="h-3.5 w-3.5" /> E zgjedhur</>
+                ) : (
+                  "Zgjidh"
+                )}
+              </Button>
+            </div>
+          )}
         </div>
       </div>
     </div>,
