@@ -31,7 +31,7 @@ const menuItems: { key: string; label: string; icon: any; group: string; roles?:
   { key: "colors", label: "Ngjyrat e Produktit", icon: Palette, group: "products", roles: ["admin", "editor"] },
   { key: "suggested-products", label: "Sugjerime Homepage", icon: Star, group: "products", roles: ["admin"] },
   { key: "homepage-categories", label: "Kategoritë Homepage", icon: Grid3X3, group: "products", roles: ["admin"] },
-  { key: "media", label: "Media", icon: Image, group: "products", roles: ["admin"] },
+  { key: "media", label: "Media", icon: Image, group: "products", roles: ["admin", "editor"] },
   { key: "webp-convert", label: "Konverto në WebP", icon: RefreshCw, group: "products", roles: ["admin"] },
   { key: "registrations", label: "Regjistrimet", icon: Users, group: "manage", roles: ["admin", "manager"] },
   { key: "registration-form", label: "Kontaktet", icon: FileText, group: "manage", roles: ["admin", "manager"] },
