@@ -56,51 +56,45 @@ export const AdminMediaLibrary = () => {
   const [showProductDropdown, setShowProductDropdown] = useState(false);
   const [showSortDropdown, setShowSortDropdown] = useState(false);
 
-  const loadFolder = useCallback(async (folder: string): Promise<MediaFile[]> => {
-    const { data, error } = await supabase.storage
-      .from(BUCKET)
-      .list(folder, { limit: 1000, sortBy: { column: "updated_at", order: "desc" } });
-    if (error) return [];
-    const results: MediaFile[] = [];
-    for (const f of data || []) {
-      if (!f.id) {
-        // subfolder — load recursively
-        const sub = await loadFolder(`${folder}/${f.name}`);
-        results.push(...sub);
-      } else {
-        const path = `${folder}/${f.name}`;
-        const { data: urlData } = supabase.storage.from(BUCKET).getPublicUrl(path);
-        results.push({
-          name: f.name,
-          path,
-          url: urlData.publicUrl,
-          size: f.metadata?.size,
-          updated_at: f.updated_at,
-          folder,
-        });
-      }
-    }
-    return results;
-  }, []);
-
   const loadFiles = useCallback(async (folder: string) => {
     setLoading(true);
     setAllFiles([]);
     setSelectedPaths(new Set());
     setPreviewFile(null);
     try {
-      if (folder === "__all__") {
-        const results = await Promise.all(FOLDERS.map(loadFolder));
-        setAllFiles(results.flat());
-      } else {
-        const results = await loadFolder(folder);
-        setAllFiles(results);
+      const folders = folder === "__all__" ? FOLDERS : [folder];
+      const results: MediaFile[] = [];
+
+      for (const f of folders) {
+        const { data } = await supabase.storage
+          .from(BUCKET)
+          .list(f, { limit: 1000, sortBy: { column: "updated_at", order: "desc" } });
+
+        for (const item of data || []) {
+          if (!item.id) {
+            // subfolder — load one level deep only
+            const { data: sub } = await supabase.storage
+              .from(BUCKET)
+              .list(`${f}/${item.name}`, { limit: 200 });
+            for (const subItem of sub || []) {
+              if (!subItem.id) continue;
+              const path = `${f}/${item.name}/${subItem.name}`;
+              const { data: u } = supabase.storage.from(BUCKET).getPublicUrl(path);
+              results.push({ name: subItem.name, path, url: u.publicUrl, size: subItem.metadata?.size, updated_at: subItem.updated_at, folder: f });
+            }
+          } else {
+            const path = `${f}/${item.name}`;
+            const { data: u } = supabase.storage.from(BUCKET).getPublicUrl(path);
+            results.push({ name: item.name, path, url: u.publicUrl, size: item.metadata?.size, updated_at: item.updated_at, folder: f });
+          }
+        }
       }
+      setAllFiles(results);
     } catch (e: any) {
       toast({ title: "Gabim", description: e.message, variant: "destructive" });
     }
     setLoading(false);
-  }, [loadFolder, toast]);
+  }, [toast]);
 
   useEffect(() => { loadFiles(activeFolder); }, [activeFolder]);
 
