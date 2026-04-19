@@ -1,12 +1,13 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { uploadCmsImage } from "@/hooks/useCms";
 import { useToast } from "@/hooks/use-toast";
+import { useProducts } from "@/hooks/useCollections";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
   Copy, Trash2, Upload, Search, FolderOpen, Image as ImageIcon,
-  Check, RefreshCw, X, CheckSquare, Square
+  Check, RefreshCw, X, CheckSquare, Square, Package, ChevronLeft
 } from "lucide-react";
 
 type MediaFile = {
@@ -22,6 +23,8 @@ const FOLDERS = ["products", "collections", "categories", "gallery", "home", "lo
 
 export const AdminMediaLibrary = () => {
   const { toast } = useToast();
+  const { data: allProducts } = useProducts();
+
   const [files, setFiles] = useState<MediaFile[]>([]);
   const [loading, setLoading] = useState(false);
   const [activeFolder, setActiveFolder] = useState("products");
@@ -34,20 +37,26 @@ export const AdminMediaLibrary = () => {
   const [bulkDeleting, setBulkDeleting] = useState(false);
   const [selectMode, setSelectMode] = useState(false);
 
-  const loadFiles = useCallback(async (folder: string) => {
+  // Product search state
+  const [productSearch, setProductSearch] = useState("");
+  const [activeProductId, setActiveProductId] = useState<string | null>(null);
+  const [activeProductName, setActiveProductName] = useState<string | null>(null);
+
+  const loadFiles = useCallback(async (folder: string, productId?: string) => {
     setLoading(true);
     setFiles([]);
     setSelectedPaths(new Set());
     setPreviewFile(null);
+    const prefix = productId ? `${folder}/${productId}` : folder;
     try {
       const { data, error } = await supabase.storage
         .from(BUCKET)
-        .list(folder, { limit: 500, sortBy: { column: "updated_at", order: "desc" } });
+        .list(prefix, { limit: 500, sortBy: { column: "updated_at", order: "desc" } });
       if (error) throw error;
       const mediaFiles: MediaFile[] = (data || [])
         .filter((f) => f.id)
         .map((f) => {
-          const path = `${folder}/${f.name}`;
+          const path = `${prefix}/${f.name}`;
           const { data: urlData } = supabase.storage.from(BUCKET).getPublicUrl(path);
           return { name: f.name, path, url: urlData.publicUrl, size: f.metadata?.size, updated_at: f.updated_at };
         });
@@ -58,14 +67,36 @@ export const AdminMediaLibrary = () => {
     setLoading(false);
   }, [toast]);
 
-  useEffect(() => { loadFiles(activeFolder); }, [activeFolder, loadFiles]);
+  useEffect(() => {
+    if (activeFolder === "products" && activeProductId) {
+      loadFiles("products", activeProductId);
+    } else if (activeFolder !== "products") {
+      loadFiles(activeFolder);
+    } else {
+      setFiles([]);
+    }
+  }, [activeFolder, activeProductId, loadFiles]);
+
+  // Filtered products for search
+  const filteredProducts = useMemo(() => {
+    if (!allProducts) return [];
+    const q = productSearch.toLowerCase();
+    return allProducts.filter((p) =>
+      (p.title_al || "").toLowerCase().includes(q) ||
+      (p.title_en || "").toLowerCase().includes(q) ||
+      (p.slug || "").toLowerCase().includes(q)
+    ).slice(0, 30);
+  }, [allProducts, productSearch]);
 
   const handleUpload = async (fileList: FileList) => {
     setUploading(true);
     let count = 0;
+    const prefix = activeFolder === "products" && activeProductId
+      ? `products/${activeProductId}`
+      : activeFolder;
     for (const file of Array.from(fileList)) {
       const safeName = file.name.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-zA-Z0-9._-]/g, "-");
-      const path = `${activeFolder}/${Date.now()}-${safeName}`;
+      const path = `${prefix}/${Date.now()}-${safeName}`;
       try {
         await uploadCmsImage(file, path);
         count++;
@@ -74,7 +105,11 @@ export const AdminMediaLibrary = () => {
       }
     }
     setUploading(false);
-    if (count > 0) { toast({ title: `U ngarkuan ${count} file!` }); loadFiles(activeFolder); }
+    if (count > 0) {
+      toast({ title: `U ngarkuan ${count} file!` });
+      if (activeFolder === "products" && activeProductId) loadFiles("products", activeProductId);
+      else loadFiles(activeFolder);
+    }
   };
 
   const handleBulkDelete = async () => {
@@ -109,19 +144,11 @@ export const AdminMediaLibrary = () => {
   };
 
   const toggleSelect = (path: string) => {
-    setSelectedPaths((prev) => {
-      const n = new Set(prev);
-      n.has(path) ? n.delete(path) : n.add(path);
-      return n;
-    });
+    setSelectedPaths((prev) => { const n = new Set(prev); n.has(path) ? n.delete(path) : n.add(path); return n; });
   };
 
   const toggleSelectAll = () => {
-    if (selectedPaths.size === filtered.length) {
-      setSelectedPaths(new Set());
-    } else {
-      setSelectedPaths(new Set(filtered.map((f) => f.path)));
-    }
+    setSelectedPaths(selectedPaths.size === filtered.length ? new Set() : new Set(filtered.map((f) => f.path)));
   };
 
   const handleCopy = (url: string) => {
@@ -143,7 +170,7 @@ export const AdminMediaLibrary = () => {
   return (
     <div className="flex h-[calc(100vh-120px)] gap-0 overflow-hidden rounded-lg border border-border">
       {/* Sidebar */}
-      <div className="w-44 shrink-0 border-r border-border bg-muted/30 flex flex-col">
+      <div className="w-48 shrink-0 border-r border-border bg-muted/30 flex flex-col">
         <div className="p-3 border-b border-border">
           <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Folder-at</p>
         </div>
@@ -151,7 +178,14 @@ export const AdminMediaLibrary = () => {
           {FOLDERS.map((folder) => (
             <button
               key={folder}
-              onClick={() => { setActiveFolder(folder); setSelectMode(false); setSearch(""); }}
+              onClick={() => {
+                setActiveFolder(folder);
+                setSelectMode(false);
+                setSearch("");
+                setActiveProductId(null);
+                setActiveProductName(null);
+                setProductSearch("");
+              }}
               className={`w-full flex items-center gap-2 px-3 py-2 text-sm transition-colors text-left ${
                 activeFolder === folder ? "bg-primary text-primary-foreground" : "text-foreground hover:bg-muted"
               }`}
@@ -165,33 +199,93 @@ export const AdminMediaLibrary = () => {
 
       {/* Main */}
       <div className="flex-1 flex flex-col min-w-0">
+
+        {/* Product search panel — shown only for products folder */}
+        {activeFolder === "products" && (
+          <div className="border-b border-border bg-muted/20">
+            {!activeProductId ? (
+              <div className="p-3 space-y-2">
+                <p className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
+                  <Package className="h-3.5 w-3.5" /> Kërko produkt
+                </p>
+                <div className="relative">
+                  <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+                  <Input
+                    value={productSearch}
+                    onChange={(e) => setProductSearch(e.target.value)}
+                    placeholder="Emri i produktit..."
+                    className="pl-8 h-8 text-sm"
+                  />
+                </div>
+                {productSearch && filteredProducts.length > 0 && (
+                  <div className="bg-background border border-border rounded-lg shadow-md max-h-48 overflow-y-auto">
+                    {filteredProducts.map((p) => (
+                      <button
+                        key={p.id}
+                        onClick={() => {
+                          setActiveProductId(p.id);
+                          setActiveProductName(p.title_al || p.title_en || p.slug);
+                          setProductSearch("");
+                        }}
+                        className="w-full text-left px-3 py-2 text-sm hover:bg-muted transition-colors flex items-center gap-2 border-b border-border/50 last:border-0"
+                      >
+                        {p.image_url ? (
+                          <img src={p.image_url} alt="" className="w-7 h-7 object-cover rounded shrink-0" />
+                        ) : (
+                          <div className="w-7 h-7 bg-muted rounded shrink-0 flex items-center justify-center">
+                            <Package className="h-3.5 w-3.5 text-muted-foreground" />
+                          </div>
+                        )}
+                        <span className="truncate">{p.title_al || p.title_en || p.slug}</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+                {productSearch && filteredProducts.length === 0 && (
+                  <p className="text-xs text-muted-foreground px-1">Nuk u gjet asnjë produkt</p>
+                )}
+                {!productSearch && (
+                  <p className="text-xs text-muted-foreground px-1">Shkruaj emrin e produktit për të parë imazhet e tij</p>
+                )}
+              </div>
+            ) : (
+              <div className="flex items-center gap-2 px-3 py-2">
+                <button
+                  onClick={() => { setActiveProductId(null); setActiveProductName(null); setFiles([]); }}
+                  className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  <ChevronLeft className="h-3.5 w-3.5" /> Kthehu
+                </button>
+                <span className="text-xs font-medium truncate">{activeProductName}</span>
+                <span className="text-xs text-muted-foreground ml-auto">{files.length} foto</span>
+              </div>
+            )}
+          </div>
+        )}
+
         {/* Toolbar */}
         <div className="flex items-center gap-2 p-3 border-b border-border bg-background flex-wrap">
-          <div className="relative flex-1 min-w-[160px] max-w-xs">
-            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
-            <Input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Kërko..." className="pl-8 h-8 text-sm" />
-            {search && <button onClick={() => setSearch("")} className="absolute right-2 top-1/2 -translate-y-1/2"><X className="h-3.5 w-3.5 text-muted-foreground" /></button>}
-          </div>
+          {(activeFolder !== "products" || activeProductId) && (
+            <div className="relative flex-1 min-w-[160px] max-w-xs">
+              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+              <Input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Kërko..." className="pl-8 h-8 text-sm" />
+              {search && <button onClick={() => setSearch("")} className="absolute right-2 top-1/2 -translate-y-1/2"><X className="h-3.5 w-3.5 text-muted-foreground" /></button>}
+            </div>
+          )}
 
           <span className="text-xs text-muted-foreground">{filtered.length} file</span>
 
-          {/* Select mode toggle */}
-          <Button
-            variant={selectMode ? "default" : "outline"} size="sm" className="h-8 text-xs gap-1.5"
-            onClick={() => { setSelectMode(!selectMode); setSelectedPaths(new Set()); }}
-          >
-            <CheckSquare className="h-3.5 w-3.5" />
-            Zgjidh
+          <Button variant={selectMode ? "default" : "outline"} size="sm" className="h-8 text-xs gap-1.5"
+            onClick={() => { setSelectMode(!selectMode); setSelectedPaths(new Set()); }}>
+            <CheckSquare className="h-3.5 w-3.5" /> Zgjidh
           </Button>
 
-          {/* Select all - shown only in select mode */}
           {selectMode && filtered.length > 0 && (
             <Button variant="outline" size="sm" className="h-8 text-xs gap-1.5" onClick={toggleSelectAll}>
-              {allSelected ? <><CheckSquare className="h-3.5 w-3.5" /> Hiq të gjitha</> : <><Square className="h-3.5 w-3.5" /> Zgjidh të gjitha</>}
+              {allSelected ? <><CheckSquare className="h-3.5 w-3.5" /> Hiq të gjitha</> : <><Square className="h-3.5 w-3.5" /> Të gjitha</>}
             </Button>
           )}
 
-          {/* Bulk delete */}
           {selectMode && selectedPaths.size > 0 && (
             <Button variant="destructive" size="sm" className="h-8 text-xs gap-1.5" onClick={handleBulkDelete} disabled={bulkDeleting}>
               <Trash2 className="h-3.5 w-3.5" />
@@ -199,19 +293,23 @@ export const AdminMediaLibrary = () => {
             </Button>
           )}
 
-          <Button variant="ghost" size="icon" className="h-8 w-8 ml-auto" onClick={() => loadFiles(activeFolder)} disabled={loading}>
+          <Button variant="ghost" size="icon" className="h-8 w-8 ml-auto"
+            onClick={() => activeFolder === "products" && activeProductId ? loadFiles("products", activeProductId) : loadFiles(activeFolder)}
+            disabled={loading}>
             <RefreshCw className={`h-3.5 w-3.5 ${loading ? "animate-spin" : ""}`} />
           </Button>
 
-          <label className="cursor-pointer">
-            <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded text-xs font-medium transition-colors ${
-              uploading ? "bg-muted text-muted-foreground" : "bg-primary text-primary-foreground hover:bg-primary/90"
-            }`}>
-              <Upload className="h-3.5 w-3.5" />
-              {uploading ? "Duke ngarkuar..." : "Ngarko"}
-            </div>
-            <input type="file" accept="image/*" multiple className="hidden" onChange={(e) => { if (e.target.files?.length) handleUpload(e.target.files); }} />
-          </label>
+          {(activeFolder !== "products" || activeProductId) && (
+            <label className="cursor-pointer">
+              <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded text-xs font-medium transition-colors ${
+                uploading ? "bg-muted text-muted-foreground" : "bg-primary text-primary-foreground hover:bg-primary/90"
+              }`}>
+                <Upload className="h-3.5 w-3.5" />
+                {uploading ? "Duke ngarkuar..." : "Ngarko"}
+              </div>
+              <input type="file" accept="image/*" multiple className="hidden" onChange={(e) => { if (e.target.files?.length) handleUpload(e.target.files); }} />
+            </label>
+          )}
         </div>
 
         <div className="flex flex-1 overflow-hidden">
@@ -222,14 +320,19 @@ export const AdminMediaLibrary = () => {
             onDragLeave={() => setDragOver(false)}
             onDrop={(e) => { e.preventDefault(); setDragOver(false); if (e.dataTransfer.files?.length) handleUpload(e.dataTransfer.files); }}
           >
-            {loading ? (
+            {activeFolder === "products" && !activeProductId ? (
+              <div className="flex flex-col items-center justify-center h-40 text-muted-foreground gap-2">
+                <Package className="h-10 w-10 opacity-20" />
+                <p className="text-sm">Kërko një produkt për të parë imazhet e tij</p>
+              </div>
+            ) : loading ? (
               <div className="flex items-center justify-center h-40">
                 <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
               </div>
             ) : filtered.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-40 text-muted-foreground gap-2">
                 <ImageIcon className="h-10 w-10 opacity-20" />
-                <p className="text-sm">Nuk ka file në këtë folder</p>
+                <p className="text-sm">Nuk ka file</p>
                 <p className="text-xs">Tërhiq foto këtu për t'i ngarkuar</p>
               </div>
             ) : (
@@ -240,38 +343,20 @@ export const AdminMediaLibrary = () => {
                   return (
                     <div
                       key={file.path}
-                      onClick={() => {
-                        if (selectMode) {
-                          toggleSelect(file.path);
-                        } else {
-                          setPreviewFile(isPreview ? null : file);
-                        }
-                      }}
+                      onClick={() => selectMode ? toggleSelect(file.path) : setPreviewFile(isPreview ? null : file)}
                       className={`group relative aspect-square rounded-lg overflow-hidden cursor-pointer transition-all duration-150 ${
-                        isSelected
-                          ? "ring-2 ring-primary ring-offset-1 scale-[0.97]"
-                          : isPreview
-                          ? "ring-2 ring-primary"
+                        isSelected ? "ring-2 ring-primary ring-offset-1 scale-[0.97]"
+                          : isPreview ? "ring-2 ring-primary"
                           : "hover:ring-1 hover:ring-border"
                       }`}
                     >
                       <img src={file.url} alt={file.name} className="w-full h-full object-cover bg-muted" loading="lazy" />
-
-                      {/* Overlay on hover */}
-                      <div className={`absolute inset-0 transition-colors ${
-                        isSelected ? "bg-primary/20" : "bg-black/0 group-hover:bg-black/15"
-                      }`} />
-
-                      {/* Checkbox */}
+                      <div className={`absolute inset-0 transition-colors ${isSelected ? "bg-primary/20" : "bg-black/0 group-hover:bg-black/15"}`} />
                       {(selectMode || isSelected) && (
-                        <div className={`absolute top-1.5 left-1.5 w-5 h-5 rounded flex items-center justify-center transition-all ${
-                          isSelected ? "bg-primary" : "bg-white/80 border border-border"
-                        }`}>
+                        <div className={`absolute top-1.5 left-1.5 w-5 h-5 rounded flex items-center justify-center transition-all ${isSelected ? "bg-primary" : "bg-white/80 border border-border"}`}>
                           {isSelected && <Check className="h-3 w-3 text-white" />}
                         </div>
                       )}
-
-                      {/* Delete on hover (non-select mode) */}
                       {!selectMode && (
                         <button
                           onClick={(e) => { e.stopPropagation(); handleDeleteOne(file); }}
@@ -292,9 +377,7 @@ export const AdminMediaLibrary = () => {
             <div className="w-56 shrink-0 border-l border-border bg-background flex flex-col overflow-y-auto">
               <div className="p-3 border-b border-border flex items-center justify-between">
                 <p className="text-xs font-semibold">Detaje</p>
-                <button onClick={() => setPreviewFile(null)}>
-                  <X className="h-3.5 w-3.5 text-muted-foreground hover:text-foreground" />
-                </button>
+                <button onClick={() => setPreviewFile(null)}><X className="h-3.5 w-3.5 text-muted-foreground hover:text-foreground" /></button>
               </div>
               <div className="p-3 space-y-3">
                 <div className="aspect-square rounded-lg overflow-hidden bg-muted border border-border">
