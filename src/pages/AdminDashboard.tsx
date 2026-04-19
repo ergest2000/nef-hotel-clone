@@ -36,6 +36,7 @@ import { AdminNewsletter } from "@/components/admin/AdminNewsletter";
 import { AdminOfferRequests } from "@/components/admin/AdminOfferRequests";
 import { AdminContactSubmissions } from "@/components/admin/AdminContactSubmissions";
 import { AdminWebpConverter } from "@/components/admin/AdminWebpConverter";
+import { AdminMediaLibrary } from "@/components/admin/AdminMediaLibrary";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import type { Tables } from "@/integrations/supabase/types";
 
@@ -313,14 +314,7 @@ function AdminDashboard() {
       case "webp-convert":
         return <AdminWebpConverter />;
       case "media":
-        return (
-          <div>
-            <h2 className="text-xl font-semibold text-foreground mb-4">Media Library</h2>
-            <div className="mt-6 border-2 border-dashed border-border rounded-lg p-12 text-center">
-              <p className="text-sm text-muted-foreground">Media library do të shtohet së shpejti.</p>
-            </div>
-          </div>
-        );
+        return <AdminMediaLibrary />;
       case "settings":
         return (
           <div>
