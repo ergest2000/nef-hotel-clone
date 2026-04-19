@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import { useCollections } from "@/hooks/useCollections";
 import {
@@ -50,30 +50,70 @@ const MediaPickerModal = ({
   const [picked, setPicked] = useState<Set<string>>(new Set());
   const [preview, setPreview] = useState<PickedFile | null>(null);
 
-  const loadFolder = async (f: string) => {
-    setLoading(true);
-    setFiles([]);
+  // Cache për folder-at e ngarkuar më parë
+  const cacheRef = useRef<Record<string, PickedFile[]>>({});
+
+  const loadFolder = async (f: string, force = false) => {
     setPicked(new Set());
     setPreview(null);
-    const results: PickedFile[] = [];
-    const { data } = await supabase.storage.from(MEDIA_BUCKET).list(f, { limit: 500 });
-    for (const item of data || []) {
-      if (!item.id) {
-        const { data: sub } = await supabase.storage.from(MEDIA_BUCKET).list(`${f}/${item.name}`, { limit: 200 });
-        for (const subItem of sub || []) {
-          if (!subItem.id) continue;
-          const path = `${f}/${item.name}/${subItem.name}`;
-          const { data: u } = supabase.storage.from(MEDIA_BUCKET).getPublicUrl(path);
-          results.push({ name: subItem.name, url: u.publicUrl });
-        }
-      } else {
-        const path = `${f}/${item.name}`;
-        const { data: u } = supabase.storage.from(MEDIA_BUCKET).getPublicUrl(path);
-        results.push({ name: item.name, url: u.publicUrl });
-      }
+
+    // Serve nga cache nëse ekziston
+    if (!force && cacheRef.current[f]) {
+      setFiles(cacheRef.current[f]);
+      setLoading(false);
+      return;
     }
-    setFiles(results);
-    setLoading(false);
+
+    setLoading(true);
+    setFiles([]);
+
+    try {
+      const { data } = await supabase.storage.from(MEDIA_BUCKET).list(f, { limit: 500 });
+      if (!data) { setFiles([]); setLoading(false); return; }
+
+      // Ndaj file-at nga nënfolderët
+      const topFiles: PickedFile[] = [];
+      const subFolders: string[] = [];
+      for (const item of data) {
+        if (!item.id) {
+          subFolders.push(item.name);
+        } else {
+          const path = `${f}/${item.name}`;
+          const { data: u } = supabase.storage.from(MEDIA_BUCKET).getPublicUrl(path);
+          topFiles.push({ name: item.name, url: u.publicUrl });
+        }
+      }
+
+      // Shfaq menjëherë file-at e nivelit të parë
+      setFiles(topFiles);
+
+      // Nëse ka nënfolderë, bëj kërkesat në paralel
+      if (subFolders.length > 0) {
+        const subResults = await Promise.all(
+          subFolders.map((sf) =>
+            supabase.storage.from(MEDIA_BUCKET).list(`${f}/${sf}`, { limit: 200 })
+              .then(({ data: sub }) =>
+                (sub || []).filter((i) => i.id).map((subItem) => {
+                  const path = `${f}/${sf}/${subItem.name}`;
+                  const { data: u } = supabase.storage.from(MEDIA_BUCKET).getPublicUrl(path);
+                  return { name: subItem.name, url: u.publicUrl } as PickedFile;
+                })
+              )
+              .catch(() => [] as PickedFile[])
+          )
+        );
+
+        const allFiles = [...topFiles, ...subResults.flat()];
+        setFiles(allFiles);
+        cacheRef.current[f] = allFiles;
+      } else {
+        cacheRef.current[f] = topFiles;
+      }
+    } catch (e) {
+      console.error("Error loading folder:", e);
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => { if (open) loadFolder(folder); }, [open, folder]);
@@ -166,7 +206,7 @@ const MediaPickerModal = ({
                 )}
               </div>
               <span className="text-sm text-muted-foreground">{filtered.length} foto</span>
-              <button onClick={() => loadFolder(folder)} className="p-1.5 hover:bg-muted rounded-lg transition-colors">
+              <button onClick={() => loadFolder(folder, true)} className="p-1.5 hover:bg-muted rounded-lg transition-colors" title="Rifresko">
                 <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
               </button>
             </div>
