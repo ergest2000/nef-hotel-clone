@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useCollections } from "@/hooks/useCollections";
 import {
   useProducts, useUpsertProduct, useDeleteProduct,
@@ -22,10 +22,143 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { Plus, Trash2, Edit, Package, Image as ImageIcon, ExternalLink, X, Copy, Search } from "lucide-react";
+import { Plus, Trash2, Edit, Package, Image as ImageIcon, ExternalLink, X, Copy, Search, FolderOpen, Check, RefreshCw } from "lucide-react";
 import { TranslateButton } from "./TranslateButton";
 import { ProductCategoriesManager } from "./ProductCategoriesManager";
+import { supabase } from "@/integrations/supabase/client";
 import type { Tables } from "@/integrations/supabase/types";
+
+type Product = Tables<"products">;
+
+// ── Media Picker Modal ─────────────────────────────────────────────
+const MEDIA_BUCKET = "cms-images";
+const MEDIA_FOLDERS = ["products", "collections", "categories", "gallery", "home", "logos"];
+
+type PickedFile = { name: string; url: string };
+
+const MediaPickerModal = ({
+  open, onClose, onSelect,
+}: {
+  open: boolean;
+  onClose: () => void;
+  onSelect: (urls: string[]) => void;
+}) => {
+  const [folder, setFolder] = useState("products");
+  const [files, setFiles] = useState<PickedFile[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [search, setSearch] = useState("");
+  const [picked, setPicked] = useState<Set<string>>(new Set());
+
+  const loadFolder = async (f: string) => {
+    setLoading(true);
+    setFiles([]);
+    setPicked(new Set());
+    const loadRec = async (prefix: string): Promise<PickedFile[]> => {
+      const { data } = await supabase.storage.from(MEDIA_BUCKET).list(prefix, { limit: 500 });
+      const results: PickedFile[] = [];
+      for (const item of data || []) {
+        if (!item.id) {
+          results.push(...await loadRec(`${prefix}/${item.name}`));
+        } else {
+          const path = `${prefix}/${item.name}`;
+          const { data: u } = supabase.storage.from(MEDIA_BUCKET).getPublicUrl(path);
+          results.push({ name: item.name, url: u.publicUrl });
+        }
+      }
+      return results;
+    };
+    const result = await loadRec(f);
+    setFiles(result);
+    setLoading(false);
+  };
+
+  useEffect(() => { if (open) loadFolder(folder); }, [open, folder]);
+
+  const filtered = files.filter((f) => f.name.toLowerCase().includes(search.toLowerCase()));
+  const togglePick = (url: string) => {
+    setPicked((prev) => { const n = new Set(prev); n.has(url) ? n.delete(url) : n.add(url); return n; });
+  };
+
+  if (!open) return null;
+  return (
+    <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4">
+      <div className="bg-background rounded-xl shadow-2xl w-full max-w-4xl h-[80vh] flex flex-col overflow-hidden">
+        {/* Header */}
+        <div className="flex items-center justify-between px-4 py-3 border-b border-border">
+          <h3 className="text-sm font-semibold">Zgjidh nga Media</h3>
+          <div className="flex items-center gap-2">
+            {picked.size > 0 && (
+              <Button size="sm" className="h-8 text-xs" onClick={() => { onSelect(Array.from(picked)); onClose(); setPicked(new Set()); }}>
+                <Check className="h-3.5 w-3.5 mr-1" /> Shto {picked.size} foto
+              </Button>
+            )}
+            <button onClick={onClose} className="p-1 hover:bg-muted rounded"><X className="h-4 w-4" /></button>
+          </div>
+        </div>
+
+        <div className="flex flex-1 overflow-hidden">
+          {/* Sidebar */}
+          <div className="w-36 shrink-0 border-r border-border bg-muted/20 overflow-y-auto py-1">
+            {MEDIA_FOLDERS.map((f) => (
+              <button key={f} onClick={() => { setFolder(f); setSearch(""); }}
+                className={`w-full flex items-center gap-2 px-3 py-2 text-xs text-left transition-colors ${folder === f ? "bg-primary text-primary-foreground" : "hover:bg-muted"}`}>
+                <FolderOpen className="h-3 w-3 shrink-0" />
+                <span className="truncate capitalize">{f}</span>
+              </button>
+            ))}
+          </div>
+
+          {/* Content */}
+          <div className="flex-1 flex flex-col overflow-hidden">
+            <div className="flex items-center gap-2 p-3 border-b border-border">
+              <div className="relative flex-1 max-w-xs">
+                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+                <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Kërko..." className="w-full pl-8 pr-3 h-8 text-sm border border-border rounded bg-background focus:outline-none focus:ring-1 focus:ring-primary" />
+              </div>
+              <span className="text-xs text-muted-foreground">{filtered.length} file</span>
+              <button onClick={() => loadFolder(folder)} className="p-1.5 hover:bg-muted rounded">
+                <RefreshCw className={`h-3.5 w-3.5 ${loading ? "animate-spin" : ""}`} />
+              </button>
+            </div>
+
+            <div className="flex-1 overflow-y-auto p-3">
+              {loading ? (
+                <div className="flex items-center justify-center h-32">
+                  <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                </div>
+              ) : (
+                <div className="grid grid-cols-5 sm:grid-cols-7 md:grid-cols-9 gap-2">
+                  {filtered.map((file) => {
+                    const isPicked = picked.has(file.url);
+                    return (
+                      <div key={file.url} onClick={() => togglePick(file.url)}
+                        className={`relative aspect-square rounded-lg overflow-hidden cursor-pointer transition-all ${isPicked ? "ring-2 ring-primary scale-[0.95]" : "hover:ring-1 hover:ring-border"}`}>
+                        <img src={file.url} alt={file.name} className="w-full h-full object-cover bg-muted" loading="lazy" />
+                        {isPicked && (
+                          <div className="absolute inset-0 bg-primary/20 flex items-center justify-center">
+                            <div className="w-6 h-6 bg-primary rounded-full flex items-center justify-center">
+                              <Check className="h-3.5 w-3.5 text-white" />
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                  {filtered.length === 0 && !loading && (
+                    <div className="col-span-full flex flex-col items-center justify-center py-12 text-muted-foreground gap-2">
+                      <ImageIcon className="h-8 w-8 opacity-20" />
+                      <p className="text-xs">Nuk ka imazhe</p>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 type Product = Tables<"products">;
 
@@ -52,6 +185,7 @@ const ProductImagesManager = ({ productId }: { productId: string }) => {
   const [uploadColorId, setUploadColorId] = useState<string>("");
 
   const [uploading, setUploading] = useState(false);
+  const [showMediaPicker, setShowMediaPicker] = useState(false);
 
   const handleUpload = async (files: FileList) => {
     const current = images?.length ?? 0;
@@ -89,41 +223,86 @@ const ProductImagesManager = ({ productId }: { productId: string }) => {
     return c?.color_hex ?? null;
   };
 
+  const handlePickFromMedia = (urls: string[]) => {
+    const current = images?.length ?? 0;
+    urls.slice(0, 10 - current).forEach((url, i) => {
+      addImage.mutate({
+        product_id: productId,
+        image_url: url,
+        sort_order: current + i,
+        color_id: uploadColorId || null,
+      });
+    });
+    toast({ title: `U shtuan ${Math.min(urls.length, 10 - current)} foto!` });
+  };
+
+  const [dragOver, setDragOver] = useState(false);
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setDragOver(false);
+    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+      handleUpload(e.dataTransfer.files);
+    }
+  };
+
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
         <label className="text-xs font-medium text-muted-foreground">
           Foto shtesë ({images?.length ?? 0}/10)
         </label>
+        <button
+          onClick={() => setShowMediaPicker(true)}
+          className="flex items-center gap-1 text-xs text-primary hover:underline"
+        >
+          <ImageIcon className="h-3 w-3" /> Zgjidh nga Media
+        </button>
       </div>
 
-      <div className="flex items-center gap-2 flex-wrap bg-muted/50 p-3 rounded">
-        {colors && colors.length > 0 && (
-          <select
-            value={uploadColorId}
-            onChange={(e) => setUploadColorId(e.target.value)}
-            className="h-8 text-xs border border-border rounded px-2 bg-background"
-          >
-            <option value="">Pa ngjyrë (Gjenerale)</option>
-            {colors.map((c) => (
-              <option key={c.id} value={c.id}>{c.color_name_al || c.color_name}</option>
-            ))}
-          </select>
-        )}
-        <label className="cursor-pointer">
-          <div className="flex items-center gap-1 px-3 py-1.5 bg-background border border-border rounded text-xs hover:bg-muted">
-            <ImageIcon className="h-3 w-3" /> {uploading ? "Duke ngarkuar..." : "Ngarko foto"}
-          </div>
-          <input type="file" accept="image/*" multiple className="hidden" onChange={(e) => {
-            if (e.target.files && e.target.files.length > 0) handleUpload(e.target.files);
-          }} />
-        </label>
-        {uploadColorId && (
-          <span className="text-[10px] text-muted-foreground">
-            → do lidhet me: <strong>{getColorName(uploadColorId)}</strong>
+      <MediaPickerModal
+        open={showMediaPicker}
+        onClose={() => setShowMediaPicker(false)}
+        onSelect={handlePickFromMedia}
+      />
+
+      {colors && colors.length > 0 && (
+        <select
+          value={uploadColorId}
+          onChange={(e) => setUploadColorId(e.target.value)}
+          className="h-8 text-xs border border-border rounded px-2 bg-background w-full"
+        >
+          <option value="">Pa ngjyrë (Gjenerale)</option>
+          {colors.map((c) => (
+            <option key={c.id} value={c.id}>{c.color_name_al || c.color_name}</option>
+          ))}
+        </select>
+      )}
+
+      <label
+        className={`flex flex-col items-center justify-center w-full h-24 border-2 border-dashed rounded-lg cursor-pointer transition-colors ${
+          dragOver ? "border-primary bg-primary/5" : "border-border bg-muted/30 hover:bg-muted/50"
+        } ${uploading ? "opacity-50 pointer-events-none" : ""}`}
+        onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+        onDragLeave={() => setDragOver(false)}
+        onDrop={handleDrop}
+      >
+        <div className="flex flex-col items-center gap-1 text-muted-foreground">
+          <ImageIcon className="h-6 w-6" />
+          <span className="text-xs font-medium">
+            {uploading ? "Duke ngarkuar..." : "Tërhiq foto këtu ose kliko për të zgjedhur"}
           </span>
-        )}
-      </div>
+          <span className="text-[10px]">Mund të zgjedhësh disa foto njëherësh</span>
+        </div>
+        <input type="file" accept="image/*" multiple className="hidden" onChange={(e) => {
+          if (e.target.files && e.target.files.length > 0) handleUpload(e.target.files);
+        }} />
+      </label>
+      {uploadColorId && (
+        <span className="text-[10px] text-muted-foreground">
+          → do lidhet me: <strong>{getColorName(uploadColorId)}</strong>
+        </span>
+      )}
 
       {isLoading ? (
         <div className="text-xs text-muted-foreground">Duke ngarkuar...</div>
