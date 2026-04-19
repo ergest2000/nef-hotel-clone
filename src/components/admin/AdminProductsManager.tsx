@@ -77,82 +77,113 @@ const MediaPickerModal = ({
 
   useEffect(() => { if (open) loadFolder(folder); }, [open, folder]);
 
+  const [preview, setPreview] = useState<PickedFile | null>(null);
   const filtered = files.filter((f) => f.name.toLowerCase().includes(search.toLowerCase()));
-  const togglePick = (url: string) => {
-    setPicked((prev) => { const n = new Set(prev); n.has(url) ? n.delete(url) : n.add(url); return n; });
+  const togglePick = (file: PickedFile) => {
+    setPicked((prev) => { const n = new Set(prev); n.has(file.url) ? n.delete(file.url) : n.add(file.url); return n; });
+    setPreview(file);
   };
 
   if (!open) return null;
   return (
-    <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4">
-      <div className="bg-background rounded-xl shadow-2xl w-full max-w-4xl h-[80vh] flex flex-col overflow-hidden">
+    <div className="fixed inset-0 z-50 bg-black/70 flex items-center justify-center p-4">
+      <div className="bg-background rounded-xl shadow-2xl w-full max-w-6xl h-[92vh] flex flex-col overflow-hidden">
         {/* Header */}
-        <div className="flex items-center justify-between px-4 py-3 border-b border-border">
-          <h3 className="text-sm font-semibold">Zgjidh nga Media</h3>
+        <div className="flex items-center justify-between px-5 py-4 border-b border-border">
+          <h3 className="font-semibold">Zgjidh nga Media</h3>
           <div className="flex items-center gap-2">
             {picked.size > 0 && (
-              <Button size="sm" className="h-8 text-xs" onClick={() => { onSelect(Array.from(picked)); onClose(); setPicked(new Set()); }}>
-                <Check className="h-3.5 w-3.5 mr-1" /> Shto {picked.size} foto
+              <Button className="gap-1.5" onClick={() => { onSelect(Array.from(picked)); onClose(); setPicked(new Set()); setPreview(null); }}>
+                <Check className="h-4 w-4" /> Shto {picked.size} foto
               </Button>
             )}
-            <button onClick={onClose} className="p-1 hover:bg-muted rounded"><X className="h-4 w-4" /></button>
+            <button onClick={onClose} className="p-1.5 hover:bg-muted rounded-lg transition-colors"><X className="h-5 w-5" /></button>
           </div>
         </div>
 
         <div className="flex flex-1 overflow-hidden">
-          {/* Sidebar */}
-          <div className="w-36 shrink-0 border-r border-border bg-muted/20 overflow-y-auto py-1">
+          {/* Sidebar folders */}
+          <div className="w-40 shrink-0 border-r border-border bg-muted/20 overflow-y-auto py-2">
             {MEDIA_FOLDERS.map((f) => (
-              <button key={f} onClick={() => { setFolder(f); setSearch(""); }}
-                className={`w-full flex items-center gap-2 px-3 py-2 text-xs text-left transition-colors ${folder === f ? "bg-primary text-primary-foreground" : "hover:bg-muted"}`}>
-                <FolderOpen className="h-3 w-3 shrink-0" />
+              <button key={f} onClick={() => { setFolder(f); setSearch(""); setPreview(null); }}
+                className={`w-full flex items-center gap-2 px-4 py-2.5 text-sm text-left transition-colors ${folder === f ? "bg-primary text-primary-foreground font-medium" : "hover:bg-muted"}`}>
+                <FolderOpen className="h-4 w-4 shrink-0" />
                 <span className="truncate capitalize">{f}</span>
               </button>
             ))}
           </div>
 
-          {/* Content */}
+          {/* Grid area */}
           <div className="flex-1 flex flex-col overflow-hidden">
-            <div className="flex items-center gap-2 p-3 border-b border-border">
-              <div className="relative flex-1 max-w-xs">
-                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
-                <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Kërko..." className="w-full pl-8 pr-3 h-8 text-sm border border-border rounded bg-background focus:outline-none focus:ring-1 focus:ring-primary" />
+            {/* Toolbar */}
+            <div className="flex items-center gap-3 p-3 border-b border-border bg-background">
+              <div className="relative flex-1 max-w-sm">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Kërko imazhe..." className="w-full pl-9 pr-3 h-9 text-sm border border-border rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-primary/30" />
+                {search && <button onClick={() => setSearch("")} className="absolute right-2.5 top-1/2 -translate-y-1/2"><X className="h-4 w-4 text-muted-foreground" /></button>}
               </div>
-              <span className="text-xs text-muted-foreground">{filtered.length} file</span>
-              <button onClick={() => loadFolder(folder)} className="p-1.5 hover:bg-muted rounded">
-                <RefreshCw className={`h-3.5 w-3.5 ${loading ? "animate-spin" : ""}`} />
+              <span className="text-sm text-muted-foreground">{filtered.length} foto</span>
+              <button onClick={() => loadFolder(folder)} className="p-1.5 hover:bg-muted rounded-lg transition-colors">
+                <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
               </button>
             </div>
 
-            <div className="flex-1 overflow-y-auto p-3">
-              {loading ? (
-                <div className="flex items-center justify-center h-32">
-                  <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-                </div>
-              ) : (
-                <div className="grid grid-cols-5 sm:grid-cols-7 md:grid-cols-9 gap-2">
-                  {filtered.map((file) => {
-                    const isPicked = picked.has(file.url);
-                    return (
-                      <div key={file.url} onClick={() => togglePick(file.url)}
-                        className={`relative aspect-square rounded-lg overflow-hidden cursor-pointer transition-all ${isPicked ? "ring-2 ring-primary scale-[0.95]" : "hover:ring-1 hover:ring-border"}`}>
-                        <img src={file.url} alt={file.name} className="w-full h-full object-cover bg-muted" loading="lazy" />
-                        {isPicked && (
-                          <div className="absolute inset-0 bg-primary/20 flex items-center justify-center">
-                            <div className="w-6 h-6 bg-primary rounded-full flex items-center justify-center">
-                              <Check className="h-3.5 w-3.5 text-white" />
+            <div className="flex flex-1 overflow-hidden">
+              {/* Image grid */}
+              <div className="flex-1 overflow-y-auto p-4">
+                {loading ? (
+                  <div className="flex items-center justify-center h-48 gap-3 flex-col">
+                    <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                    <p className="text-sm text-muted-foreground">Duke ngarkuar...</p>
+                  </div>
+                ) : filtered.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center h-48 text-muted-foreground gap-2">
+                    <ImageIcon className="h-10 w-10 opacity-20" />
+                    <p className="text-sm">Nuk ka imazhe</p>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-3">
+                    {filtered.map((file) => {
+                      const isPicked = picked.has(file.url);
+                      const isPreview = preview?.url === file.url;
+                      return (
+                        <div key={file.url} onClick={() => togglePick(file)}
+                          className={`relative aspect-square rounded-xl overflow-hidden cursor-pointer transition-all duration-150 ${
+                            isPicked ? "ring-3 ring-primary ring-offset-2 scale-[0.96]"
+                              : isPreview ? "ring-2 ring-primary/50"
+                              : "hover:scale-[1.03] hover:shadow-md"
+                          }`}>
+                          <img src={file.url} alt={file.name} className="w-full h-full object-cover bg-muted" loading="lazy" />
+                          {isPicked && (
+                            <div className="absolute inset-0 bg-primary/15">
+                              <div className="absolute top-2 right-2 w-7 h-7 bg-primary rounded-full flex items-center justify-center shadow">
+                                <Check className="h-4 w-4 text-white" />
+                              </div>
                             </div>
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })}
-                  {filtered.length === 0 && !loading && (
-                    <div className="col-span-full flex flex-col items-center justify-center py-12 text-muted-foreground gap-2">
-                      <ImageIcon className="h-8 w-8 opacity-20" />
-                      <p className="text-xs">Nuk ka imazhe</p>
-                    </div>
-                  )}
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+
+              {/* Preview panel */}
+              {preview && (
+                <div className="w-56 shrink-0 border-l border-border bg-muted/10 flex flex-col p-4 gap-3">
+                  <div className="aspect-square rounded-xl overflow-hidden bg-muted border border-border shadow">
+                    <img src={preview.url} alt={preview.name} className="w-full h-full object-cover" />
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-xs font-medium break-all leading-snug">{preview.name}</p>
+                  </div>
+                  <Button
+                    variant={picked.has(preview.url) ? "default" : "outline"}
+                    size="sm" className="w-full gap-1.5"
+                    onClick={() => togglePick(preview)}
+                  >
+                    {picked.has(preview.url) ? <><Check className="h-3.5 w-3.5" /> E zgjedhur</> : "Zgjidh"}
+                  </Button>
                 </div>
               )}
             </div>
