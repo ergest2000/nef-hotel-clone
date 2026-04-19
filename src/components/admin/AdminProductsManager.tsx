@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { useCollections } from "@/hooks/useCollections";
 import {
   useProducts, useUpsertProduct, useDeleteProduct,
@@ -84,8 +85,8 @@ const MediaPickerModal = ({
   };
 
   if (!open) return null;
-  return (
-    <div className="fixed inset-0 z-50 bg-black/70 flex items-center justify-center p-4" onClick={onClose}>
+  return createPortal(
+    <div className="fixed inset-0 z-[9999] bg-black/70 flex items-center justify-center p-4" onClick={onClose}>
       <div
         className="bg-background rounded-xl shadow-2xl w-full max-w-6xl h-[92vh] flex flex-col overflow-hidden border border-border"
         onClick={(e) => e.stopPropagation()}
@@ -223,7 +224,8 @@ const MediaPickerModal = ({
           </div>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };
 
