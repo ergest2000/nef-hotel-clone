@@ -53,22 +53,25 @@ const MediaPickerModal = ({
     setLoading(true);
     setFiles([]);
     setPicked(new Set());
-    const loadRec = async (prefix: string): Promise<PickedFile[]> => {
-      const { data } = await supabase.storage.from(MEDIA_BUCKET).list(prefix, { limit: 500 });
-      const results: PickedFile[] = [];
-      for (const item of data || []) {
-        if (!item.id) {
-          results.push(...await loadRec(`${prefix}/${item.name}`));
-        } else {
-          const path = `${prefix}/${item.name}`;
+    const results: PickedFile[] = [];
+    const { data } = await supabase.storage.from(MEDIA_BUCKET).list(f, { limit: 500 });
+    for (const item of data || []) {
+      if (!item.id) {
+        // subfolder — one level deep
+        const { data: sub } = await supabase.storage.from(MEDIA_BUCKET).list(`${f}/${item.name}`, { limit: 200 });
+        for (const subItem of sub || []) {
+          if (!subItem.id) continue;
+          const path = `${f}/${item.name}/${subItem.name}`;
           const { data: u } = supabase.storage.from(MEDIA_BUCKET).getPublicUrl(path);
-          results.push({ name: item.name, url: u.publicUrl });
+          results.push({ name: subItem.name, url: u.publicUrl });
         }
+      } else {
+        const path = `${f}/${item.name}`;
+        const { data: u } = supabase.storage.from(MEDIA_BUCKET).getPublicUrl(path);
+        results.push({ name: item.name, url: u.publicUrl });
       }
-      return results;
-    };
-    const result = await loadRec(f);
-    setFiles(result);
+    }
+    setFiles(results);
     setLoading(false);
   };
 
