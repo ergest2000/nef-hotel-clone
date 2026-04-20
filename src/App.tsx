@@ -9,10 +9,9 @@ import { LanguageProvider } from "@/hooks/useLanguage";
 import { DesignProvider } from "@/hooks/useDesignSettings";
 import { CartProvider } from "@/hooks/useCart";
 import ScrollToTop from "./components/ScrollToTop";
-
+import WhatsAppButton from "./components/WhatsAppButton";
 // Eager — faqja kryesore
 import Index from "./pages/Index";
-
 // Lazy — faqet e tjera
 const BlogPost = lazy(() => import("./pages/BlogPost"));
 const Collections = lazy(() => import("./pages/Collections"));
@@ -26,7 +25,6 @@ const AdminRoute = lazy(() => import("./components/AdminRoute"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const SlugRouter = lazy(() => import("./components/SlugRouter"));
 const ResetPassword = lazy(() => import("./pages/ResetPassword"));
-
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -37,7 +35,6 @@ const queryClient = new QueryClient({
     },
   },
 });
-
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <AuthProvider>
@@ -66,6 +63,7 @@ const App = () => (
                     <Route path="*" element={<NotFound />} />
                   </Routes>
                 </Suspense>
+                <WhatsAppButton />
               </BrowserRouter>
             </TooltipProvider>
           </CartProvider>
@@ -74,5 +72,4 @@ const App = () => (
     </AuthProvider>
   </QueryClientProvider>
 );
-
 export default App;
