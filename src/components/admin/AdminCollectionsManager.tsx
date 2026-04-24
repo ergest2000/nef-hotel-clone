@@ -13,7 +13,8 @@ import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Plus, Trash2, GripVertical, Edit, FolderOpen, Image as ImageIcon } from "lucide-react";
+import { Plus, Trash2, GripVertical, Edit, FolderOpen, Image as ImageIcon, X } from "lucide-react";
+import { MediaPickerModal } from "./MediaPickerModal";
 import { TranslateButton } from "./TranslateButton";
 import type { Tables } from "@/integrations/supabase/types";
 
@@ -61,6 +62,7 @@ export const AdminCollectionsManager = () => {
   const [editItem, setEditItem] = useState<Partial<Collection> | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [showMediaPicker, setShowMediaPicker] = useState(false);
   const qc = useQueryClient();
 
   // ── Drag state ──────────────────────────────────────────────────
@@ -168,9 +170,15 @@ export const AdminCollectionsManager = () => {
   };
 
   const handleImageUpload = async (file: File) => {
-    const path = `collections/${Date.now()}-${file.name}`;
-    const url = await uploadCmsImage(file, path);
-    setEditItem((prev) => prev ? { ...prev, image_url: url } : prev);
+    try {
+      const safeName = file.name.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-zA-Z0-9._-]/g, "-");
+      const path = `collections/${Date.now()}-${safeName}`;
+      const url = await uploadCmsImage(file, path);
+      setEditItem((prev) => prev ? { ...prev, image_url: url } : prev);
+      toast({ title: "Imazhi u ngarkua!" });
+    } catch (e: any) {
+      toast({ title: "Gabim gjatë ngarkimit", description: e.message, variant: "destructive" });
+    }
   };
 
   const openNew = (parentId?: string) => {
@@ -383,9 +391,18 @@ export const AdminCollectionsManager = () => {
               </div>
               <div>
                 <label className="text-xs font-medium text-muted-foreground">Imazhi</label>
-                <div className="flex items-center gap-3 mt-1">
+                <div className="flex items-center gap-3 mt-1 flex-wrap">
                   {editItem.image_url && (
-                    <img src={editItem.image_url} alt="" className="h-16 w-16 object-cover rounded" />
+                    <div className="relative group">
+                      <img src={editItem.image_url} alt="" className="h-16 w-16 object-cover rounded" />
+                      <button
+                        type="button"
+                        onClick={() => setEditItem((p) => p ? { ...p, image_url: "" } : p)}
+                        className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-destructive rounded-full flex items-center justify-center shadow opacity-0 group-hover:opacity-100 transition-opacity"
+                      >
+                        <X className="h-3 w-3 text-white" />
+                      </button>
+                    </div>
                   )}
                   <label className="cursor-pointer">
                     <div className="flex items-center gap-2 px-3 py-2 bg-muted rounded text-sm hover:bg-muted/80">
@@ -395,8 +412,24 @@ export const AdminCollectionsManager = () => {
                       if (e.target.files?.[0]) handleImageUpload(e.target.files[0]);
                     }} />
                   </label>
+                  <button
+                    type="button"
+                    onClick={() => setShowMediaPicker(true)}
+                    className="flex items-center gap-2 px-3 py-2 bg-muted rounded text-sm hover:bg-muted/80"
+                  >
+                    <FolderOpen className="h-4 w-4" /> Zgjidh nga Media
+                  </button>
                 </div>
               </div>
+
+              <MediaPickerModal
+                open={showMediaPicker}
+                onClose={() => setShowMediaPicker(false)}
+                defaultFolder="collections"
+                onSelect={(urls) => {
+                  if (urls[0]) setEditItem((p) => p ? { ...p, image_url: urls[0] } : p);
+                }}
+              />
               <div className="flex items-center gap-2">
                 <Switch
                   checked={editItem.visible ?? true}
