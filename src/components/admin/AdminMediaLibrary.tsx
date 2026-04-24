@@ -393,8 +393,7 @@ export const AdminMediaLibrary = () => {
 
         <div
           style={{
-            display: "grid",
-            gridTemplateColumns: previewFile && !selectMode ? "1fr 224px" : "1fr",
+            position: "relative",
             minHeight: 0,
             minWidth: 0,
             overflow: "hidden",
@@ -402,8 +401,12 @@ export const AdminMediaLibrary = () => {
         >
           {/* Grid */}
           <div
-            className={`overflow-y-auto p-3 transition-colors ${dragOver ? "bg-primary/5 ring-2 ring-inset ring-primary" : ""}`}
-            style={{ minHeight: 0, minWidth: 0 }}
+            className={`absolute inset-0 overflow-y-auto p-3 transition-all ${dragOver ? "bg-primary/5 ring-2 ring-inset ring-primary" : ""}`}
+            style={{
+              minHeight: 0,
+              minWidth: 0,
+              paddingRight: previewFile && !selectMode ? "236px" : "12px",
+            }}
             onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
             onDragLeave={() => setDragOver(false)}
             onDrop={(e) => { e.preventDefault(); setDragOver(false); if (e.dataTransfer.files?.length) handleUpload(e.dataTransfer.files); }}
@@ -428,10 +431,10 @@ export const AdminMediaLibrary = () => {
                     <div
                       key={file.path}
                       onClick={() => selectMode ? toggleSelect(file.path) : setPreviewFile(isPreview ? null : file)}
-                      className={`group relative aspect-square rounded-lg overflow-hidden cursor-pointer transition-all duration-150 ${
-                        isSelected ? "ring-2 ring-primary ring-offset-1 scale-[0.97]"
+                      className={`group relative aspect-square rounded-lg overflow-hidden cursor-pointer ${
+                        isSelected ? "ring-2 ring-primary"
                           : isPreview ? "ring-2 ring-primary"
-                          : "hover:ring-1 hover:ring-border"
+                          : "ring-1 ring-transparent hover:ring-border"
                       }`}
                     >
                       <img src={file.url} alt={file.name} className="w-full h-full object-cover bg-muted" loading="lazy" />
@@ -456,7 +459,10 @@ export const AdminMediaLibrary = () => {
 
           {/* Preview panel */}
           {previewFile && !selectMode && (
-            <div className="border-l border-border bg-background flex flex-col overflow-y-auto" style={{ minHeight: 0 }}>
+            <div
+              className="absolute top-0 right-0 bottom-0 border-l border-border bg-background flex flex-col overflow-y-auto shadow-lg"
+              style={{ width: "224px", minHeight: 0, zIndex: 10 }}
+            >
               <div className="p-3 border-b border-border flex items-center justify-between">
                 <p className="text-xs font-semibold">Detaje</p>
                 <button onClick={() => setPreviewFile(null)}><X className="h-3.5 w-3.5 text-muted-foreground hover:text-foreground" /></button>
