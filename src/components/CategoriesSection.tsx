@@ -46,14 +46,36 @@ const CategoriesSection = ({ content }: { content?: SiteContent[] }) => {
     return catBedroom;
   };
 
-  // Gjej imazhin e koleksionit të lidhur (nga link_url p.sh. "/koleksionet/spa" → collection me slug "spa")
-  const findCollectionImage = (linkUrl?: string | null): string | null => {
-    if (!linkUrl || !collections?.length) return null;
-    const match = linkUrl.match(/\/koleksionet\/([^/?#]+)/);
-    if (!match) return null;
-    const slug = match[1];
-    const col = collections.find((c) => c.slug === slug);
-    return col?.image_url && col.image_url.trim() ? col.image_url : null;
+  // Gjej imazhin e koleksionit të lidhur - kërko sipas link_url, slug të titullit, ose titullit
+  const findCollectionImage = (categoryTitle: string, linkUrl?: string | null): string | null => {
+    if (!collections?.length) return null;
+
+    // 1) Kërko sipas link_url p.sh. "/koleksionet/spa" → collection me slug "spa"
+    if (linkUrl) {
+      const match = linkUrl.match(/\/koleksionet\/([^/?#]+)/);
+      if (match) {
+        const slug = match[1].toLowerCase();
+        const col = collections.find((c) => c.slug?.toLowerCase() === slug);
+        if (col?.image_url?.trim()) return col.image_url;
+      }
+    }
+
+    // 2) Kërko sipas titullit (p.sh. "SPA" → collection me title_al "SPA" ose slug "spa")
+    if (categoryTitle) {
+      const normalizedTitle = categoryTitle.toLowerCase().trim();
+      const col = collections.find((c) => {
+        const titleAl = (c.title_al || "").toLowerCase().trim();
+        const titleEn = (c.title_en || "").toLowerCase().trim();
+        const slug = (c.slug || "").toLowerCase().trim();
+        return titleAl === normalizedTitle ||
+               titleEn === normalizedTitle ||
+               slug === normalizedTitle ||
+               slug === normalizedTitle.replace(/\s+/g, "-");
+      });
+      if (col?.image_url?.trim()) return col.image_url;
+    }
+
+    return null;
   };
 
   const categories = dynamicCategories?.length
@@ -61,7 +83,7 @@ const CategoriesSection = ({ content }: { content?: SiteContent[] }) => {
         const name = lang === "en" ? (c.title_en || c.title_al) : (c.title_al || c.title_en);
         // Prioriteti: 1) image_url i homepage_category, 2) image i koleksionit të lidhur, 3) fallback sipas titullit
         const ownImage = c.image_url && c.image_url.trim() ? c.image_url : null;
-        const collectionImage = findCollectionImage(c.link_url);
+        const collectionImage = findCollectionImage(name, c.link_url);
         return {
           name,
           image: ownImage || collectionImage || pickFallback(name),
