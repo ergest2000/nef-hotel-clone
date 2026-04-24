@@ -102,10 +102,6 @@ export const AdminMediaLibrary = () => {
         })
       );
 
-      // Shfaq menjëherë file-at top-level
-      const initialFiles = topLevelResults.flatMap((r) => r.topFiles);
-      setAllFiles(initialFiles);
-
       // Mblidh të gjithë nënfolderët dhe ngarkoji paralel
       const allSubfolderRequests: Promise<MediaFile[]>[] = [];
       for (const { f, subfolders } of topLevelResults) {
@@ -127,6 +123,9 @@ export const AdminMediaLibrary = () => {
         }
       }
 
+      const initialFiles = topLevelResults.flatMap((r) => r.topFiles);
+
+      // Prit që të gjitha të mbarojnë, pastaj setoj NJË HERË (që scroll position të mos rezetohet)
       if (allSubfolderRequests.length > 0) {
         const subResults = await Promise.all(allSubfolderRequests);
         const allFinalFiles = [...initialFiles, ...subResults.flat()];
