@@ -78,27 +78,48 @@ const CategoriesSection = ({ content }: { content?: SiteContent[] }) => {
     return null;
   };
 
-  const categories = dynamicCategories?.length
-    ? dynamicCategories.map((c) => {
-        const name = lang === "en" ? (c.title_en || c.title_al) : (c.title_al || c.title_en);
-        // Prioriteti: 1) image_url i homepage_category, 2) image i koleksionit të lidhur, 3) fallback sipas titullit
-        const ownImage = c.image_url && c.image_url.trim() ? c.image_url : null;
-        const collectionImage = findCollectionImage(name, c.link_url);
-        return {
-          name,
-          image: ownImage || collectionImage || pickFallback(name),
-          fallback: pickFallback(name),
-          link: c.link_url || "#",
-          id: c.id,
-        };
-      })
-    : defaultCategories.map((def) => ({
-        name: def.name,
-        image: def.image,
-        fallback: def.image,
-        link: "#",
-        id: def.key,
-      }));
+  // Prioritet i të dhënave:
+  // 1) Nëse ka kategori te "homepage_categories", përdori ato
+  // 2) Përndryshe, përdor koleksionet top-level (parent_id == null) që kanë image_url
+  // 3) Si fallback i fundit, hardcoded defaults
+  let categories: Array<{ name: string; image: string; fallback: string; link: string; id: string }> = [];
+
+  if (dynamicCategories?.length) {
+    categories = dynamicCategories.map((c) => {
+      const name = lang === "en" ? (c.title_en || c.title_al) : (c.title_al || c.title_en);
+      const ownImage = c.image_url && c.image_url.trim() ? c.image_url : null;
+      const collectionImage = findCollectionImage(name, c.link_url);
+      const finalImage = ownImage || collectionImage || pickFallback(name);
+      return {
+        name,
+        image: finalImage,
+        fallback: pickFallback(name),
+        link: c.link_url || "#",
+        id: c.id,
+      };
+    });
+  } else if (collections?.length) {
+    // Përdor koleksionet top-level (pa parent) që kanë image_url
+    const topLevel = collections.filter((c) => !c.parent_id && c.visible !== false);
+    categories = topLevel.map((c) => {
+      const name = lang === "en" ? (c.title_en || c.title_al || c.slug) : (c.title_al || c.title_en || c.slug);
+      return {
+        name: name || c.slug,
+        image: c.image_url && c.image_url.trim() ? c.image_url : pickFallback(name || c.slug),
+        fallback: pickFallback(name || c.slug),
+        link: `/koleksionet/${c.slug}`,
+        id: c.id,
+      };
+    });
+  } else {
+    categories = defaultCategories.map((def) => ({
+      name: def.name,
+      image: def.image,
+      fallback: def.image,
+      link: "#",
+      id: def.key,
+    }));
+  }
 
   return (
     <section className="py-16 md:py-24">
