@@ -1,5 +1,4 @@
 import { useState, useEffect, useRef } from "react";
-import { createPortal } from "react-dom";
 import { useCollections } from "@/hooks/useCollections";
 import {
   useProducts, useUpsertProduct, useDeleteProduct,
@@ -120,43 +119,34 @@ const MediaPickerModal = ({
     setPicked((prev) => { const n = new Set(prev); n.has(file.url) ? n.delete(file.url) : n.add(file.url); return n; });
   };
 
-  if (!open) return null;
-  return createPortal(
-    <div
-      className="fixed inset-0 z-[9999] bg-black/70 flex items-center justify-center p-4"
-      onClick={onClose}
-      style={{ overscrollBehavior: "contain" }}
-    >
-      <div
-        className="bg-background rounded-xl shadow-2xl w-full max-w-6xl border border-border overflow-hidden"
-        style={{ height: "92vh", display: "grid", gridTemplateRows: "auto 1fr" }}
-        onClick={(e) => e.stopPropagation()}
+  return (
+    <Dialog open={open} onOpenChange={(v) => { if (!v) onClose(); }}>
+      <DialogContent
+        className="p-0 gap-0 overflow-hidden"
+        style={{ maxWidth: "min(1100px, 95vw)", width: "95vw", height: "90vh", display: "grid", gridTemplateRows: "auto 1fr" }}
       >
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-border">
           <h3 className="font-semibold">Zgjidh nga Media</h3>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 mr-8">
             {picked.size > 0 && (
               <Button
                 className="gap-1.5"
-                onClick={() => { onSelect(Array.from(picked)); onClose(); setPicked(new Set());  }}
+                onClick={() => { onSelect(Array.from(picked)); setPicked(new Set()); onClose(); }}
               >
                 <Check className="h-4 w-4" /> Shto {picked.size} foto
               </Button>
             )}
-            <button onClick={onClose} className="p-1.5 hover:bg-muted rounded-lg transition-colors">
-              <X className="h-5 w-5" />
-            </button>
           </div>
         </div>
 
-        {/* Body: sidebar + main using grid */}
+        {/* Body: sidebar + main */}
         <div
           style={{
             display: "grid",
             gridTemplateColumns: "160px 1fr",
             minHeight: 0,
-            height: "100%",
+            overflow: "hidden",
           }}
         >
           {/* Sidebar folders */}
@@ -164,7 +154,8 @@ const MediaPickerModal = ({
             {MEDIA_FOLDERS.map((f) => (
               <button
                 key={f}
-                onClick={() => { setFolder(f); setSearch("");  }}
+                type="button"
+                onClick={() => { setFolder(f); setSearch(""); }}
                 className={`w-full flex items-center gap-2 px-4 py-2.5 text-sm text-left transition-colors ${
                   folder === f ? "bg-primary text-primary-foreground font-medium" : "hover:bg-muted"
                 }`}
@@ -182,7 +173,6 @@ const MediaPickerModal = ({
               gridTemplateRows: "auto 1fr",
               minHeight: 0,
               minWidth: 0,
-              height: "100%",
             }}
           >
             {/* Toolbar */}
@@ -196,18 +186,18 @@ const MediaPickerModal = ({
                   className="w-full pl-9 pr-3 h-9 text-sm border border-border rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-primary/30"
                 />
                 {search && (
-                  <button onClick={() => setSearch("")} className="absolute right-2.5 top-1/2 -translate-y-1/2">
+                  <button type="button" onClick={() => setSearch("")} className="absolute right-2.5 top-1/2 -translate-y-1/2">
                     <X className="h-4 w-4 text-muted-foreground" />
                   </button>
                 )}
               </div>
               <span className="text-sm text-muted-foreground">{filtered.length} foto</span>
-              <button onClick={() => loadFolder(folder, true)} className="p-1.5 hover:bg-muted rounded-lg transition-colors" title="Rifresko">
+              <button type="button" onClick={() => loadFolder(folder, true)} className="p-1.5 hover:bg-muted rounded-lg transition-colors" title="Rifresko">
                 <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
               </button>
             </div>
 
-            {/* Image grid — direct overflow container */}
+            {/* Image grid */}
             <div className="overflow-y-auto p-4" style={{ minHeight: 0 }}>
               {loading ? (
                 <div className="flex items-center justify-center h-48 gap-3 flex-col">
@@ -224,16 +214,17 @@ const MediaPickerModal = ({
                   {filtered.map((file) => {
                     const isPicked = picked.has(file.url);
                     return (
-                      <div
+                      <button
                         key={file.url}
+                        type="button"
                         onClick={() => togglePick(file)}
-                        className={`relative aspect-square rounded-xl overflow-hidden cursor-pointer ${
+                        className={`relative aspect-square rounded-xl overflow-hidden cursor-pointer focus:outline-none ${
                           isPicked
                             ? "ring-2 ring-primary"
                             : "ring-1 ring-transparent hover:ring-border"
                         }`}
                       >
-                        <img src={file.url} alt={file.name} className="w-full h-full object-cover bg-muted" loading="lazy" />
+                        <img src={file.url} alt={file.name} className="w-full h-full object-cover bg-muted pointer-events-none" loading="lazy" />
                         {isPicked && (
                           <div className="absolute inset-0 bg-primary/15 pointer-events-none">
                             <div className="absolute top-2 right-2 w-7 h-7 bg-primary rounded-full flex items-center justify-center shadow">
@@ -241,7 +232,7 @@ const MediaPickerModal = ({
                             </div>
                           </div>
                         )}
-                      </div>
+                      </button>
                     );
                   })}
                 </div>
@@ -249,9 +240,8 @@ const MediaPickerModal = ({
             </div>
           </div>
         </div>
-      </div>
-    </div>,
-    document.body
+      </DialogContent>
+    </Dialog>
   );
 };
 
