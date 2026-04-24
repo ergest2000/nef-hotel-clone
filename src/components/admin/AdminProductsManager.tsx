@@ -114,7 +114,13 @@ const MediaPickerModal = ({
 
   useEffect(() => { if (open) loadFolder(folder); }, [open, folder]);
 
-  const filtered = files.filter((f) => f.name.toLowerCase().includes(search.toLowerCase()));
+  const filtered = files.filter((f) => {
+    const q = search.toLowerCase().trim();
+    if (!q) return true;
+    // Kërkim i dekoduar që të gjejë edhe foto me hapësira/simbole të enkoduara në URL
+    const haystack = (f.name + " " + decodeURIComponent(f.url)).toLowerCase();
+    return haystack.includes(q);
+  });
   const togglePick = (file: PickedFile) => {
     setPicked((prev) => { const n = new Set(prev); n.has(file.url) ? n.delete(file.url) : n.add(file.url); return n; });
   };
@@ -582,6 +588,7 @@ export const AdminProductsManager = () => {
   const [editItem, setEditItem] = useState<Partial<Product> | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
+  const [showPrimaryMediaPicker, setShowPrimaryMediaPicker] = useState(false);
 
   const handleSave = () => {
     if (!editItem?.collection_id) {
@@ -1020,8 +1027,22 @@ export const AdminProductsManager = () => {
                         if (e.target.files?.[0]) handleImageUpload(e.target.files[0]);
                       }} />
                     </label>
+                    <button
+                      type="button"
+                      onClick={() => setShowPrimaryMediaPicker(true)}
+                      className="flex items-center gap-2 px-3 py-2 bg-muted rounded text-sm hover:bg-muted/80"
+                    >
+                      <FolderOpen className="h-4 w-4" /> Zgjidh nga Media
+                    </button>
                   </div>
                 </div>
+                <MediaPickerModal
+                  open={showPrimaryMediaPicker}
+                  onClose={() => setShowPrimaryMediaPicker(false)}
+                  onSelect={(urls) => {
+                    if (urls[0]) setEditItem((p) => p ? { ...p, image_url: urls[0] } : p);
+                  }}
+                />
                 {editItem.id ? (
                   <ProductImagesManager productId={editItem.id} />
                 ) : (
