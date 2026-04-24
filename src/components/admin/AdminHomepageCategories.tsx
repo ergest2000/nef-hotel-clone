@@ -10,8 +10,9 @@ import { Switch } from "@/components/ui/switch";
 import { Card, CardContent } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Trash2, Edit, Image as ImageIcon } from "lucide-react";
+import { Plus, Trash2, Edit, Image as ImageIcon, FolderOpen } from "lucide-react";
 import { TranslateButton } from "./TranslateButton";
+import { MediaPickerModal } from "./MediaPickerModal";
 
 const empty: Partial<HomepageCategory> = { title_al: "", title_en: "", image_url: "", link_url: "#", visible: true, sort_order: 0 };
 
@@ -24,6 +25,7 @@ export const AdminHomepageCategories = () => {
   const { translateField, translating } = useAutoTranslate();
   const [editItem, setEditItem] = useState<Partial<HomepageCategory> | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [showMediaPicker, setShowMediaPicker] = useState(false);
 
   const handleSave = () => {
     if (!editItem?.title_al && !editItem?.title_en) {
@@ -42,9 +44,15 @@ export const AdminHomepageCategories = () => {
   };
 
   const handleImageUpload = async (file: File) => {
-    const path = `categories/${Date.now()}-${file.name}`;
-    const url = await uploadCmsImage(file, path);
-    setEditItem((p) => p ? { ...p, image_url: url } : p);
+    try {
+      const safeName = file.name.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-zA-Z0-9._-]/g, "-");
+      const path = `categories/${Date.now()}-${safeName}`;
+      const url = await uploadCmsImage(file, path);
+      setEditItem((p) => p ? { ...p, image_url: url } : p);
+      toast({ title: "Imazhi u ngarkua!" });
+    } catch (e: any) {
+      toast({ title: "Gabim gjatë ngarkimit", description: e.message, variant: "destructive" });
+    }
   };
 
   const handleCollectionSelect = (collectionId: string) => {
@@ -145,14 +153,41 @@ export const AdminHomepageCategories = () => {
 
               <div>
                 <label className="text-xs font-medium text-muted-foreground">Imazhi</label>
-                <div className="flex items-center gap-3 mt-1">
-                  {editItem.image_url && <img src={editItem.image_url} className="h-20 w-20 object-cover rounded" />}
+                <div className="flex items-center gap-3 mt-1 flex-wrap">
+                  {editItem.image_url && (
+                    <div className="relative group">
+                      <img src={editItem.image_url} className="h-20 w-20 object-cover rounded" />
+                      <button
+                        type="button"
+                        onClick={() => setEditItem((p) => p ? { ...p, image_url: "" } : p)}
+                        className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-destructive rounded-full flex items-center justify-center shadow opacity-0 group-hover:opacity-100 transition-opacity"
+                      >
+                        <span className="text-white text-xs leading-none">×</span>
+                      </button>
+                    </div>
+                  )}
                   <label className="cursor-pointer">
                     <div className="flex items-center gap-2 px-3 py-2 bg-muted rounded text-sm hover:bg-muted/80"><ImageIcon className="h-4 w-4" /> Ngarko imazh tjetër</div>
                     <input type="file" accept="image/*" className="hidden" onChange={(e) => { if (e.target.files?.[0]) handleImageUpload(e.target.files[0]); }} />
                   </label>
+                  <button
+                    type="button"
+                    onClick={() => setShowMediaPicker(true)}
+                    className="flex items-center gap-2 px-3 py-2 bg-muted rounded text-sm hover:bg-muted/80"
+                  >
+                    <FolderOpen className="h-4 w-4" /> Zgjidh nga Media
+                  </button>
                 </div>
               </div>
+
+              <MediaPickerModal
+                open={showMediaPicker}
+                onClose={() => setShowMediaPicker(false)}
+                defaultFolder="categories"
+                onSelect={(urls) => {
+                  if (urls[0]) setEditItem((p) => p ? { ...p, image_url: urls[0] } : p);
+                }}
+              />
 
               <div className="flex items-center gap-3">
                 <Switch checked={editItem.visible ?? true} onCheckedChange={(v) => setEditItem({ ...editItem, visible: v })} />
