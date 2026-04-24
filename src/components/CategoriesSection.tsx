@@ -1,5 +1,6 @@
 import { getContentValue } from "@/hooks/useCms";
 import { useHomepageCategories } from "@/hooks/useHomepageCategories";
+import { useCollections } from "@/hooks/useCollections";
 import { useLanguage } from "@/hooks/useLanguage";
 import catBedroom from "@/assets/cat-bedroom.jpg";
 import catBathroom from "@/assets/cat-bathroom.jpg";
@@ -29,6 +30,7 @@ const CategoriesSection = ({ content }: { content?: SiteContent[] }) => {
   const subtitle = getContentValue(content, "categories", "subtitle", "Koleksioni ynë i hoteleve përfshin kategori produktesh me zgjidhje që mbulojnë çdo nevojë.");
   const { lang } = useLanguage();
   const { data: dynamicCategories } = useHomepageCategories(true);
+  const { data: collections } = useCollections();
 
   // Përshtat fallback sipas titullit
   const pickFallback = (title: string) => {
@@ -44,12 +46,25 @@ const CategoriesSection = ({ content }: { content?: SiteContent[] }) => {
     return catBedroom;
   };
 
+  // Gjej imazhin e koleksionit të lidhur (nga link_url p.sh. "/koleksionet/spa" → collection me slug "spa")
+  const findCollectionImage = (linkUrl?: string | null): string | null => {
+    if (!linkUrl || !collections?.length) return null;
+    const match = linkUrl.match(/\/koleksionet\/([^/?#]+)/);
+    if (!match) return null;
+    const slug = match[1];
+    const col = collections.find((c) => c.slug === slug);
+    return col?.image_url && col.image_url.trim() ? col.image_url : null;
+  };
+
   const categories = dynamicCategories?.length
     ? dynamicCategories.map((c) => {
         const name = lang === "en" ? (c.title_en || c.title_al) : (c.title_al || c.title_en);
+        // Prioriteti: 1) image_url i homepage_category, 2) image i koleksionit të lidhur, 3) fallback sipas titullit
+        const ownImage = c.image_url && c.image_url.trim() ? c.image_url : null;
+        const collectionImage = findCollectionImage(c.link_url);
         return {
           name,
-          image: c.image_url && c.image_url.trim() ? c.image_url : pickFallback(name),
+          image: ownImage || collectionImage || pickFallback(name),
           fallback: pickFallback(name),
           link: c.link_url || "#",
           id: c.id,
