@@ -48,14 +48,13 @@ const MediaPickerModal = ({
   const [loading, setLoading] = useState(false);
   const [search, setSearch] = useState("");
   const [picked, setPicked] = useState<Set<string>>(new Set());
-  const [preview, setPreview] = useState<PickedFile | null>(null);
 
   // Cache për folder-at e ngarkuar më parë
   const cacheRef = useRef<Record<string, PickedFile[]>>({});
 
   const loadFolder = async (f: string, force = false) => {
     setPicked(new Set());
-    setPreview(null);
+    
 
     // Serve nga cache nëse ekziston
     if (!force && cacheRef.current[f]) {
@@ -84,10 +83,7 @@ const MediaPickerModal = ({
         }
       }
 
-      // Shfaq menjëherë file-at e nivelit të parë
-      setFiles(topFiles);
-
-      // Nëse ka nënfolderë, bëj kërkesat në paralel
+      // Nëse ka nënfolderë, bëj kërkesat në paralel pastaj setoj njëherësh
       if (subFolders.length > 0) {
         const subResults = await Promise.all(
           subFolders.map((sf) =>
@@ -107,6 +103,7 @@ const MediaPickerModal = ({
         setFiles(allFiles);
         cacheRef.current[f] = allFiles;
       } else {
+        setFiles(topFiles);
         cacheRef.current[f] = topFiles;
       }
     } catch (e) {
@@ -121,7 +118,6 @@ const MediaPickerModal = ({
   const filtered = files.filter((f) => f.name.toLowerCase().includes(search.toLowerCase()));
   const togglePick = (file: PickedFile) => {
     setPicked((prev) => { const n = new Set(prev); n.has(file.url) ? n.delete(file.url) : n.add(file.url); return n; });
-    setPreview(file);
   };
 
   if (!open) return null;
@@ -143,7 +139,7 @@ const MediaPickerModal = ({
             {picked.size > 0 && (
               <Button
                 className="gap-1.5"
-                onClick={() => { onSelect(Array.from(picked)); onClose(); setPicked(new Set()); setPreview(null); }}
+                onClick={() => { onSelect(Array.from(picked)); onClose(); setPicked(new Set());  }}
               >
                 <Check className="h-4 w-4" /> Shto {picked.size} foto
               </Button>
@@ -158,7 +154,7 @@ const MediaPickerModal = ({
         <div
           style={{
             display: "grid",
-            gridTemplateColumns: preview ? "160px 1fr 224px" : "160px 1fr",
+            gridTemplateColumns: "160px 1fr",
             minHeight: 0,
             height: "100%",
           }}
@@ -168,7 +164,7 @@ const MediaPickerModal = ({
             {MEDIA_FOLDERS.map((f) => (
               <button
                 key={f}
-                onClick={() => { setFolder(f); setSearch(""); setPreview(null); }}
+                onClick={() => { setFolder(f); setSearch("");  }}
                 className={`w-full flex items-center gap-2 px-4 py-2.5 text-sm text-left transition-colors ${
                   folder === f ? "bg-primary text-primary-foreground font-medium" : "hover:bg-muted"
                 }`}
@@ -227,22 +223,19 @@ const MediaPickerModal = ({
                 <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-3">
                   {filtered.map((file) => {
                     const isPicked = picked.has(file.url);
-                    const isPreview = preview?.url === file.url;
                     return (
                       <div
                         key={file.url}
                         onClick={() => togglePick(file)}
-                        className={`relative aspect-square rounded-xl overflow-hidden cursor-pointer transition-all duration-150 ${
+                        className={`relative aspect-square rounded-xl overflow-hidden cursor-pointer ${
                           isPicked
-                            ? "ring-2 ring-primary ring-offset-2 scale-[0.96]"
-                            : isPreview
-                            ? "ring-2 ring-primary/50"
-                            : "hover:scale-[1.03] hover:shadow-md"
+                            ? "ring-2 ring-primary"
+                            : "ring-1 ring-transparent hover:ring-border"
                         }`}
                       >
                         <img src={file.url} alt={file.name} className="w-full h-full object-cover bg-muted" loading="lazy" />
                         {isPicked && (
-                          <div className="absolute inset-0 bg-primary/15">
+                          <div className="absolute inset-0 bg-primary/15 pointer-events-none">
                             <div className="absolute top-2 right-2 w-7 h-7 bg-primary rounded-full flex items-center justify-center shadow">
                               <Check className="h-4 w-4 text-white" />
                             </div>
@@ -255,30 +248,6 @@ const MediaPickerModal = ({
               )}
             </div>
           </div>
-
-          {/* Preview panel */}
-          {preview && (
-            <div className="border-l border-border bg-muted/10 flex flex-col p-4 gap-3 overflow-y-auto">
-              <div className="aspect-square rounded-xl overflow-hidden bg-muted border border-border shadow shrink-0">
-                <img src={preview.url} alt={preview.name} className="w-full h-full object-cover" />
-              </div>
-              <div className="space-y-1">
-                <p className="text-xs font-medium break-all leading-snug">{preview.name}</p>
-              </div>
-              <Button
-                variant={picked.has(preview.url) ? "default" : "outline"}
-                size="sm"
-                className="w-full gap-1.5"
-                onClick={() => togglePick(preview)}
-              >
-                {picked.has(preview.url) ? (
-                  <><Check className="h-3.5 w-3.5" /> E zgjedhur</>
-                ) : (
-                  "Zgjidh"
-                )}
-              </Button>
-            </div>
-          )}
         </div>
       </div>
     </div>,
