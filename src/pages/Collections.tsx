@@ -9,6 +9,7 @@ import {
   useToggleWishlist,
   useAllProductColors,
   useAllProductSizes,
+  useAllProductCollections,
   type ProductColor,
   type ProductSize,
 } from "@/hooks/useCollections";
@@ -529,6 +530,7 @@ const Collections = () => {
   const { data: allProducts, isLoading: loadingProducts } = useProducts();
   const { data: allColors } = useAllProductColors();
   const { data: allSizes } = useAllProductSizes();
+  const { data: allProductCollections } = useAllProductCollections();
 
   // CMS content for collections page
   const { data: cmsContent } = usePageContent("collections", lang);
@@ -574,6 +576,7 @@ const Collections = () => {
 
   // Products scoped to the active collection (before attribute filters)
   // This drives both the sidebar filter options AND the final filtered list.
+  // Përfshin produktet me collection_id kryesor, DHE ato të lidhura përmes tabelës product_collections
   const scopedProducts = useMemo(() => {
     if (!allProducts) return [];
     if (!activeCollection) return allProducts;
@@ -581,9 +584,24 @@ const Collections = () => {
       collections
         ?.filter((c) => c.parent_id === activeCollection.id)
         .map((c) => c.id) ?? [];
-    const relevantIds = [activeCollection.id, ...childIds];
-    return allProducts.filter((p) => relevantIds.includes(p.collection_id));
-  }, [allProducts, activeCollection, collections]);
+    const relevantIds = new Set<string>([activeCollection.id, ...childIds]);
+
+    // Produkte kryesore
+    const primaryProducts = allProducts.filter((p) => relevantIds.has(p.collection_id));
+
+    // Produkte të lidhura si dytësore (nga product_collections) në cilindo nga relevantIds
+    const primaryIds = new Set(primaryProducts.map((p) => p.id));
+    const secondaryProductIds = new Set(
+      (allProductCollections ?? [])
+        .filter((pc) => relevantIds.has(pc.collection_id))
+        .map((pc) => pc.product_id)
+    );
+    const secondaryProducts = allProducts.filter(
+      (p) => secondaryProductIds.has(p.id) && !primaryIds.has(p.id)
+    );
+
+    return [...primaryProducts, ...secondaryProducts];
+  }, [allProducts, activeCollection, collections, allProductCollections]);
 
   const scopedProductIds = useMemo(
     () => new Set(scopedProducts.map((p) => p.id)),
