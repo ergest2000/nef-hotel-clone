@@ -30,16 +30,35 @@ const CategoriesSection = ({ content }: { content?: SiteContent[] }) => {
   const { lang } = useLanguage();
   const { data: dynamicCategories } = useHomepageCategories(true);
 
+  // Përshtat fallback sipas titullit
+  const pickFallback = (title: string) => {
+    const t = (title || "").toLowerCase();
+    if (t.includes("gjumi") || t.includes("bedroom")) return catBedroom;
+    if (t.includes("banjo") || t.includes("bathroom") || t.includes("tualet")) return catBathroom;
+    if (t.includes("dyshek") || t.includes("mattress")) return catMattresses;
+    if (t.includes("restorant") || t.includes("dining")) return catDining;
+    if (t.includes("pishin") || t.includes("pool")) return catPool;
+    if (t.includes("spa")) return catSpa;
+    if (t.includes("shampo") || t.includes("amenit")) return catAmenities;
+    if (t.includes("pastr") || t.includes("clean")) return catClean;
+    return catBedroom;
+  };
+
   const categories = dynamicCategories?.length
-    ? dynamicCategories.map((c) => ({
-        name: lang === "en" ? (c.title_en || c.title_al) : (c.title_al || c.title_en),
-        image: c.image_url || catBedroom,
-        link: c.link_url || "#",
-        id: c.id,
-      }))
+    ? dynamicCategories.map((c) => {
+        const name = lang === "en" ? (c.title_en || c.title_al) : (c.title_al || c.title_en);
+        return {
+          name,
+          image: c.image_url && c.image_url.trim() ? c.image_url : pickFallback(name),
+          fallback: pickFallback(name),
+          link: c.link_url || "#",
+          id: c.id,
+        };
+      })
     : defaultCategories.map((def) => ({
         name: def.name,
         image: def.image,
+        fallback: def.image,
         link: "#",
         id: def.key,
       }));
@@ -55,7 +74,16 @@ const CategoriesSection = ({ content }: { content?: SiteContent[] }) => {
           {categories.map((cat) => (
             <a key={cat.id} href={cat.link} className="group flex flex-col">
               <div className="relative aspect-square overflow-hidden">
-                <img src={cat.image} alt={cat.name} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" loading="lazy" />
+                <img
+                  src={cat.image}
+                  alt={cat.name}
+                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                  loading="lazy"
+                  onError={(e) => {
+                    const img = e.currentTarget;
+                    if (img.src !== cat.fallback) img.src = cat.fallback;
+                  }}
+                />
                 <div className="absolute inset-0 bg-foreground/10 group-hover:bg-foreground/25 transition-colors" />
               </div>
               <span className="mt-3 text-xs md:text-sm tracking-wide-brand text-foreground font-semibold text-center">
