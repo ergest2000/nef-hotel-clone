@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { uploadCmsImage } from "@/hooks/useCms";
 import { useToast } from "@/hooks/use-toast";
@@ -56,47 +56,92 @@ export const AdminMediaLibrary = () => {
   const [showProductDropdown, setShowProductDropdown] = useState(false);
   const [showSortDropdown, setShowSortDropdown] = useState(false);
 
-  const loadFiles = useCallback(async (folder: string) => {
-    setLoading(true);
-    setAllFiles([]);
+  // Cache: folder -> files
+  const cacheRef = useRef<Record<string, MediaFile[]>>({});
+
+  const loadFiles = useCallback(async (folder: string, force = false) => {
     setSelectedPaths(new Set());
     setPreviewFile(null);
+
+    // Serve nga cache nëse ka
+    if (!force && cacheRef.current[folder]) {
+      setAllFiles(cacheRef.current[folder]);
+      setLoading(false);
+      return;
+    }
+
+    setLoading(true);
+    setAllFiles([]);
+
     try {
       const folders = folder === "__all__" ? FOLDERS : [folder];
-      const results: MediaFile[] = [];
 
-      for (const f of folders) {
-        const { data } = await supabase.storage
-          .from(BUCKET)
-          .list(f, { limit: 1000, sortBy: { column: "updated_at", order: "desc" } });
+      // Ngarko të gjithë folder-at top-level paralelisht
+      const topLevelResults = await Promise.all(
+        folders.map(async (f) => {
+          const { data } = await supabase.storage
+            .from(BUCKET)
+            .list(f, { limit: 1000, sortBy: { column: "updated_at", order: "desc" } });
 
-        for (const item of data || []) {
-          if (!item.id) {
-            // subfolder — load one level deep only
-            const { data: sub } = await supabase.storage
-              .from(BUCKET)
-              .list(`${f}/${item.name}`, { limit: 200 });
-            for (const subItem of sub || []) {
-              if (!subItem.id) continue;
-              const path = `${f}/${item.name}/${subItem.name}`;
+          const topFiles: MediaFile[] = [];
+          const subfolders: string[] = [];
+
+          for (const item of data || []) {
+            if (!item.id) {
+              subfolders.push(item.name);
+            } else {
+              const path = `${f}/${item.name}`;
               const { data: u } = supabase.storage.from(BUCKET).getPublicUrl(path);
-              results.push({ name: subItem.name, path, url: u.publicUrl, size: subItem.metadata?.size, updated_at: subItem.updated_at, folder: f });
+              topFiles.push({
+                name: item.name, path, url: u.publicUrl,
+                size: item.metadata?.size, updated_at: item.updated_at, folder: f,
+              });
             }
-          } else {
-            const path = `${f}/${item.name}`;
-            const { data: u } = supabase.storage.from(BUCKET).getPublicUrl(path);
-            results.push({ name: item.name, path, url: u.publicUrl, size: item.metadata?.size, updated_at: item.updated_at, folder: f });
           }
+          return { f, topFiles, subfolders };
+        })
+      );
+
+      // Shfaq menjëherë file-at top-level
+      const initialFiles = topLevelResults.flatMap((r) => r.topFiles);
+      setAllFiles(initialFiles);
+
+      // Mblidh të gjithë nënfolderët dhe ngarkoji paralel
+      const allSubfolderRequests: Promise<MediaFile[]>[] = [];
+      for (const { f, subfolders } of topLevelResults) {
+        for (const sf of subfolders) {
+          allSubfolderRequests.push(
+            supabase.storage.from(BUCKET).list(`${f}/${sf}`, { limit: 200 })
+              .then(({ data: sub }) =>
+                (sub || []).filter((i) => i.id).map((subItem) => {
+                  const path = `${f}/${sf}/${subItem.name}`;
+                  const { data: u } = supabase.storage.from(BUCKET).getPublicUrl(path);
+                  return {
+                    name: subItem.name, path, url: u.publicUrl,
+                    size: subItem.metadata?.size, updated_at: subItem.updated_at, folder: f,
+                  } as MediaFile;
+                })
+              )
+              .catch(() => [] as MediaFile[])
+          );
         }
       }
-      setAllFiles(results);
+
+      if (allSubfolderRequests.length > 0) {
+        const subResults = await Promise.all(allSubfolderRequests);
+        const allFinalFiles = [...initialFiles, ...subResults.flat()];
+        setAllFiles(allFinalFiles);
+        cacheRef.current[folder] = allFinalFiles;
+      } else {
+        cacheRef.current[folder] = initialFiles;
+      }
     } catch (e: any) {
       toast({ title: "Gabim", description: e.message, variant: "destructive" });
     }
     setLoading(false);
   }, [toast]);
 
-  useEffect(() => { loadFiles(activeFolder); }, [activeFolder]);
+  useEffect(() => { loadFiles(activeFolder); }, [activeFolder, loadFiles]);
 
   // Filter by product
   const filteredByProduct = useMemo(() => {
@@ -145,7 +190,11 @@ export const AdminMediaLibrary = () => {
       catch (e: any) { toast({ title: `Gabim: ${file.name}`, description: e.message, variant: "destructive" }); }
     }
     setUploading(false);
-    if (count > 0) { toast({ title: `U ngarkuan ${count} file!` }); loadFiles(activeFolder); }
+    if (count > 0) {
+      toast({ title: `U ngarkuan ${count} file!` });
+      cacheRef.current = {}; // invalidate cache
+      loadFiles(activeFolder, true);
+    }
   };
 
   const handleBulkDelete = async () => {
@@ -158,6 +207,7 @@ export const AdminMediaLibrary = () => {
     else {
       toast({ title: `U fshinë ${selectedPaths.size} file!` });
       setAllFiles((prev) => prev.filter((f) => !selectedPaths.has(f.path)));
+      cacheRef.current = {}; // invalidate cache
       setSelectedPaths(new Set()); setPreviewFile(null); setSelectMode(false);
     }
   };
@@ -169,6 +219,7 @@ export const AdminMediaLibrary = () => {
     else {
       toast({ title: "U fshi!" });
       setAllFiles((prev) => prev.filter((f) => f.path !== file.path));
+      cacheRef.current = {}; // invalidate cache
       if (previewFile?.path === file.path) setPreviewFile(null);
       setSelectedPaths((prev) => { const n = new Set(prev); n.delete(file.path); return n; });
     }
@@ -195,13 +246,21 @@ export const AdminMediaLibrary = () => {
   const activeSortLabel = SORT_OPTIONS.find((o) => o.value === sortKey)?.label;
 
   return (
-    <div className="flex h-[calc(100vh-120px)] gap-0 overflow-hidden rounded-lg border border-border">
+    <div
+      className="overflow-hidden rounded-lg border border-border bg-background"
+      style={{
+        display: "grid",
+        gridTemplateColumns: "176px 1fr",
+        height: "calc(100vh - 160px)",
+        minHeight: "500px",
+      }}
+    >
       {/* Sidebar */}
-      <div className="w-44 shrink-0 border-r border-border bg-muted/30 flex flex-col">
-        <div className="p-3 border-b border-border">
+      <div className="border-r border-border bg-muted/30 flex flex-col min-h-0">
+        <div className="p-3 border-b border-border shrink-0">
           <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Folder-at</p>
         </div>
-        <div className="flex-1 overflow-y-auto py-1">
+        <div className="flex-1 overflow-y-auto py-1 min-h-0">
           <button
             onClick={() => { setActiveFolder("__all__"); setSelectMode(false); setSearch(""); setProductFilter(null); }}
             className={`w-full flex items-center gap-2 px-3 py-2 text-sm transition-colors text-left ${activeFolder === "__all__" ? "bg-primary text-primary-foreground" : "text-foreground hover:bg-muted"}`}
@@ -223,7 +282,14 @@ export const AdminMediaLibrary = () => {
       </div>
 
       {/* Main */}
-      <div className="flex-1 flex flex-col min-w-0">
+      <div
+        style={{
+          display: "grid",
+          gridTemplateRows: "auto 1fr",
+          minHeight: 0,
+          minWidth: 0,
+        }}
+      >
         {/* Toolbar */}
         <div className="flex items-center gap-2 p-3 border-b border-border bg-background flex-wrap">
           {/* Search */}
@@ -307,7 +373,7 @@ export const AdminMediaLibrary = () => {
             </Button>
           )}
 
-          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => loadFiles(activeFolder)} disabled={loading}>
+          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => loadFiles(activeFolder, true)} disabled={loading} title="Rifresko">
             <RefreshCw className={`h-3.5 w-3.5 ${loading ? "animate-spin" : ""}`} />
           </Button>
 
@@ -325,10 +391,19 @@ export const AdminMediaLibrary = () => {
           <div className="fixed inset-0 z-40" onClick={() => { setShowProductDropdown(false); setShowSortDropdown(false); }} />
         )}
 
-        <div className="flex flex-1 overflow-hidden">
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: previewFile && !selectMode ? "1fr 224px" : "1fr",
+            minHeight: 0,
+            minWidth: 0,
+            overflow: "hidden",
+          }}
+        >
           {/* Grid */}
           <div
-            className={`flex-1 overflow-y-auto p-3 transition-colors ${dragOver ? "bg-primary/5 ring-2 ring-inset ring-primary" : ""}`}
+            className={`overflow-y-auto p-3 transition-colors ${dragOver ? "bg-primary/5 ring-2 ring-inset ring-primary" : ""}`}
+            style={{ minHeight: 0, minWidth: 0 }}
             onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
             onDragLeave={() => setDragOver(false)}
             onDrop={(e) => { e.preventDefault(); setDragOver(false); if (e.dataTransfer.files?.length) handleUpload(e.dataTransfer.files); }}
@@ -381,7 +456,7 @@ export const AdminMediaLibrary = () => {
 
           {/* Preview panel */}
           {previewFile && !selectMode && (
-            <div className="w-56 shrink-0 border-l border-border bg-background flex flex-col overflow-y-auto">
+            <div className="border-l border-border bg-background flex flex-col overflow-y-auto" style={{ minHeight: 0 }}>
               <div className="p-3 border-b border-border flex items-center justify-between">
                 <p className="text-xs font-semibold">Detaje</p>
                 <button onClick={() => setPreviewFile(null)}><X className="h-3.5 w-3.5 text-muted-foreground hover:text-foreground" /></button>
