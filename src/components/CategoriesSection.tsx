@@ -32,6 +32,14 @@ const CategoriesSection = ({ content }: { content?: SiteContent[] }) => {
   const { data: dynamicCategories } = useHomepageCategories(true);
   const { data: collections } = useCollections();
 
+  // DEBUG - heqe pasi të diagnostikojmë
+  if (typeof window !== "undefined") {
+    console.log("[CategoriesSection DEBUG]");
+    console.log("dynamicCategories count:", dynamicCategories?.length ?? "LOADING");
+    console.log("dynamicCategories:", dynamicCategories);
+    console.log("collections count:", collections?.length ?? "LOADING");
+  }
+
   // Përshtat fallback sipas titullit
   const pickFallback = (title: string) => {
     const t = (title || "").toLowerCase();
