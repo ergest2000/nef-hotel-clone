@@ -495,6 +495,19 @@ export const useProductCollections = (productId?: string) =>
     },
   });
 
+// Merr të gjitha relacionet product <-> collection nga tabela product_collections
+export const useAllProductCollections = () =>
+  useQuery({
+    queryKey: ["product_collections", "all"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("product_collections" as any)
+        .select("product_id, collection_id");
+      if (error) throw error;
+      return data as unknown as { product_id: string; collection_id: string }[];
+    },
+  });
+
 export const useAddProductCollection = () => {
   const qc = useQueryClient();
   return useMutation({
@@ -506,6 +519,7 @@ export const useAddProductCollection = () => {
     },
     onSuccess: (_, vars) => {
       qc.invalidateQueries({ queryKey: ["product_collections", vars.product_id] });
+      qc.invalidateQueries({ queryKey: ["product_collections", "all"] });
       qc.invalidateQueries({ queryKey: ["products"] });
     },
   });
@@ -524,6 +538,7 @@ export const useRemoveProductCollection = () => {
     },
     onSuccess: (_, vars) => {
       qc.invalidateQueries({ queryKey: ["product_collections", vars.product_id] });
+      qc.invalidateQueries({ queryKey: ["product_collections", "all"] });
       qc.invalidateQueries({ queryKey: ["products"] });
     },
   });
