@@ -1,5 +1,6 @@
+import { useMemo, useState } from "react";
 import { useCollections, useProductCollections, useAddProductCollection, useRemoveProductCollection } from "@/hooks/useCollections";
-import { X, FolderOpen, Plus } from "lucide-react";
+import { X, FolderOpen, Plus, Search } from "lucide-react";
 
 export const ProductCategoriesManager = ({
   productId,
@@ -14,9 +15,31 @@ export const ProductCategoriesManager = ({
   const { data: assigned, isLoading } = useProductCollections(productId);
   const add = useAddProductCollection();
   const remove = useRemoveProductCollection();
+  const [search, setSearch] = useState("");
+
+  // Hartë që gjen emrin e prindit për çdo koleksion
+  const getCollectionLabel = (colId: string): string => {
+    const col = collections?.find((c) => c.id === colId);
+    if (!col) return "";
+    const name = col.title_al || col.slug || "";
+    if (col.parent_id) {
+      const parent = collections?.find((c) => c.id === col.parent_id);
+      const parentName = parent?.title_al || parent?.slug || "";
+      if (parentName) return `${name} (nën ${parentName})`;
+    }
+    return name;
+  };
 
   const assignedIds = new Set(assigned?.map((pc) => pc.collection_id) ?? []);
-  const available = collections?.filter((c) => !assignedIds.has(c.id)) ?? [];
+  const available = useMemo(() => {
+    const list = collections?.filter((c) => !assignedIds.has(c.id)) ?? [];
+    const q = search.toLowerCase().trim();
+    if (!q) return list;
+    return list.filter((c) => {
+      const label = getCollectionLabel(c.id).toLowerCase();
+      return label.includes(q);
+    });
+  }, [collections, assignedIds, search]);
 
   return (
     <div className="space-y-4">
@@ -37,6 +60,7 @@ export const ProductCategoriesManager = ({
               const col = collections?.find((c) => c.id === pc.collection_id);
               if (!col) return null;
               const isPrimary = pc.collection_id === primaryCollectionId;
+              const label = getCollectionLabel(pc.collection_id);
               return (
                 <div
                   key={pc.id}
@@ -51,9 +75,10 @@ export const ProductCategoriesManager = ({
                       Kryesore
                     </span>
                   )}
-                  <span>{col.title_al || col.slug}</span>
+                  <span>{label}</span>
                   {!isPrimary && (
                     <button
+                      type="button"
                       onClick={() => onChangePrimary(pc.collection_id)}
                       className="opacity-50 hover:opacity-100 transition-opacity text-[9px] border border-current rounded px-1"
                       title="Bëje kategorinë kryesore"
@@ -62,6 +87,7 @@ export const ProductCategoriesManager = ({
                     </button>
                   )}
                   <button
+                    type="button"
                     onClick={() => {
                       if (assigned.length === 1) return;
                       remove.mutate({ product_id: productId, collection_id: pc.collection_id });
@@ -83,29 +109,49 @@ export const ProductCategoriesManager = ({
         )}
       </div>
 
-      {available.length > 0 && (
+      {(collections?.length ?? 0) > 0 && (
         <div>
-          <label className="text-xs font-medium text-muted-foreground mb-2 block">
-            Shto në kategori
-          </label>
-          <div className="flex flex-wrap gap-2">
-            {available.map((col) => (
-              <button
-                key={col.id}
-                onClick={() => add.mutate({ product_id: productId, collection_id: col.id })}
-                disabled={add.isPending}
-                className="flex items-center gap-1.5 px-3 py-1.5 border border-dashed border-border rounded-full text-xs text-muted-foreground hover:border-primary hover:text-primary transition-colors"
-              >
-                <Plus className="h-3 w-3" />
-                {col.title_al || col.slug}
-              </button>
-            ))}
+          <div className="flex items-center justify-between mb-2">
+            <label className="text-xs font-medium text-muted-foreground">
+              Shto në kategori
+            </label>
+            <div className="relative">
+              <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground" />
+              <input
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Kërko..."
+                className="pl-7 pr-2 h-7 text-xs border border-border rounded bg-background focus:outline-none focus:ring-1 focus:ring-primary/30 w-40"
+              />
+            </div>
+          </div>
+          <div className="flex flex-wrap gap-2 max-h-48 overflow-y-auto p-1">
+            {available.length === 0 ? (
+              <p className="text-xs text-muted-foreground">Asnjë rezultat.</p>
+            ) : (
+              available.map((col) => {
+                const label = getCollectionLabel(col.id);
+                return (
+                  <button
+                    key={col.id}
+                    type="button"
+                    onClick={() => add.mutate({ product_id: productId, collection_id: col.id })}
+                    disabled={add.isPending}
+                    className="flex items-center gap-1.5 px-3 py-1.5 border border-dashed border-border rounded-full text-xs text-muted-foreground hover:border-primary hover:text-primary transition-colors"
+                  >
+                    <Plus className="h-3 w-3" />
+                    {label}
+                  </button>
+                );
+              })
+            )}
           </div>
         </div>
       )}
 
       <p className="text-[10px] text-muted-foreground">
         Kategoria <strong>Kryesore</strong> përdoret për URL-in e produktit. Kategoritë e tjera e shfaqin produktin edhe atje.
+        Për të shfaqur produktin te një nënkategori specifike (p.sh. <em>SPA → Peshqirë</em>), zgjidhe atë nënkategori direkt — jo vetëm prindin.
       </p>
     </div>
   );
