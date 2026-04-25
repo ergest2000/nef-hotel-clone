@@ -15,7 +15,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { Heart, ShoppingBag, Package, ChevronLeft, ChevronRight, Search, X } from "lucide-react";
+import { Heart, ShoppingBag, Package, ChevronLeft, ChevronRight, Search, X, ExternalLink } from "lucide-react";
 import { useDesign } from "@/hooks/useDesignSettings";
 import ProductColorPicker from "@/components/ProductColorPicker";
 
@@ -140,6 +140,73 @@ const ImageLightbox = ({ images, startIndex, onClose }: { images: string[]; star
         </div>
       </DialogContent>
     </Dialog>
+  );
+};
+
+// ─── Brand Banner (Distributor zyrtar) ──────────────────────────
+type CollectionLike = { brand_name?: string | null; brand_logo_url?: string | null; brand_url?: string | null } | null | undefined;
+
+const BrandBanner = ({ collection, parentCollection, isAl }: {
+  collection: CollectionLike;
+  parentCollection: CollectionLike;
+  isAl: boolean;
+}) => {
+  // Përdor brandin e koleksionit; nëse mungon, brandin e prindit
+  const c = collection as any;
+  const p = parentCollection as any;
+  const brandName: string | null = c?.brand_name || p?.brand_name || null;
+  const brandLogoUrl: string | null = c?.brand_logo_url || p?.brand_logo_url || null;
+  const brandUrl: string | null = c?.brand_url || p?.brand_url || null;
+
+  if (!brandName) return null;
+
+  const distributorText = isAl
+    ? `Distributor zyrtar i ${brandName} në Shqipëri`
+    : `Official distributor of ${brandName} in Albania`;
+  const subText = isAl
+    ? "Kliko për më shumë informacion mbi brandin"
+    : "Click for more information about the brand";
+  const ctaText = isAl ? "Vizito faqen" : "Visit website";
+
+  const Inner = (
+    <div className="flex items-center gap-4 px-5 py-4 bg-primary/5 border-y border-primary/20 hover:bg-primary/10 transition-colors">
+      {brandLogoUrl ? (
+        <div className="bg-white border border-primary/15 rounded p-2 shrink-0 flex items-center justify-center" style={{ width: 90, height: 56 }}>
+          <img src={brandLogoUrl} alt={brandName} className="max-w-full max-h-full object-contain" />
+        </div>
+      ) : (
+        <div className="bg-white border border-primary/15 rounded p-2 shrink-0 flex items-center justify-center font-medium text-primary text-xs" style={{ width: 90, height: 56 }}>
+          {brandName}
+        </div>
+      )}
+      <div className="flex-1 min-w-0">
+        <p className="text-sm md:text-base font-medium text-primary leading-tight">{distributorText}.</p>
+        <p className="text-xs md:text-sm text-primary/70 mt-0.5">{subText}</p>
+      </div>
+      {brandUrl && (
+        <span className="text-sm font-medium text-primary whitespace-nowrap shrink-0 flex items-center gap-1.5">
+          {ctaText}
+          <ExternalLink className="h-4 w-4" />
+        </span>
+      )}
+    </div>
+  );
+
+  if (!brandUrl) {
+    return <div className="max-w-7xl mx-auto px-4 mt-6">{Inner}</div>;
+  }
+
+  return (
+    <div className="max-w-7xl mx-auto px-4 mt-6">
+      <a
+        href={brandUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="block no-underline"
+      >
+        {Inner}
+      </a>
+    </div>
   );
 };
 
@@ -456,6 +523,13 @@ const ProductDetail = () => {
           </div>
         </div>
       </div>
+
+      {/* Brand Banner (shfaqet nëse koleksioni ose prindi i tij ka brand të lidhur) */}
+      <BrandBanner
+        collection={collection}
+        parentCollection={parentCollection}
+        isAl={isAl}
+      />
 
       {/* Product Content */}
       <div className="max-w-7xl mx-auto px-4 py-8 md:py-12">
