@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback, useEffect } from "react";
+import { useState, useMemo, useCallback, useEffect, useRef } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { useCart } from "@/hooks/useCart";
 import {
@@ -56,8 +56,48 @@ const GlobalReturnPolicy = ({ isAl }: { isAl: boolean }) => {
 // ─── Image Lightbox ─────────────────────────────────────────────
 const ImageLightbox = ({ images, startIndex, onClose }: { images: string[]; startIndex: number; onClose: () => void }) => {
   const [idx, setIdx] = useState(startIndex);
-  const goPrev = () => setIdx((i) => (i > 0 ? i - 1 : images.length - 1));
-  const goNext = () => setIdx((i) => (i < images.length - 1 ? i + 1 : 0));
+  const [zoomed, setZoomed] = useState(false);
+  const [pan, setPan] = useState({ x: 0, y: 0 });
+  const [dragging, setDragging] = useState(false);
+  const dragStart = useRef<{ x: number; y: number; panX: number; panY: number } | null>(null);
+
+  const goPrev = () => { setIdx((i) => (i > 0 ? i - 1 : images.length - 1)); resetZoom(); };
+  const goNext = () => { setIdx((i) => (i < images.length - 1 ? i + 1 : 0)); resetZoom(); };
+  const resetZoom = () => { setZoomed(false); setPan({ x: 0, y: 0 }); };
+
+  // Klikim për zoom (kur jo-zoomed) ose reset (kur zoomed por jo duke tërhequr)
+  const handleImageClick = (e: React.MouseEvent<HTMLImageElement>) => {
+    if (dragging) return;
+    if (!zoomed) {
+      // Zoom drejt pikës ku kliket
+      const rect = e.currentTarget.getBoundingClientRect();
+      const cx = e.clientX - rect.left - rect.width / 2;
+      const cy = e.clientY - rect.top - rect.height / 2;
+      setPan({ x: -cx, y: -cy });
+      setZoomed(true);
+    } else {
+      resetZoom();
+    }
+  };
+
+  // Pan me mouse down/move/up kur është zoomed
+  const onMouseDown = (e: React.MouseEvent) => {
+    if (!zoomed) return;
+    e.preventDefault();
+    dragStart.current = { x: e.clientX, y: e.clientY, panX: pan.x, panY: pan.y };
+  };
+  const onMouseMove = (e: React.MouseEvent) => {
+    if (!zoomed || !dragStart.current) return;
+    const dx = e.clientX - dragStart.current.x;
+    const dy = e.clientY - dragStart.current.y;
+    if (Math.abs(dx) > 3 || Math.abs(dy) > 3) setDragging(true);
+    setPan({ x: dragStart.current.panX + dx, y: dragStart.current.panY + dy });
+  };
+  const onMouseUp = () => {
+    dragStart.current = null;
+    // Lë dragging të zhduket pas tick-ut që të mos triggerojmë click të papritur
+    setTimeout(() => setDragging(false), 50);
+  };
 
   return (
     <Dialog open onOpenChange={onClose}>
@@ -65,21 +105,38 @@ const ImageLightbox = ({ images, startIndex, onClose }: { images: string[]; star
         <button onClick={onClose} className="absolute top-4 right-4 z-50 w-10 h-10 rounded-full bg-background/20 flex items-center justify-center hover:bg-background/40 transition-colors">
           <X className="h-5 w-5 text-white" />
         </button>
-        <div className="relative w-full h-full flex items-center justify-center min-h-[60vh]">
-          <img src={images[idx]} alt="" className="max-w-full max-h-[85vh] object-contain" />
-          {images.length > 1 && (
+        <div
+          className="relative w-full h-full flex items-center justify-center min-h-[60vh] overflow-hidden select-none"
+          onMouseMove={onMouseMove}
+          onMouseUp={onMouseUp}
+          onMouseLeave={onMouseUp}
+        >
+          <img
+            src={images[idx]}
+            alt=""
+            draggable={false}
+            onClick={handleImageClick}
+            onMouseDown={onMouseDown}
+            className={`max-w-full max-h-[85vh] object-contain transition-transform duration-200 ${zoomed ? (dragging ? "cursor-grabbing" : "cursor-grab") : "cursor-zoom-in"}`}
+            style={{
+              transform: zoomed ? `translate(${pan.x}px, ${pan.y}px) scale(2.2)` : "none",
+              transformOrigin: "center center",
+            }}
+          />
+          {!zoomed && images.length > 1 && (
             <>
-              <button onClick={goPrev} className="absolute left-4 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-background/20 flex items-center justify-center hover:bg-background/40 transition-colors">
+              <button onClick={(e) => { e.stopPropagation(); goPrev(); }} className="absolute left-4 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-background/20 flex items-center justify-center hover:bg-background/40 transition-colors">
                 <ChevronLeft className="h-6 w-6 text-white" />
               </button>
-              <button onClick={goNext} className="absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-background/20 flex items-center justify-center hover:bg-background/40 transition-colors">
+              <button onClick={(e) => { e.stopPropagation(); goNext(); }} className="absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-background/20 flex items-center justify-center hover:bg-background/40 transition-colors">
                 <ChevronRight className="h-6 w-6 text-white" />
               </button>
             </>
           )}
         </div>
-        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 text-white/60 text-sm">
-          {idx + 1} / {images.length}
+        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 text-white/60 text-xs flex flex-col items-center gap-1 pointer-events-none">
+          <span>{idx + 1} / {images.length}</span>
+          <span className="opacity-70">{zoomed ? "Kliko për të kthyer • Tërhiq për të lëvizur" : "Kliko për zoom"}</span>
         </div>
       </DialogContent>
     </Dialog>
@@ -140,21 +197,22 @@ const ProductGallery = ({ mainImage, productId, selectedColorId, colorImageUrl, 
           key={displayImage}
           src={displayImage}
           alt=""
-          className="w-full h-full object-cover transition-opacity duration-300"
+          onClick={() => onOpenLightbox(allImages, selected)}
+          className="w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-110 cursor-zoom-in"
         />
         {/* Zoom icon */}
         <button
-          onClick={() => onOpenLightbox(allImages, selected)}
-          className="absolute top-3 right-3 w-9 h-9 rounded-full bg-background/80 border border-border flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-background"
+          onClick={(e) => { e.stopPropagation(); onOpenLightbox(allImages, selected); }}
+          className="absolute top-3 right-3 w-9 h-9 rounded-full bg-background/80 border border-border flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-background z-10"
         >
           <Search className="h-4 w-4 text-foreground" />
         </button>
         {allImages.length > 1 && (
           <>
-            <button onClick={goPrev} className="absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-background/80 border border-border flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+            <button onClick={(e) => { e.stopPropagation(); goPrev(); }} className="absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-background/80 border border-border flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity z-10">
               <ChevronLeft className="h-4 w-4 text-foreground" />
             </button>
-            <button onClick={goNext} className="absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-background/80 border border-border flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+            <button onClick={(e) => { e.stopPropagation(); goNext(); }} className="absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-background/80 border border-border flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity z-10">
               <ChevronRight className="h-4 w-4 text-foreground" />
             </button>
           </>
