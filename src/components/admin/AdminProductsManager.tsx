@@ -635,14 +635,14 @@ export const AdminProductsManager = () => {
                       <label className="text-xs font-medium text-muted-foreground">Përshkrimi (AL)</label>
                       <TranslateButton direction="al_to_en" loading={translating === "p_desc"} onClick={() => translateField("p_desc", editItem.description_al ?? "", "al_to_en", (t) => setEditItem((p) => p ? { ...p, description_en: t } : p))} />
                     </div>
-                    <Textarea value={editItem.description_al ?? ""} onChange={(e) => setEditItem({ ...editItem, description_al: e.target.value })} rows={3} />
+                    <Textarea value={editItem.description_al ?? ""} onChange={(e) => setEditItem({ ...editItem, description_al: e.target.value })} rows={6} placeholder="Shkruaj përshkrimin... Përdor Enter për të krijuar paragrafë të rinj." />
                   </div>
                   <div>
                     <div className="flex items-center justify-between">
                       <label className="text-xs font-medium text-muted-foreground">Description (EN)</label>
                       <TranslateButton direction="en_to_al" loading={translating === "p_desc_r"} onClick={() => translateField("p_desc_r", editItem.description_en ?? "", "en_to_al", (t) => setEditItem((p) => p ? { ...p, description_al: t } : p))} />
                     </div>
-                    <Textarea value={editItem.description_en ?? ""} onChange={(e) => setEditItem({ ...editItem, description_en: e.target.value })} rows={3} />
+                    <Textarea value={editItem.description_en ?? ""} onChange={(e) => setEditItem({ ...editItem, description_en: e.target.value })} rows={6} placeholder="Write description... Use Enter to create new paragraphs." />
                   </div>
                 </div>
                 <div>
