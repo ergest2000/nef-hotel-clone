@@ -63,6 +63,7 @@ export const AdminCollectionsManager = () => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [showMediaPicker, setShowMediaPicker] = useState(false);
+  const [showBrandLogoPicker, setShowBrandLogoPicker] = useState(false);
   const qc = useQueryClient();
 
   // ── Drag state ──────────────────────────────────────────────────
@@ -142,7 +143,7 @@ export const AdminCollectionsManager = () => {
     }
     setSaving(true);
     try {
-      const fields = ["title_al","title_en","description_al","description_en","slug","image_url","parent_id","visible","sort_order"] as const;
+      const fields = ["title_al","title_en","description_al","description_en","slug","image_url","parent_id","visible","sort_order","brand_name","brand_logo_url","brand_url"] as const;
       const payload: Record<string, unknown> = {};
       fields.forEach((f) => { if ((editItem as any)[f] !== undefined) payload[f] = (editItem as any)[f]; });
 
@@ -428,6 +429,70 @@ export const AdminCollectionsManager = () => {
                 defaultFolder="collections"
                 onSelect={(urls) => {
                   if (urls[0]) setEditItem((p) => p ? { ...p, image_url: urls[0] } : p);
+                }}
+              />
+
+              {/* ── Brand i lidhur (opsional) ──────────────────────────── */}
+              <div className="border-t border-border pt-4">
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">
+                  Brand i lidhur (opsional)
+                </p>
+                <p className="text-xs text-muted-foreground mb-3">
+                  Plotësoji këto fusha vetëm nëse ky koleksion përfaqëson një brand specifik (p.sh. Media Strom, Groupe GM).
+                  Banner-i shfaqet vetëm te faqja e produktit individual.
+                </p>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="text-xs font-medium text-muted-foreground">Emri i brandit</label>
+                    <Input
+                      value={(editItem as any).brand_name ?? ""}
+                      onChange={(e) => setEditItem({ ...editItem, brand_name: e.target.value } as any)}
+                      placeholder="p.sh. Media Strom"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs font-medium text-muted-foreground">URL i faqes zyrtare</label>
+                    <Input
+                      value={(editItem as any).brand_url ?? ""}
+                      onChange={(e) => setEditItem({ ...editItem, brand_url: e.target.value } as any)}
+                      placeholder="https://www.brand.com"
+                    />
+                  </div>
+                </div>
+
+                <div className="mt-3">
+                  <label className="text-xs font-medium text-muted-foreground">Logoja e brandit</label>
+                  <div className="flex items-center gap-3 mt-1 flex-wrap">
+                    {(editItem as any).brand_logo_url && (
+                      <div className="relative group">
+                        <img src={(editItem as any).brand_logo_url} alt="" className="h-12 w-auto max-w-[140px] object-contain bg-muted rounded p-1" />
+                        <button
+                          type="button"
+                          onClick={() => setEditItem({ ...editItem, brand_logo_url: "" } as any)}
+                          className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-destructive rounded-full flex items-center justify-center shadow opacity-0 group-hover:opacity-100 transition-opacity"
+                        >
+                          <X className="h-3 w-3 text-white" />
+                        </button>
+                      </div>
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => setShowBrandLogoPicker(true)}
+                      className="flex items-center gap-2 px-3 py-2 bg-muted rounded text-sm hover:bg-muted/80"
+                    >
+                      <FolderOpen className="h-4 w-4" /> Zgjidh logo nga Media
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <MediaPickerModal
+                open={showBrandLogoPicker}
+                onClose={() => setShowBrandLogoPicker(false)}
+                defaultFolder="logos"
+                onSelect={(urls) => {
+                  if (urls[0]) setEditItem((p) => p ? ({ ...p, brand_logo_url: urls[0] } as any) : p);
                 }}
               />
               <div className="flex items-center gap-2">
