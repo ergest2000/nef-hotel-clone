@@ -562,7 +562,7 @@ const ProductDetail = () => {
             </div>
 
             {/* Description */}
-            <p className="text-sm text-foreground leading-relaxed">
+            <p className="text-sm text-foreground leading-relaxed whitespace-pre-line">
               {isAl ? product.description_al : product.description_en}
             </p>
 
