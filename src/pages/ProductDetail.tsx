@@ -190,15 +190,35 @@ const ProductGallery = ({ mainImage, productId, selectedColorId, colorImageUrl, 
   const goPrev = () => setSelected((s) => (s > 0 ? s - 1 : allImages.length - 1));
   const goNext = () => setSelected((s) => (s < allImages.length - 1 ? s + 1 : 0));
 
+  // Magnifier zoom — kur kursori lëviz mbi foto, ajo zoom-on në pikën ku është mouse
+  const [hoverZoom, setHoverZoom] = useState(false);
+  const [hoverPos, setHoverPos] = useState({ x: 50, y: 50 }); // % të pozicionit
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = ((e.clientX - rect.left) / rect.width) * 100;
+    const y = ((e.clientY - rect.top) / rect.height) * 100;
+    setHoverPos({ x: Math.max(0, Math.min(100, x)), y: Math.max(0, Math.min(100, y)) });
+  };
+
   return (
     <div className="space-y-4">
-      <div className="relative aspect-square bg-muted overflow-hidden group">
+      <div
+        className="relative aspect-square bg-muted overflow-hidden group cursor-zoom-in"
+        onMouseEnter={() => setHoverZoom(true)}
+        onMouseLeave={() => setHoverZoom(false)}
+        onMouseMove={handleMouseMove}
+        onClick={() => onOpenLightbox(allImages, selected)}
+      >
         <img
           key={displayImage}
           src={displayImage}
           alt=""
-          onClick={() => onOpenLightbox(allImages, selected)}
-          className="w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-110 cursor-zoom-in"
+          draggable={false}
+          className="w-full h-full object-cover transition-transform duration-200 ease-out pointer-events-none"
+          style={{
+            transform: hoverZoom ? "scale(2.2)" : "scale(1)",
+            transformOrigin: `${hoverPos.x}% ${hoverPos.y}%`,
+          }}
         />
         {/* Zoom icon */}
         <button
