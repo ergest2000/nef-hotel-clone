@@ -16,7 +16,7 @@ import {
 import { useLanguage } from "@/hooks/useLanguage";
 import { useAuth } from "@/hooks/useAuth";
 import { usePageContent, getContentValue } from "@/hooks/useCms";
-import { Heart, ChevronRight } from "lucide-react";
+import { Heart, ChevronRight, ExternalLink } from "lucide-react";
 import ProductColorPicker from "@/components/ProductColorPicker";
 import type { Tables } from "@/integrations/supabase/types";
 
@@ -100,7 +100,7 @@ const ProductCard = ({
           )}
           {/* Brand badge overlay — top-left corner */}
           {brandLogoUrl && (
-            <div className="absolute top-2 left-2 bg-white/95 backdrop-blur-sm rounded-md px-2 py-1 shadow-sm">
+            <div className="absolute top-2 left-2 bg-white border border-primary/15 rounded p-1 shadow-sm">
               <img
                 src={brandLogoUrl}
                 alt="Brand"
@@ -824,26 +824,60 @@ const Collections = () => {
         </div>
       </section>
 
-      {/* ── BRAND BANNER — për kategoritë me brand të lidhur (Dyshek, Shampo & Amenities) ── */}
-      {(activeCollection as any)?.brand_logo_url && (
-        <section className="relative bg-white border-b border-border py-5 md:py-6">
-          <div className="container flex items-center justify-center gap-3">
-            <a
-              href={(activeCollection as any).brand_url || "#"}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="block transition-opacity hover:opacity-80"
-              aria-label={(activeCollection as any).brand_name || "Visit brand website"}
-            >
-              <img
-                src={(activeCollection as any).brand_logo_url}
-                alt={(activeCollection as any).brand_name || "Brand"}
-                className="h-10 md:h-12 w-auto object-contain"
-              />
+      {/* ── BRAND BANNER (Distributor zyrtar) — për kategoritë me brand ── */}
+      {(() => {
+        const c = activeCollection as any;
+        const p = parentCollection as any;
+        const brandName: string | null = c?.brand_name || p?.brand_name || null;
+        const brandLogoUrl: string | null = c?.brand_logo_url || p?.brand_logo_url || null;
+        const brandUrl: string | null = c?.brand_url || p?.brand_url || null;
+
+        if (!brandName) return null;
+
+        const distributorText = isAl
+          ? `Distributor zyrtar i ${brandName} në Shqipëri`
+          : `Official distributor of ${brandName} in Albania`;
+        const subText = isAl
+          ? "Kliko për më shumë informacion mbi brandin"
+          : "Click for more information about the brand";
+        const ctaText = isAl ? "Vizito faqen" : "Visit website";
+
+        const Inner = (
+          <div className="flex flex-col items-center gap-3 px-5 py-6 md:py-8 bg-primary/5 border-y border-primary/20 hover:bg-primary/10 transition-colors text-center">
+            {brandLogoUrl ? (
+              <div className="bg-white border border-primary/15 rounded p-3 flex items-center justify-center" style={{ width: 130, height: 70 }}>
+                <img src={brandLogoUrl} alt={brandName} className="max-w-full max-h-full object-contain" />
+              </div>
+            ) : (
+              <div className="bg-white border border-primary/15 rounded p-3 flex items-center justify-center font-medium text-primary text-sm" style={{ width: 130, height: 70 }}>
+                {brandName}
+              </div>
+            )}
+            <div className="flex flex-col items-center gap-1">
+              <p className="text-sm md:text-base font-medium text-primary leading-tight">{distributorText}.</p>
+              <p className="text-xs md:text-sm text-primary/70">{subText}</p>
+              {brandUrl && (
+                <span className="mt-2 text-sm font-medium text-primary inline-flex items-center gap-1.5">
+                  {ctaText}
+                  <ExternalLink className="h-4 w-4" />
+                </span>
+              )}
+            </div>
+          </div>
+        );
+
+        if (!brandUrl) {
+          return <div className="max-w-7xl mx-auto px-4 mt-6">{Inner}</div>;
+        }
+
+        return (
+          <div className="max-w-7xl mx-auto px-4 mt-6">
+            <a href={brandUrl} target="_blank" rel="noopener noreferrer" className="block no-underline">
+              {Inner}
             </a>
           </div>
-        </section>
-      )}
+        );
+      })()}
 
       {/* ── Content: Subcategories OR Sidebar + Products ── */}
       {(() => {
