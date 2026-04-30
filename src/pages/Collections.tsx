@@ -812,6 +812,32 @@ const Collections = () => {
         </div>
       </section>
 
+      {/* ── BRAND BANNER — për kategoritë me brand të lidhur (Dyshek, Shampo & Amenities) ── */}
+      {(activeCollection as any)?.brand_logo_url && (
+        <section className="relative bg-white border-b border-border py-8 md:py-12">
+          <div className="container flex flex-col items-center justify-center gap-3">
+            <a
+              href={(activeCollection as any).brand_url || "#"}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="block transition-opacity hover:opacity-80"
+              aria-label={(activeCollection as any).brand_name || "Visit brand website"}
+            >
+              <img
+                src={(activeCollection as any).brand_logo_url}
+                alt={(activeCollection as any).brand_name || "Brand"}
+                className="h-16 md:h-24 w-auto object-contain"
+              />
+            </a>
+            {(activeCollection as any).brand_name && (
+              <p className="text-xs md:text-sm text-muted-foreground tracking-wide uppercase">
+                Distribuar nga <span className="font-semibold text-foreground">{(activeCollection as any).brand_name}</span>
+              </p>
+            )}
+          </div>
+        </section>
+      )}
+
       {/* ── Content: Subcategories OR Sidebar + Products ── */}
       {(() => {
         const subCollections = activeCollection
