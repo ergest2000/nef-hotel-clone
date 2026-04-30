@@ -35,11 +35,13 @@ const ProductCard = ({
   collectionSlug,
   isAl,
   productColors,
+  brandLogoUrl,
 }: {
   product: Product;
   collectionSlug: string;
   isAl: boolean;
   productColors?: ProductColor[];
+  brandLogoUrl?: string;
 }) => {
   const { user } = useAuth();
   const { data: wishlist } = useWishlist(user?.id);
@@ -94,6 +96,16 @@ const ProductCard = ({
           ) : (
             <div className="w-full h-full flex items-center justify-center text-muted-foreground text-xs">
               {isAl ? "Pa imazh" : "No image"}
+            </div>
+          )}
+          {/* Brand badge overlay — top-left corner */}
+          {brandLogoUrl && (
+            <div className="absolute top-2 left-2 bg-white/95 backdrop-blur-sm rounded-md px-2 py-1 shadow-sm">
+              <img
+                src={brandLogoUrl}
+                alt="Brand"
+                className="h-4 md:h-5 w-auto object-contain"
+              />
             </div>
           )}
         </div>
@@ -814,8 +826,8 @@ const Collections = () => {
 
       {/* ── BRAND BANNER — për kategoritë me brand të lidhur (Dyshek, Shampo & Amenities) ── */}
       {(activeCollection as any)?.brand_logo_url && (
-        <section className="relative bg-white border-b border-border py-8 md:py-12">
-          <div className="container flex flex-col items-center justify-center gap-3">
+        <section className="relative bg-white border-b border-border py-5 md:py-6">
+          <div className="container flex items-center justify-center gap-3">
             <a
               href={(activeCollection as any).brand_url || "#"}
               target="_blank"
@@ -826,14 +838,9 @@ const Collections = () => {
               <img
                 src={(activeCollection as any).brand_logo_url}
                 alt={(activeCollection as any).brand_name || "Brand"}
-                className="h-16 md:h-24 w-auto object-contain"
+                className="h-10 md:h-12 w-auto object-contain"
               />
             </a>
-            {(activeCollection as any).brand_name && (
-              <p className="text-xs md:text-sm text-muted-foreground tracking-wide uppercase">
-                Distribuar nga <span className="font-semibold text-foreground">{(activeCollection as any).brand_name}</span>
-              </p>
-            )}
           </div>
         </section>
       )}
@@ -989,6 +996,7 @@ const Collections = () => {
                           collectionSlug={getCollectionSlug(product)}
                           isAl={isAl}
                           productColors={allColors || []}
+                          brandLogoUrl={(activeCollection as any)?.brand_logo_url || undefined}
                         />
                       ))}
                     </div>
