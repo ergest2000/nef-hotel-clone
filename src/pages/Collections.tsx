@@ -843,25 +843,25 @@ const Collections = () => {
         const ctaText = isAl ? "Vizito faqen" : "Visit website";
 
         const Inner = (
-          <div className="flex flex-row items-center gap-4 px-5 py-4 bg-primary/5 border-y border-primary/20 hover:bg-primary/10 transition-colors w-full">
-            {/* Logo — left */}
+          <div className="flex flex-col items-center text-center gap-3 px-5 py-5 bg-primary/5 border-y border-primary/20 hover:bg-primary/10 transition-colors w-full">
+            {/* Logo — centered, bigger */}
             {brandLogoUrl ? (
-              <div className="bg-white border border-primary/15 rounded p-2 shrink-0 flex items-center justify-center" style={{ width: 80, height: 50 }}>
+              <div className="bg-white border border-primary/15 rounded p-2.5 shrink-0 flex items-center justify-center" style={{ width: 140, height: 80 }}>
                 <img src={brandLogoUrl} alt={brandName} className="max-w-full max-h-full object-contain" />
               </div>
             ) : (
-              <div className="bg-white border border-primary/15 rounded p-2 shrink-0 flex items-center justify-center font-medium text-primary text-xs" style={{ width: 80, height: 50 }}>
+              <div className="bg-white border border-primary/15 rounded p-2.5 shrink-0 flex items-center justify-center font-medium text-primary text-sm" style={{ width: 140, height: 80 }}>
                 {brandName}
               </div>
             )}
-            {/* Text — middle, takes available space */}
-            <div className="flex-1 min-w-0 text-left">
+            {/* Text — centered below */}
+            <div className="min-w-0">
               <p className="text-sm md:text-base font-medium text-primary leading-tight m-0">{distributorText}.</p>
               <p className="text-xs md:text-sm text-primary/70 mt-0.5 m-0">{subText}</p>
             </div>
-            {/* CTA — right */}
+            {/* CTA — centered below */}
             {brandUrl && (
-              <span className="hidden sm:flex text-sm font-medium text-primary whitespace-nowrap shrink-0 items-center gap-1.5">
+              <span className="inline-flex items-center gap-1.5 text-sm font-medium text-primary whitespace-nowrap">
                 {ctaText}
                 <ExternalLink className="h-4 w-4" />
               </span>
