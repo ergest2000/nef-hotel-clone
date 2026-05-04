@@ -20,8 +20,14 @@ import type { Tables } from "@/integrations/supabase/types";
 
 type Collection = Tables<"collections">;
 
-const SUPABASE_URL = (import.meta.env.VITE_SUPABASE_URL || "https://yvkwkrumopgspyohrgio.supabase.co") + "/rest/v1/collections";
-const ANON_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl2a3drcnVtb3Bnc3B5b2hyZ2lvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI5OTU1NzMsImV4cCI6MjA4ODU3MTU3M30.xjSZ7U-Fqdg_lf66YaEem1Wi5W5h4kO1ab1vezV8XIc";
+const BASE_URL = import.meta.env.VITE_SUPABASE_URL;
+const ANON_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+
+if (!BASE_URL || !ANON_KEY) {
+  throw new Error("Missing VITE_SUPABASE_URL or VITE_SUPABASE_PUBLISHABLE_KEY environment variables");
+}
+
+const SUPABASE_URL = BASE_URL + "/rest/v1/collections";
 
 async function getAuthHeaders() {
   const session = await supabase.auth.getSession();
