@@ -36,12 +36,14 @@ const ProductCard = ({
   isAl,
   productColors,
   brandLogoUrl,
+  brandUrl,
 }: {
   product: Product;
   collectionSlug: string;
   isAl: boolean;
   productColors?: ProductColor[];
   brandLogoUrl?: string;
+  brandUrl?: string;
 }) => {
   const { user } = useAuth();
   const { data: wishlist } = useWishlist(user?.id);
@@ -78,50 +80,72 @@ const ProductCard = ({
     }
   };
 
+  /* ── Inner content (image + info) — shared between Link & external <a> ── */
+  const innerContent = (
+    <>
+      {/* Image */}
+      <div className="relative aspect-square overflow-hidden bg-secondary">
+        {image ? (
+          <img
+            src={image}
+            alt={title}
+            className="w-full h-full object-cover transition-all duration-300 group-hover:scale-105"
+            loading="lazy"
+          />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center text-muted-foreground text-xs">
+            {isAl ? "Pa imazh" : "No image"}
+          </div>
+        )}
+        {/* Brand badge overlay — top-left corner */}
+        {brandLogoUrl && (
+          <div className="absolute top-2 left-2 bg-white border border-primary/15 rounded p-1 shadow-sm">
+            <img
+              src={brandLogoUrl}
+              alt="Brand"
+              className="h-4 md:h-5 w-auto object-contain"
+            />
+          </div>
+        )}
+      </div>
+
+      {/* Info */}
+      <div className="mt-3 space-y-1">
+        <span className="block text-sm md:text-base text-foreground font-medium leading-snug group-hover:text-primary transition-colors line-clamp-2" style={{ textTransform: 'none', letterSpacing: 'normal' }}>
+          {title ? toTitleCase(title) : ""}
+        </span>
+        {dimensions && (
+          <p className="text-xs md:text-sm text-muted-foreground">
+            {isAl ? "Dimensioni:" : "Dimensions:"} {dimensions}
+          </p>
+        )}
+      </div>
+    </>
+  );
+
   return (
     <div className="group relative flex flex-col">
-      <Link
-        to={`/koleksionet/${collectionSlug}/${product.slug || product.id}`}
-        className="block"
-      >
-        {/* Image */}
-        <div className="relative aspect-square overflow-hidden bg-secondary">
-          {image ? (
-            <img
-              src={image}
-              alt={title}
-              className="w-full h-full object-cover transition-all duration-300 group-hover:scale-105"
-              loading="lazy"
-            />
-          ) : (
-            <div className="w-full h-full flex items-center justify-center text-muted-foreground text-xs">
-              {isAl ? "Pa imazh" : "No image"}
-            </div>
-          )}
-          {/* Brand badge overlay — top-left corner */}
-          {brandLogoUrl && (
-            <div className="absolute top-2 left-2 bg-white border border-primary/15 rounded p-1 shadow-sm">
-              <img
-                src={brandLogoUrl}
-                alt="Brand"
-                className="h-4 md:h-5 w-auto object-contain"
-              />
-            </div>
-          )}
-        </div>
-
-        {/* Info */}
-        <div className="mt-3 space-y-1">
-          <span className="block text-sm md:text-base text-foreground font-medium leading-snug group-hover:text-primary transition-colors line-clamp-2" style={{ textTransform: 'none', letterSpacing: 'normal' }}>
-            {title ? toTitleCase(title) : ""}
-          </span>
-          {dimensions && (
-            <p className="text-xs md:text-sm text-muted-foreground">
-              {isAl ? "Dimensioni:" : "Dimensions:"} {dimensions}
-            </p>
-          )}
-        </div>
-      </Link>
+      {brandUrl ? (
+        // Koleksione me brand (p.sh. Groupe GM): klikimi mbi produkt
+        // hap drejtpërdrejt faqen zyrtare të brandit në New Tab,
+        // pa kaluar nga faqja e brendshme e produktit.
+        <a
+          href={brandUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="block no-underline"
+          aria-label={title || "Brand"}
+        >
+          {innerContent}
+        </a>
+      ) : (
+        <Link
+          to={`/koleksionet/${collectionSlug}/${product.slug || product.id}`}
+          className="block"
+        >
+          {innerContent}
+        </Link>
+      )}
 
       {/* Color swatches */}
       {colors.length > 0 && (
@@ -1033,7 +1057,8 @@ const Collections = () => {
                           collectionSlug={getCollectionSlug(product)}
                           isAl={isAl}
                           productColors={allColors || []}
-                          brandLogoUrl={(activeCollection as any)?.brand_logo_url || undefined}
+                          brandLogoUrl={(activeCollection as any)?.brand_logo_url || (parentCollection as any)?.brand_logo_url || undefined}
+                          brandUrl={(activeCollection as any)?.brand_url || (parentCollection as any)?.brand_url || undefined}
                         />
                       ))}
                     </div>
