@@ -661,6 +661,25 @@ export const AdminProductsManager = () => {
                     Lëre bosh për gjenerim automatik. Ndrysho vetëm nëse ke arsye specifike.
                   </p>
                 </div>
+                <div>
+                  <label className="text-xs font-medium text-muted-foreground">
+                    Link i jashtëm (hapet në New Tab)
+                  </label>
+                  <Input
+                    type="url"
+                    value={(editItem as any).external_url ?? ""}
+                    onChange={(e) => setEditItem({ ...editItem, external_url: e.target.value || null } as any)}
+                    placeholder="p.sh. https://groupegm.com/brand/nuxe-ligne-standard/"
+                    className="font-mono text-xs"
+                  />
+                  <p className="text-[10px] text-muted-foreground mt-1">
+                    Nëse e plotëson, klikimi mbi produkt në faqen e koleksionit
+                    nuk hap faqen e brendshme të produktit por hap drejtpërdrejt
+                    këtë link në një tab të ri. Përdore për brande që kërkojnë
+                    ridrejtim te faqja e tyre zyrtare (p.sh. Groupe GM). Lëre
+                    bosh për sjelljen normale.
+                  </p>
+                </div>
                 <div className="flex items-center gap-6">
                   <div className="flex items-center gap-2">
                     <Switch checked={editItem.in_stock ?? true} onCheckedChange={(v) => setEditItem({ ...editItem, in_stock: v })} />
