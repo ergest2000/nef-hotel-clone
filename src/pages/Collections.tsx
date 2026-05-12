@@ -123,14 +123,21 @@ const ProductCard = ({
     </>
   );
 
+  // Përcakto destinacionin e klikimit:
+  // 1) Linku i jashtëm specifik për produktin (nga admin), nëse vendoset
+  // 2) Linku i brandit në nivel koleksioni (p.sh. Groupe GM), nëse vendoset
+  // 3) Faqja e brendshme e produktit (sjellja standarde)
+  const productExternalUrl =
+    (product as any).external_url && String((product as any).external_url).trim()
+      ? String((product as any).external_url).trim()
+      : null;
+  const targetExternalUrl = productExternalUrl || brandUrl || null;
+
   return (
     <div className="group relative flex flex-col">
-      {brandUrl ? (
-        // Koleksione me brand (p.sh. Groupe GM): klikimi mbi produkt
-        // hap drejtpërdrejt faqen zyrtare të brandit në New Tab,
-        // pa kaluar nga faqja e brendshme e produktit.
+      {targetExternalUrl ? (
         <a
-          href={brandUrl}
+          href={targetExternalUrl}
           target="_blank"
           rel="noopener noreferrer"
           className="block no-underline"
