@@ -4,6 +4,7 @@ import logo from "@/assets/egjeu-logo.png";
 import { useLanguage } from "@/hooks/useLanguage";
 import { usePageContent, getContentValue } from "@/hooks/useCms";
 import { useNavMenusByLocation } from "@/hooks/useNavMenus";
+import { useCollections } from "@/hooks/useCollections";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Mail, Phone, MapPin } from "lucide-react";
@@ -23,9 +24,9 @@ function SiteFooter() {
     return getContentValue(content, "footer", key, fallback);
   }
 
-  function h(key: string, fallback: string) {
-    return getContentValue(content, "header", key, fallback);
-  }
+  // Koleksionet top-level përdoren për col2 (Produktet)
+  var collectionsData = useCollections();
+  var allCollections = collectionsData.data ?? [];
 
   // Newsletter
   var nlTitle = isAl ? f("newsletter_title_al", "NEWSLETTER") : f("newsletter_title_en", "NEWSLETTER");
@@ -74,17 +75,15 @@ function SiteFooter() {
     ? footerCol2Menus.map(function (m: any) { return { label: isAl ? m.label : (m.label_en || m.label), href: m.href }; })
     : buildLinks("col3");
 
-  // Column 2 links (Products) - lexon nga header categories
-  var catCountVal = h("cat_count", "7");
-  var catCount = Math.min(10, Math.max(0, parseInt(catCountVal) || 7));
-  var col2Links: { label: string; href: string }[] = [];
-  for (var ci = 1; ci <= catCount; ci++) {
-    var catLabelAl = h("cat" + ci + "_label", "");
-    var catLabelEn = h("cat" + ci + "_label_en", "");
-    var catHref = h("cat" + ci + "_href", "#");
-    var catLabel = isAl ? catLabelAl : (catLabelEn || catLabelAl);
-    if (catLabel) col2Links.push({ label: catLabel, href: catHref });
-  }
+  // Column 2 links (Products) - lexohen direkt nga koleksionet top-level (parent_id == null)
+  // që janë `visible`. Renditja vjen nga `sort_order`. Kjo është e njëjta logjikë si te SiteHeader,
+  // kështu që header & footer mbajnë gjithmonë të njëjtën listë automatikisht.
+  var col2Links: { label: string; href: string }[] = allCollections
+    .filter(function (c: any) { return !c.parent_id && c.visible !== false; })
+    .map(function (c: any) {
+      var label = isAl ? (c.title_al || c.title_en || c.slug) : (c.title_en || c.title_al || c.slug);
+      return { label: label, href: "/koleksionet/" + c.slug };
+    });
 
   // Contact
   var emailAddr = f("email", "info@egjeu.al");
