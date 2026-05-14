@@ -367,18 +367,15 @@ function SiteHeader() {
   var contactPhone = h("contact_phone", "+355 69 000 0000");
   var searchPlaceholder = isAl ? h("search_placeholder_al", "Kërko për produkte këtu") : h("search_placeholder_en", "Search for products here");
 
-  var catCountVal = h("cat_count", "7");
-  var catCount = Math.min(10, Math.max(0, parseInt(catCountVal) || 7));
-  var productLinks: { label: string; href: string }[] = [];
-  for (var ci = 1; ci <= catCount; ci++) {
-    var catLabelAl = h("cat" + ci + "_label", "");
-    var catLabelEn = h("cat" + ci + "_label_en", "");
-    var catHref = h("cat" + ci + "_href", "#");
-    var catLabel = isAl ? catLabelAl : (catLabelEn || catLabelAl);
-    if (catLabel) {
-      productLinks.push({ label: catLabel, href: catHref });
-    }
-  }
+  // Kategoritë e navigation lexohen drejtpërdrejt nga koleksionet top-level (parent_id == null)
+  // që janë `visible`. Renditja vjen nga `sort_order` (vendoset në AdminCollectionsManager).
+  // Pra çdo koleksion i ri që krijohet, shfaqet automatikisht në main nav dhe në footer.
+  var productLinks: { label: string; href: string }[] = allCollections
+    .filter(function (c: any) { return !c.parent_id && c.visible !== false; })
+    .map(function (c: any) {
+      var label = isAl ? (c.title_al || c.title_en || c.slug) : (c.title_en || c.title_al || c.slug);
+      return { label: label, href: "/koleksionet/" + c.slug };
+    });
 
   var mainLinks = headerMenus ? headerMenus.map(function (m: any) { return { label: isAl ? m.label : (m.label_en || m.label), href: m.href }; }) : [
     { label: "About Us", href: "/company" },
