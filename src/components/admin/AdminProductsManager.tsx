@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useCollections } from "@/hooks/useCollections";
 import {
-  useProducts, useUpsertProduct, useDeleteProduct,
+  useProducts, useUpsertProduct, useDeleteProduct, useUpdateProductOrder,
   useProductImages, useAddProductImage, useDeleteProductImage, useUpdateProductImage,
   useProductColors, useAddProductColor, useDeleteProductColor, useUpdateProductColor,
   useProductSizes, useAddProductSize, useDeleteProductSize,
@@ -22,11 +22,25 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { Plus, Trash2, Edit, Package, Image as ImageIcon, ExternalLink, X, Copy, Search, FolderOpen, Check, RefreshCw } from "lucide-react";
+import { Plus, Trash2, Edit, Package, Image as ImageIcon, ExternalLink, X, Copy, Search, FolderOpen, Check, RefreshCw, GripVertical, ArrowUpDown } from "lucide-react";
 import { TranslateButton } from "./TranslateButton";
 import { ProductCategoriesManager } from "./ProductCategoriesManager";
 import { supabase } from "@/integrations/supabase/client";
 import type { Tables } from "@/integrations/supabase/types";
+import {
+  DndContext,
+  closestCenter,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from "@dnd-kit/core";
+import {
+  SortableContext,
+  verticalListSortingStrategy,
+  useSortable,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 
 
 // ── Media Picker Modal ─────────────────────────────────────────────
@@ -355,6 +369,78 @@ const ProductSizesManager = ({ productId }: { productId: string }) => {
   );
 };
 
+// ── Sortable Product Row (drag-drop reorder list) ─────────────────────────
+const SortableProductRow = ({
+  product,
+  index,
+  onEdit,
+}: {
+  product: Product;
+  index: number;
+  onEdit: (product: Product) => void;
+}) => {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: product.id });
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.4 : 1,
+  };
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      className="flex items-center gap-3 p-2.5 bg-background border border-border rounded-md hover:bg-muted/30 transition-colors"
+    >
+      <button
+        {...attributes}
+        {...listeners}
+        className="cursor-grab active:cursor-grabbing text-muted-foreground hover:text-foreground touch-none p-1"
+        title="Mbaj e zvarrit për të ndryshuar renditjen"
+      >
+        <GripVertical className="h-4 w-4" />
+      </button>
+      <span className="text-[10px] text-muted-foreground font-mono w-6 text-center shrink-0">
+        {index + 1}
+      </span>
+      <div className="w-12 h-12 bg-muted border border-border rounded overflow-hidden shrink-0">
+        {product.image_url ? (
+          <img src={product.image_url} alt={product.title_al ?? ""} className="w-full h-full object-cover" />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center">
+            <Package className="h-5 w-5 text-muted-foreground/30" />
+          </div>
+        )}
+      </div>
+      <div className="flex-1 min-w-0">
+        <p className="text-sm font-medium text-foreground truncate">
+          {product.title_al || product.code || "Pa titull"}
+        </p>
+        <div className="flex items-center gap-2 mt-0.5">
+          {product.code && (
+            <span className="text-[10px] text-muted-foreground font-mono">{product.code}</span>
+          )}
+          {!product.visible && (
+            <Badge variant="secondary" className="text-[9px] h-4 px-1.5">Fshehur</Badge>
+          )}
+          {!product.in_stock && (
+            <Badge variant="destructive" className="text-[9px] h-4 px-1.5">Jo në stok</Badge>
+          )}
+        </div>
+      </div>
+      <Button
+        variant="ghost"
+        size="icon"
+        className="h-7 w-7 shrink-0"
+        onClick={() => onEdit(product)}
+        title="Ndrysho"
+      >
+        <Edit className="h-3.5 w-3.5" />
+      </Button>
+    </div>
+  );
+};
+
 export const AdminProductsManager = () => {
   const { data: collections } = useCollections();
   const [selectedCollection, setSelectedCollection] = useState<string>("");
@@ -364,12 +450,83 @@ export const AdminProductsManager = () => {
   const upsert = useUpsertProduct();
   const remove = useDeleteProduct();
   const duplicate = useDuplicateProduct();
+  const updateOrder = useUpdateProductOrder();
   const { toast } = useToast();
   const { translateField, translating } = useAutoTranslate();
   const [editItem, setEditItem] = useState<Partial<Product> | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [showPrimaryMediaPicker, setShowPrimaryMediaPicker] = useState(false);
+
+  // ── Renditja Manuale (drag-drop) ─────────────────────────────────────────
+  // E aktivizojmë vetëm kur kemi një koleksion të zgjedhur (jo "Të gjitha")
+  // dhe kur nuk ka kërkim aktiv — përndryshe renditja nuk ka kuptim.
+  const [reorderMode, setReorderMode] = useState(false);
+  const [localOrder, setLocalOrder] = useState<Product[]>([]);
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 5 } })
+  );
+
+  // Kur hapet modaliteti, marrim foton fillestare të renditjes
+  // (vetëm produktet kryesore të koleksionit aktiv — pa cross-listings)
+  useEffect(() => {
+    if (reorderMode && products && selectedCollection && selectedCollection !== "all") {
+      const primaryOnly = products.filter((p) => p.collection_id === selectedCollection);
+      setLocalOrder(primaryOnly);
+    } else if (!reorderMode) {
+      setLocalOrder([]);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [reorderMode, selectedCollection]);
+
+  // Kur produktet refresh-ohen (p.sh. pas save), update-ojmë localOrder
+  // duke respektuar renditjen që ka filluar përdoruesi.
+  useEffect(() => {
+    if (reorderMode && products && selectedCollection && selectedCollection !== "all") {
+      const primaryOnly = products.filter((p) => p.collection_id === selectedCollection);
+      // Mbaj renditjen lokale; vetëm shto produkte të reja në fund
+      // dhe hiq ato që janë fshirë.
+      setLocalOrder((prev) => {
+        const prevIds = new Set(prev.map((p) => p.id));
+        const currentIds = new Set(primaryOnly.map((p) => p.id));
+        // Hiq të fshirat
+        const kept = prev.filter((p) => currentIds.has(p.id));
+        // Shto të rejat
+        const added = primaryOnly.filter((p) => !prevIds.has(p.id));
+        return [...kept, ...added];
+      });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [products]);
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+    const oldIdx = localOrder.findIndex((p) => p.id === active.id);
+    const newIdx = localOrder.findIndex((p) => p.id === over.id);
+    if (oldIdx === -1 || newIdx === -1) return;
+
+    const reordered = [...localOrder];
+    const [moved] = reordered.splice(oldIdx, 1);
+    reordered.splice(newIdx, 0, moved);
+
+    // Update i menjëhershëm vizual (optimistic)
+    setLocalOrder(reordered);
+
+    // Ruaj në DB në background
+    updateOrder.mutate(
+      reordered.map((p, i) => ({ id: p.id, sort_order: i })),
+      {
+        onError: (e) =>
+          toast({
+            title: "Renditja nuk u ruajt",
+            description: e.message,
+            variant: "destructive",
+          }),
+      }
+    );
+  };
+  // ─────────────────────────────────────────────────────────────────────────
 
   const handleSave = () => {
     if (!editItem?.collection_id) {
@@ -445,22 +602,70 @@ export const AdminProductsManager = () => {
     return matchesCollection && matchesSearch;
   });
 
+  // A mund ta aktivizojmë renditjen manuale? Vetëm kur:
+  //  - është zgjedhur një koleksion specifik (jo "Të gjitha")
+  //  - nuk ka kërkim aktiv
+  const canReorder =
+    !!selectedCollection &&
+    selectedCollection !== "all" &&
+    !searchTerm.trim();
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h2 className="text-xl font-semibold text-foreground">
-          Produktet
-          {searchTerm && filteredProducts !== undefined && (
+          {reorderMode ? "Renditja e Produkteve" : "Produktet"}
+          {!reorderMode && searchTerm && filteredProducts !== undefined && (
             <span className="text-sm font-normal text-muted-foreground ml-2">
               ({filteredProducts.length} rezultate)
             </span>
           )}
+          {reorderMode && (
+            <span className="text-sm font-normal text-muted-foreground ml-2">
+              ({localOrder.length} produkte)
+            </span>
+          )}
         </h2>
-        <Button onClick={openNew} size="sm" disabled={!collections?.length}>
-          <Plus className="h-4 w-4 mr-1" /> Shto Produkt
-        </Button>
+        <div className="flex items-center gap-2">
+          {reorderMode ? (
+            <Button
+              onClick={() => setReorderMode(false)}
+              size="sm"
+              variant="default"
+            >
+              <Check className="h-4 w-4 mr-1" /> Mbaroi
+            </Button>
+          ) : (
+            <>
+              <Button
+                onClick={() => setReorderMode(true)}
+                size="sm"
+                variant="outline"
+                disabled={!canReorder}
+                title={
+                  canReorder
+                    ? "Renditja manuale e produkteve me drag-drop"
+                    : "Zgjidh një koleksion specifik dhe pastro kërkimin për të aktivizuar renditjen"
+                }
+              >
+                <ArrowUpDown className="h-4 w-4 mr-1" /> Rendit
+              </Button>
+              <Button onClick={openNew} size="sm" disabled={!collections?.length}>
+                <Plus className="h-4 w-4 mr-1" /> Shto Produkt
+              </Button>
+            </>
+          )}
+        </div>
       </div>
 
+      {reorderMode && (
+        <div className="border-l-2 border-primary bg-primary/5 px-3 py-2 text-xs text-muted-foreground rounded-r">
+          Mbaj ikonën <GripVertical className="inline h-3 w-3 align-middle" /> dhe zvarrit
+          produktet për të ndryshuar renditjen. Ndryshimet ruhen automatikisht.
+        </div>
+      )}
+
+      {!reorderMode && (
       <div className="flex items-center gap-3 flex-wrap">
         <label className="text-sm font-medium text-muted-foreground">Koleksioni:</label>
         <Select value={selectedCollection} onValueChange={setSelectedCollection}>
@@ -490,8 +695,52 @@ export const AdminProductsManager = () => {
           )}
         </div>
       </div>
+      )}
 
-      {isLoading ? (
+      {reorderMode && (
+        <div className="flex items-center gap-3 flex-wrap">
+          <span className="text-sm font-medium text-muted-foreground">Koleksioni:</span>
+          <Badge variant="secondary" className="text-xs">
+            {collections?.find((c) => c.id === selectedCollection)?.title_al || selectedCollection}
+          </Badge>
+          {updateOrder.isPending && (
+            <span className="text-[10px] text-muted-foreground flex items-center gap-1.5">
+              <RefreshCw className="h-3 w-3 animate-spin" /> Duke ruajtur...
+            </span>
+          )}
+        </div>
+      )}
+
+      {reorderMode ? (
+        localOrder.length === 0 ? (
+          <div className="border-2 border-dashed border-border rounded-lg p-12 text-center">
+            <Package className="h-12 w-12 mx-auto text-muted-foreground mb-3" />
+            <p className="text-muted-foreground">Nuk ka produkte për të renditur.</p>
+          </div>
+        ) : (
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragEnd={handleDragEnd}
+          >
+            <SortableContext
+              items={localOrder.map((p) => p.id)}
+              strategy={verticalListSortingStrategy}
+            >
+              <div className="space-y-1.5">
+                {localOrder.map((product, idx) => (
+                  <SortableProductRow
+                    key={product.id}
+                    product={product}
+                    index={idx}
+                    onEdit={openEdit}
+                  />
+                ))}
+              </div>
+            </SortableContext>
+          </DndContext>
+        )
+      ) : isLoading ? (
         <div className="flex items-center justify-center py-12">
           <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
         </div>
