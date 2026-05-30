@@ -23,19 +23,16 @@ const NewsletterSection = ({ content }: { content?: SiteContent[] }) => {
         },
       });
 
-      // ===== DEBUG: tregon saktesisht cfare kthen funksioni =====
+      // Dërgo email-in automatik te abonuesi (përmes të njëjtit endpoint si oferta)
       try {
-        const r = await fetch("/api/send-newsletter", {
+        await fetch("/api/send-email", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email }),
+          body: JSON.stringify({ type: "newsletter", email }),
         });
-        const text = await r.text();
-        alert("STATUS: " + r.status + "\n\nPERGJIGJA:\n" + text);
       } catch (err) {
-        alert("GABIM RRJETI:\n" + String(err));
+        console.error("Newsletter email error:", err);
       }
-      // ===== FUND DEBUG =====
 
       toast({ title: "U abonuat!", description: "Do merrni përditësimet tona." });
       setEmail("");
