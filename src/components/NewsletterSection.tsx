@@ -23,16 +23,19 @@ const NewsletterSection = ({ content }: { content?: SiteContent[] }) => {
         },
       });
 
-      // Dërgo email-in automatik te abonuesi
+      // ===== DEBUG: tregon saktesisht cfare kthen funksioni =====
       try {
-        await fetch("/api/send-newsletter", {
+        const r = await fetch("/api/send-newsletter", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ email }),
         });
+        const text = await r.text();
+        alert("STATUS: " + r.status + "\n\nPERGJIGJA:\n" + text);
       } catch (err) {
-        console.error("Newsletter email error:", err);
+        alert("GABIM RRJETI:\n" + String(err));
       }
+      // ===== FUND DEBUG =====
 
       toast({ title: "U abonuat!", description: "Do merrni përditësimet tona." });
       setEmail("");
