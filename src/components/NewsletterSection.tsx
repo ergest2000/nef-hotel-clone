@@ -23,12 +23,10 @@ const NewsletterSection = ({ content }: { content?: SiteContent[] }) => {
         },
       });
 
-      // Dërgo email-in automatik te abonuesi (përmes të njëjtit endpoint si oferta)
+      // Dërgo welcome-email te abonuesi (njësoj si oferta — Supabase Edge Function)
       try {
-        await fetch("/api/send-email", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ type: "newsletter", email }),
+        await supabase.functions.invoke("send-newsletter", {
+          body: { email },
         });
       } catch (err) {
         console.error("Newsletter email error:", err);
