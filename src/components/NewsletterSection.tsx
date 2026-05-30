@@ -23,16 +23,19 @@ const NewsletterSection = ({ content }: { content?: SiteContent[] }) => {
         },
       });
 
-      // Dërgo welcome-email te abonuesi (përmes të njëjtit endpoint si oferta)
+      // ===== DEBUG: tregon saktësisht çfarë kthen Resend =====
       try {
-        await fetch("/api/send-email", {
+        const r = await fetch("/api/send-email", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ type: "newsletter", email }),
         });
+        const text = await r.text();
+        alert("STATUS: " + r.status + "\n\nPËRGJIGJA:\n" + text);
       } catch (err) {
-        console.error("Newsletter email error:", err);
+        alert("GABIM RRJETI:\n" + String(err));
       }
+      // ===== FUND DEBUG =====
 
       toast({ title: "U abonuat!", description: "Do merrni përditësimet tona." });
       setEmail("");
