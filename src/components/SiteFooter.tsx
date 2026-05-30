@@ -102,6 +102,16 @@ function SiteFooter() {
     if (!email) return;
     try {
       await supabase.from("registrations").insert({ data: { type: "newsletter", email: email } });
+      // Dërgo welcome-email te abonuesi (përmes të njëjtit endpoint si oferta)
+      try {
+        await fetch("/api/send-email", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ type: "newsletter", email: email }),
+        });
+      } catch (mailErr) {
+        console.error("Newsletter email error:", mailErr);
+      }
       toast({ title: isAl ? "U abonuat!" : "Subscribed!", description: isAl ? "Do merrni përditësimet tona." : "You'll receive our latest updates." });
       setEmail("");
     } catch (err) {
