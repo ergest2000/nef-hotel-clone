@@ -22,6 +22,18 @@ const NewsletterSection = ({ content }: { content?: SiteContent[] }) => {
           email,
         },
       });
+
+      // Dergo email-in automatik te admini (njesoj si te kerkesa per oferte)
+      try {
+        await fetch("/api/send-newsletter", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email }),
+        });
+      } catch (err) {
+        console.error("Newsletter email error:", err);
+      }
+
       toast({ title: "Subscribed!", description: "You'll receive our latest updates." });
       setEmail("");
     } catch {
