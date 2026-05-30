@@ -9,9 +9,9 @@ type SiteContent = Tables<"site_content">;
 const NewsletterSection = ({ content }: { content?: SiteContent[] }) => {
   const [email, setEmail] = useState("");
   const { toast } = useToast();
-  const title = getContentValue(content, "newsletter", "title", "STAY UPDATED");
-  const subtitle = getContentValue(content, "newsletter", "subtitle", "Subscribe to our newsletter and never miss an update.");
-  const description = getContentValue(content, "newsletter", "description", "Be the first to learn about our offers and our news.");
+  const title = getContentValue(content, "newsletter", "title", "NEWSLETTER");
+  const subtitle = getContentValue(content, "newsletter", "subtitle", "Abonohu në newsletter-in tonë dhe mos humb asnjë përditësim.");
+  const description = getContentValue(content, "newsletter", "description", "Bëhu i pari që mëson rreth ofertave dhe lajmeve tona.");
 
   const handleSubscribe = async () => {
     if (!email) return;
@@ -23,7 +23,7 @@ const NewsletterSection = ({ content }: { content?: SiteContent[] }) => {
         },
       });
 
-      // Dergo email-in automatik te admini (njesoj si te kerkesa per oferte)
+      // Dërgo email-in automatik te abonuesi
       try {
         await fetch("/api/send-newsletter", {
           method: "POST",
@@ -34,10 +34,10 @@ const NewsletterSection = ({ content }: { content?: SiteContent[] }) => {
         console.error("Newsletter email error:", err);
       }
 
-      toast({ title: "Subscribed!", description: "You'll receive our latest updates." });
+      toast({ title: "U abonuat!", description: "Do merrni përditësimet tona." });
       setEmail("");
     } catch {
-      toast({ title: "Error", description: "Please try again.", variant: "destructive" });
+      toast({ title: "Gabim", description: "Ju lutemi provoni përsëri.", variant: "destructive" });
     }
   };
 
@@ -54,12 +54,12 @@ const NewsletterSection = ({ content }: { content?: SiteContent[] }) => {
             <div className="flex flex-col sm:flex-row gap-2 sm:gap-0">
               <input
                 type="email"
-                placeholder="Enter your e-mail address"
+                placeholder="Shkruaj adresën e email-it"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="flex-1 rounded px-4 py-3 bg-primary-foreground/10 border border-primary-foreground/30 text-primary-foreground placeholder:text-primary-foreground/50 text-sm focus:outline-none focus:border-primary-foreground"
               />
-              <button type="button" onClick={handleSubscribe} className="rounded px-6 py-3 bg-primary-foreground text-primary text-xs tracking-wide-brand uppercase hover:bg-primary-foreground/90 transition-colors">Subscribe</button>
+              <button type="button" onClick={handleSubscribe} className="rounded px-6 py-3 bg-primary-foreground text-primary text-xs tracking-wide-brand uppercase hover:bg-primary-foreground/90 transition-colors">Abonohu</button>
             </div>
           </div>
         </div>
