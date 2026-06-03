@@ -86,7 +86,7 @@ function SiteFooter() {
     });
 
   // Contact
-  var emailAddr = f("email", "info@egjeu.al");
+  var emailAddr = "shitje@egjeu.al";
   var phone = f("phone", "+355 69 000 0000");
   var address = isAl ? f("address_al", "Tiranë, Shqipëri") : f("address_en", "Tirana, Albania");
 
