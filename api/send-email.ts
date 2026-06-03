@@ -49,7 +49,7 @@ export default async function handler(req: any, res: any) {
     },
     body: JSON.stringify({
       from: "EGJEU <noreply@egjeu.al>",
-      to: ["topciuergest@gmail.com", "info@rejs.al"],
+      to: ["topciuergest@gmail.com", "shitje@egjeu.al"],
       subject: `Kërkesë për Ofertë`,
       html: `<div style="font-family:Arial;max-width:600px;margin:0 auto"><div style="background:#ffffff;padding:24px;text-align:center;border-bottom:1px solid #e5e5e5"><img src="${LOGO}" alt="EGJEU" style="height:50px;max-width:200px;object-fit:contain" /></div><div style="padding:30px"><h2 style="color:#163058">Kërkesë e re për Ofertë</h2><p><b>Emri:</b> ${customerName||"-"}</p><p><b>Biznesi:</b> ${businessName||"-"}</p><p><b>Email:</b> ${customerEmail||"-"}</p><p><b>Telefon:</b> ${phone||"-"}</p><p><b>Qyteti:</b> ${city||"-"}</p><h3 style="color:#163058">Produktet:</h3><table style="width:100%;border-collapse:collapse"><thead><tr style="background:#f5f5f5"><th style="padding:8px;text-align:left">Produkti</th><th style="padding:8px;text-align:left">Ngjyra</th><th style="padding:8px;text-align:left">Kutitë</th><th style="padding:8px;text-align:left">Copë</th></tr></thead><tbody>${itemsHtml}</tbody></table></div><div style="background:#f5f5f5;padding:15px;text-align:center;color:#999;font-size:12px">EGJEU Hotel Collection — hotel.egjeu.al</div></div>`,
     }),
