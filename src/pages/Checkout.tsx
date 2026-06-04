@@ -7,6 +7,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useLanguage } from "@/hooks/useLanguage";
 import { useDesign } from "@/hooks/useDesignSettings";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -43,23 +44,27 @@ const Checkout = () => {
   const [registerLoading, setRegisterLoading] = useState(false);
   const [requestLoading, setRequestLoading] = useState(false);
 
+  // Mesazh opsional nga klienti
+  const [customerMessage, setCustomerMessage] = useState("");
+
   const sendQuoteEmail = async (payload: {
     customerEmail: string;
     customerName: string;
     businessName?: string;
     city?: string;
     phone?: string;
+    message?: string;
     items: Array<{ title: string; color: string; boxes: number; pieces: number }>;
   }) => {
     try {
-      const { customerEmail, customerName, businessName, city, phone, items } = payload;
+      const { customerEmail, customerName, businessName, city, phone, message, items } = payload;
       const itemsHtml = items.map((item) =>
         `<tr><td style="padding:8px;border-bottom:1px solid #eee">${item.title}</td><td style="padding:8px;border-bottom:1px solid #eee">${item.color || "-"}</td><td style="padding:8px;border-bottom:1px solid #eee">${item.boxes || 0}</td><td style="padding:8px;border-bottom:1px solid #eee">${item.pieces || 0}</td></tr>`
       ).join("") || "<tr><td colspan='4'>Nuk ka produkte</td></tr>";
       await fetch("/api/send-email", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ customerEmail, customerName, businessName, city, phone, items }),
+        body: JSON.stringify({ customerEmail, customerName, businessName, city, phone, message, items }),
       });
     } catch (err) {
       console.error("Email error:", err);
@@ -131,6 +136,7 @@ const Checkout = () => {
           source: "checkout",
           email: user.email,
           fullName: user.user_metadata?.full_name || user.email,
+          message: customerMessage.trim(),
           items: items.map((item) => ({
             title: item.title || item.title_al || item.title_en || "",
             code: item.code || "",
@@ -149,6 +155,7 @@ const Checkout = () => {
         businessName: user.user_metadata?.business_name || "",
         city: user.user_metadata?.city || "",
         phone: user.user_metadata?.phone || "",
+        message: customerMessage.trim(),
         items: items.map((item) => ({
           title: item.title || item.title_al || item.title_en || "",
           color: item.color || "",
@@ -157,6 +164,7 @@ const Checkout = () => {
         })),
       });
 
+      setCustomerMessage("");
       toast({ title: "Sukses", description: t("checkout_request_sent", "Kërkesa u dërgua!", "Request sent!") });
     } catch {
       toast({ title: "Gabim", variant: "destructive" });
@@ -189,6 +197,27 @@ const Checkout = () => {
                 >
                   {requestLoading ? "..." : t("checkout_request_quote", "KËRKO NJË OFERTË", "REQUEST A QUOTE")}
                 </Button>
+
+                <div className="mt-6">
+                  <label htmlFor="customer-message" className="block text-sm font-medium text-foreground">
+                    {t("checkout_message_label", "Lini mesazhin tuaj (Opsionale)", "Leave your message (Optional)")}
+                  </label>
+                  <p className="text-xs text-muted-foreground mt-1 mb-2">
+                    {t(
+                      "checkout_message_hint",
+                      "Shkruani çdo informacion shtesë që mund të na ndihmojë në përgatitjen e ofertës.",
+                      "Write any additional information that may help us prepare the offer."
+                    )}
+                  </p>
+                  <Textarea
+                    id="customer-message"
+                    value={customerMessage}
+                    onChange={(e) => setCustomerMessage(e.target.value)}
+                    rows={4}
+                    className="rounded-none bg-background focus-visible:ring-1 focus-visible:ring-offset-0"
+                    placeholder={t("checkout_message_placeholder", "Shkruani këtu...", "Write here...")}
+                  />
+                </div>
               </div>
             ) : (
               <>
