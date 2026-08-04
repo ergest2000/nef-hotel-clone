@@ -10,8 +10,9 @@ import { DesignProvider } from "@/hooks/useDesignSettings";
 import { CartProvider } from "@/hooks/useCart";
 import ScrollToTop from "./components/ScrollToTop";
 import WhatsAppButton from "./components/WhatsAppButton";
-// Lazy — faqet
-const Index = lazy(() => import("./pages/Index"));
+// Eager — faqja kryesore
+import Index from "./pages/Index";
+// Lazy — faqet e tjera
 const BlogPost = lazy(() => import("./pages/BlogPost"));
 const Collections = lazy(() => import("./pages/Collections"));
 const ProductDetail = lazy(() => import("./pages/ProductDetail"));
@@ -47,8 +48,7 @@ const App = () => (
                 <ScrollToTop />
                 <Suspense fallback={null}>
                   <Routes>
-                    {/* Faqja kryesore tani kthen 404 */}
-                    <Route path="/" element={<NotFound />} />
+                    <Route path="/" element={<Index />} />
                     <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
                     <Route path="/reset-password" element={<ResetPassword />} />
                     <Route path="/koleksionet" element={<Collections />} />
