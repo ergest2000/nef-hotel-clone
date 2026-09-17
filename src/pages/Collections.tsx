@@ -855,7 +855,7 @@ const Collections = () => {
         </div>
       </section>
 
-      {/* ── BRAND BANNER (Distributor zyrtar) — për kategoritë me brand ── */}
+      {/* ── BRAND BANNER (Distributor ekskluziv) — për kategoritë me brand ── */}
       {(() => {
         const c = activeCollection as any;
         const p = parentCollection as any;
@@ -866,8 +866,8 @@ const Collections = () => {
         if (!brandName) return null;
 
         const distributorText = isAl
-          ? `Distributor zyrtar i ${brandName} në Shqipëri`
-          : `Official distributor of ${brandName} in Albania`;
+          ? `Distributor ekskluziv i ${brandName} në Shqipëri`
+          : `Exclusive distributor of ${brandName} in Albania`;
         const subText = isAl
           ? "Kliko për më shumë informacion mbi brandin"
           : "Click for more information about the brand";
