@@ -143,7 +143,7 @@ const ImageLightbox = ({ images, startIndex, onClose }: { images: string[]; star
   );
 };
 
-// ─── Brand Banner (Distributor zyrtar) ──────────────────────────
+// ─── Brand Banner (Distributor ekskluziv) ──────────────────────────
 type CollectionLike = { brand_name?: string | null; brand_logo_url?: string | null; brand_url?: string | null } | null | undefined;
 
 const BrandBanner = ({ collection, parentCollection, isAl }: {
@@ -161,8 +161,8 @@ const BrandBanner = ({ collection, parentCollection, isAl }: {
   if (!brandName) return null;
 
   const distributorText = isAl
-    ? `Distributor zyrtar i ${brandName} në Shqipëri`
-    : `Official distributor of ${brandName} in Albania`;
+    ? `Distributor ekskluziv i ${brandName} në Shqipëri`
+    : `Exclusive distributor of ${brandName} in Albania`;
   const subText = isAl
     ? "Kliko për më shumë informacion mbi brandin"
     : "Click for more information about the brand";
