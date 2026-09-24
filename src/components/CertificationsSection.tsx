@@ -15,13 +15,13 @@ const CertificationsSection = ({ content }: { content?: SiteContent[] }) => {
         <h2 className="text-lg md:text-xl tracking-[0.25em] uppercase font-light text-foreground text-center mb-10">{title}</h2>
 
         {/* Desktop: flex row with dividers */}
-        <div className="hidden md:flex items-center justify-center">
+        <div className="hidden md:flex flex-wrap items-center justify-center gap-y-8">
           {certs.map((cert, i) => (
             <div key={cert.id} className="flex items-center">
-              {i > 0 && <div className="w-px h-16 bg-border/60 mx-10" />}
-              <div className="flex items-center justify-center px-6 py-3">
+              {i > 0 && <div className="w-px h-16 bg-border/60 mx-6 lg:mx-10" />}
+              <div className="flex items-center justify-center px-4 lg:px-6 py-3">
                 {cert.logo_url ? (
-                  <img src={cert.logo_url} alt={cert.name} className="h-[100px] w-auto object-contain" />
+                  <img src={cert.logo_url} alt={cert.name} className="h-[80px] lg:h-[100px] w-auto max-w-[180px] object-contain" />
                 ) : (
                   <span className="text-sm tracking-[0.15em] text-muted-foreground font-semibold uppercase">{cert.name}</span>
                 )}
