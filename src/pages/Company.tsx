@@ -374,18 +374,18 @@ const Company = () => {
         <section className="py-16 md:py-24 bg-muted/30">
           <div className="container">
             <SectionHeading>{g("certifications", "title", t("CERTIFIKIME", "CERTIFICATIONS"))}</SectionHeading>
-            <div className="flex flex-col md:flex-row items-center justify-center">
+            <div className="flex flex-col md:flex-row md:flex-wrap items-center justify-center md:gap-y-8">
               {certs.map((c, i) => (
                 <div key={c.id} className="flex items-center">
                   {i > 0 && (
-                    <div className="hidden md:block w-px h-16 bg-border/60 mx-10" />
+                    <div className="hidden md:block w-px h-16 bg-border/60 mx-6 lg:mx-10" />
                   )}
                   {i > 0 && (
                     <div className="md:hidden w-16 h-px bg-border/60 my-6" />
                   )}
                   <div className="flex items-center justify-center px-6 py-3">
                     {c.logo_url ? (
-                      <img src={c.logo_url} alt={c.name} className="h-[80px] md:h-[100px] w-auto object-contain" />
+                      <img src={c.logo_url} alt={c.name} className="h-[80px] lg:h-[100px] w-auto max-w-[180px] object-contain" />
                     ) : (
                       <span className="text-sm tracking-[0.15em] text-muted-foreground font-semibold uppercase">{c.name}</span>
                     )}
