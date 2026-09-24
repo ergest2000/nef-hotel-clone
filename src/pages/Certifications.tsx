@@ -1,13 +1,20 @@
 import { useState, useEffect, useCallback } from "react";
 import useEmblaCarousel from "embla-carousel-react";
-import { getContentValue } from "@/hooks/useCms";
+import SiteHeader from "@/components/SiteHeader";
+import SiteFooter from "@/components/SiteFooter";
+import { usePageContent, getContentValue } from "@/hooks/useCms";
 import { useManagedLogos } from "@/hooks/useManagedLogos";
-import type { Tables } from "@/integrations/supabase/types";
+import { useLanguage } from "@/hooks/useLanguage";
 
-type SiteContent = Tables<"site_content">;
-
-const CertificationsSection = ({ content }: { content?: SiteContent[] }) => {
-  const title = getContentValue(content, "certifications", "title", "CERTIFICATIONS");
+const Certifications = () => {
+  const { lang } = useLanguage();
+  const { data: content } = usePageContent("certifications", lang);
+  const title = getContentValue(
+    content,
+    "hero",
+    "title",
+    getContentValue(content, "certifications", "title", "CERTIFICATIONS")
+  );
   const { data: logos } = useManagedLogos("certifications");
   const certs = logos?.filter((l) => l.visible) ?? [];
 
@@ -35,7 +42,9 @@ const CertificationsSection = ({ content }: { content?: SiteContent[] }) => {
   }, [emblaApi]);
 
   return (
-    <section className="py-12 md:py-16 border-t border-border">
+    <div className="min-h-screen bg-background md:overflow-visible md:h-auto overflow-y-auto h-screen overscroll-none">
+      <SiteHeader />
+    <section className="py-12 md:py-16">
       <div className="container">
         <h2 className="text-lg md:text-xl tracking-[0.25em] uppercase font-light text-foreground text-center mb-10">{title}</h2>
 
@@ -91,7 +100,9 @@ const CertificationsSection = ({ content }: { content?: SiteContent[] }) => {
         </div>
       </div>
     </section>
+      <SiteFooter />
+    </div>
   );
 };
 
-export default CertificationsSection;
+export default Certifications;
