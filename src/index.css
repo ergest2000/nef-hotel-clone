@@ -95,10 +95,6 @@
     @apply border-border;
   }
 
-  html, body {
-    overscroll-behavior: none;
-  }
-
   body {
     @apply bg-background text-foreground;
     font-family: var(--ds-font-family, 'Century Gothic', 'Avantgarde', 'CenturyGothic', 'AppleGothic', sans-serif);
