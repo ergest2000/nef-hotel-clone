@@ -7,10 +7,6 @@ const ScrollToTop = () => {
   useEffect(() => {
     // Skip scroll reset on admin pages
     if (pathname.startsWith("/admin")) return;
-    const scrollable = document.querySelector("#root > div");
-    if (scrollable) {
-      scrollable.scrollTop = 0;
-    }
     window.scrollTo(0, 0);
   }, [pathname]);
 
