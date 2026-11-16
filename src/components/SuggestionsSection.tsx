@@ -64,7 +64,9 @@ const SuggestionsSection = ({ content }: { content?: SiteContent[] }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [visibleCount, setVisibleCount] = useState(getVisibleCount);
   const touchStartX = useRef(0);
+  const touchStartY = useRef(0);
   const touchDeltaX = useRef(0);
+  const touchAxis = useRef<"x" | "y" | null>(null);
   const [isSwiping, setIsSwiping] = useState(false);
   const [swipeOffset, setSwipeOffset] = useState(0);
 
@@ -97,20 +99,38 @@ const SuggestionsSection = ({ content }: { content?: SiteContent[] }) => {
   /* ── touch / swipe ─────────────────────────────────────────────── */
   const onTouchStart = useCallback((e: React.TouchEvent) => {
     touchStartX.current = e.touches[0].clientX;
+    touchStartY.current = e.touches[0].clientY;
     touchDeltaX.current = 0;
-    setIsSwiping(true);
+    touchAxis.current = null;
   }, []);
 
   const onTouchMove = useCallback((e: React.TouchEvent) => {
-    if (!isSwiping) return;
-    const delta = e.touches[0].clientX - touchStartX.current;
-    touchDeltaX.current = delta;
-    setSwipeOffset(delta);
-  }, [isSwiping]);
+    const dx = e.touches[0].clientX - touchStartX.current;
+    const dy = e.touches[0].clientY - touchStartY.current;
+
+    // Vendos drejtimin e lëvizjes vetëm një herë
+    if (touchAxis.current === null) {
+      if (Math.abs(dx) < 8 && Math.abs(dy) < 8) return;
+      touchAxis.current = Math.abs(dx) > Math.abs(dy) ? "x" : "y";
+      if (touchAxis.current === "x") setIsSwiping(true);
+    }
+
+    // Lëvizje vertikale → lëre faqen të scrollojë normalisht
+    if (touchAxis.current !== "x") return;
+
+    touchDeltaX.current = dx;
+    setSwipeOffset(dx);
+  }, []);
 
   const onTouchEnd = useCallback(() => {
+    const wasHorizontal = touchAxis.current === "x";
+    touchAxis.current = null;
     setIsSwiping(false);
     setSwipeOffset(0);
+    if (!wasHorizontal) {
+      touchDeltaX.current = 0;
+      return;
+    }
     const threshold = 50;
     if (touchDeltaX.current < -threshold) {
       slide("right");
@@ -170,8 +190,6 @@ const SuggestionsSection = ({ content }: { content?: SiteContent[] }) => {
   }, []);
 
   /* ── compute translateX ────────────────────────────────────────── */
-  // Each card = (100% / visibleCount) with gap adjustments
-  // translateX = -(currentIndex * (cardWidth + gap)) + swipeOffset
   const cardPercent = 100 / visibleCount;
   const gapPerCard = GAP * (visibleCount - 1) / visibleCount;
   const translatePx = -(currentIndex * gapPerCard + currentIndex * GAP) + swipeOffset;
@@ -236,7 +254,7 @@ const SuggestionsSection = ({ content }: { content?: SiteContent[] }) => {
           {/* ── Track with overflow hidden ────────────────────────── */}
           <div className="overflow-hidden">
             <div
-              className="flex select-none"
+              className="flex select-none touch-pan-y"
               style={{
                 gap: `${GAP}px`,
                 transform: `translateX(calc(${translatePercent}% + ${translatePx}px))`,
