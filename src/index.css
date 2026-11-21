@@ -95,16 +95,8 @@
     @apply border-border;
   }
 
-  /* ── Scroll i bllokuar në gjithë faqen ── */
-  html, body {
-    height: 100%;
-    overflow: hidden !important;
-    overscroll-behavior: none;
-  }
-
-  #root {
-    height: 100%;
-    overflow: hidden;
+  html {
+    scroll-behavior: smooth;
   }
 
   body {
